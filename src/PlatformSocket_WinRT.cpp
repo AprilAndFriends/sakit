@@ -1,0 +1,96 @@
+/// @file
+/// @author  Boris Mikic
+/// @version 1.0
+/// 
+/// @section LICENSE
+/// 
+/// This program is free software; you can redistribute it and/or modify it under
+/// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
+
+#if defined(_WIN32) && defined(_WINRT)
+#define _NO_WIN_H
+#include <hltypes/hplatform.h>
+#include <hltypes/hlog.h>
+#include <hltypes/hstring.h>
+
+#include "PlatformSocket.h"
+
+using namespace Windows::Foundation;
+using namespace Windows::Networking;
+using namespace Windows::Networking::Sockets;
+using namespace Windows::Storage::Streams;
+using namespace Windows::System::Threading;
+
+namespace sakit
+{
+	void PlatformSocket::platformInit()
+	{
+	}
+
+	void PlatformSocket::platformDestroy()
+	{
+	}
+
+	PlatformSocket::PlatformSocket()
+	{
+		this->connected = false;
+		this->sock = nullptr;
+		this->hostName = nullptr;
+	}
+
+	bool PlatformSocket::connect(chstr host, unsigned int port)
+	{
+		// create host info
+		try
+		{
+			this->hostName = ref new HostName(_HL_HSTR_TO_PSTR(host.split("/", 1).first()));
+		}
+		catch (Platform::Exception^ e)
+		{
+			hlog::error(sakit::logTag, _HL_PSTR_TO_HSTR(e->Message));
+			return false;
+		}
+		// create socket
+		this->sock = ref new StreamSocket();
+		this->sock->Control->KeepAlive = false; // TODOsock - check if this is ok
+		this->sock->Control->NoDelay = true;
+		// open socket
+		this->_asyncProcessing = true;
+		this->_asyncFinished = false;
+		try
+		{
+			IAsyncAction^ action = this->sock->ConnectAsync(this->hostName, _HL_HSTR_TO_PSTR(hstr(PORT)), SocketProtectionLevel::PlainSocket);
+			action->Completed = ref new AsyncActionCompletedHandler([this](IAsyncAction^ a, AsyncStatus status)
+			{
+				if (status == AsyncStatus::Completed)
+				{
+					this->_asyncFinished = true;
+				}
+				this->_asyncProcessing = false;
+			});
+			// TODO - use proper mutex here
+			if (!this->_awaitAsync())
+			{
+				return false;
+			}
+		}
+		catch (Platform::Exception^ e)
+		{
+			hlog::error(System::logTag, _HL_PSTR_TO_HSTR(e->Message));
+			return false;
+		}
+		return true;
+	}
+
+	void PlatformSocket::disconnect()
+	{
+		this->hostName = nullptr;
+		if (this->sock != nullptr)
+		{
+			delete this->sock; // deleting the socket is the documented way in WinRT to close the socket in C++
+			this->sock = nullptr;
+		}
+	}
+	
+}
+#endif
