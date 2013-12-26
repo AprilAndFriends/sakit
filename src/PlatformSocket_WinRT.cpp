@@ -36,6 +36,7 @@ namespace sakit
 		this->connected = false;
 		this->sock = nullptr;
 		this->hostName = nullptr;
+		memset(this->buffer, 0, sizeof(BUFFER_SIZE));
 	}
 
 	bool PlatformSocket::connect(chstr host, unsigned int port)
@@ -89,6 +90,56 @@ namespace sakit
 		{
 			delete this->sock; // deleting the socket is the documented way in WinRT to close the socket in C++
 			this->sock = nullptr;
+		}
+	}
+	
+	void PlatformSocket::receive(hsbase& stream, unsigned int maxBytes)
+	{
+		while (true)
+		{
+			/*
+
+			this->_asyncProcessing = true;
+			this->_asyncFinished = false;
+			int received = 0;
+			try
+			{
+				Buffer^ _buffer = ref new Buffer(HTTP_BUFFER_SIZE - 1);
+				IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = this->sock->InputStream->ReadAsync(
+					_buffer, HTTP_BUFFER_SIZE - 1, InputStreamOptions::None);
+				operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
+					[this](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
+				{
+					if (status == AsyncStatus::Completed)
+					{
+						this->_asyncFinished = true;
+					}
+					this->_asyncProcessing = false;
+				});
+				if (!this->_awaitAsync())
+				{
+					return 0;
+				}
+				Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
+				try
+				{
+					DataReader::FromBuffer(_buffer)->ReadBytes(_data);
+				}
+				catch (Platform::OutOfBoundsException^ e)
+				{
+					return 0;
+				}
+				memcpy(buffer, _data->Data, _data->Length);
+				received = (int)_data->Length;
+			}
+			catch (Platform::Exception^ e)
+			{
+				hlog::error(System::logTag, _HL_PSTR_TO_HSTR(e->Message));
+				return 0;
+			}
+			return received;
+			*/
+			break;
 		}
 	}
 	

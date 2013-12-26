@@ -15,6 +15,7 @@
 #define SAKIT_SOCKET_H
 
 #include <hltypes/hltypesUtil.h>
+#include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
 #include "sakitExport.h"
@@ -33,6 +34,8 @@ namespace sakit
 
 		bool connect(chstr host, unsigned short port);
 		bool disconnect();
+		long receive(hsbase& stream, int maxBytes, bool retainPosition = true);
+		long receive(hsbase& stream, bool retainPosition = true);
 
 	protected:
 		PlatformSocket* socket;

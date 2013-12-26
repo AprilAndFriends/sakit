@@ -45,6 +45,7 @@ extern int h_errno;
 #define EWOULDBLOCK EAGAIN
 #endif
 
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
 #include "PlatformSocket.h"
@@ -56,7 +57,6 @@ extern int h_errno;
 namespace sakit
 {
 	static timeval interval = {5, 0};
-	static fd_set readSet;
 
 	void PlatformSocket::platformInit()
 	{
@@ -79,6 +79,7 @@ namespace sakit
 		this->connected = false;
 		this->sock = 0;
 		this->info = NULL;
+		memset(this->buffer, 0, sizeof(BUFFER_SIZE));
 	}
 
 	bool PlatformSocket::connect(chstr host, unsigned int port)
@@ -133,6 +134,47 @@ namespace sakit
 		bool previouslyConnected = this->connected;
 		this->connected = false;
 		return previouslyConnected;
+	}
+
+	void PlatformSocket::receive(hsbase& stream, int maxBytes)
+	{
+		interval.tv_sec = 5;
+		interval.tv_usec = 0;
+		memset(&this->readSet, 0, sizeof(this->readSet));
+		int received = 0;
+#ifdef _WIN32
+		u_long* read = (u_long*)received;
+#else
+		uint32_t* read = (uint32_t*)received;
+#endif
+		while (true)
+		{
+			FD_ZERO(&this->readSet);
+			FD_SET(this->sock, &this->readSet);
+			if (select(this->sock + 1, &this->readSet, NULL, NULL, &interval) <= 0)
+			{
+				break;
+			}
+			if (ioctlsocket(this->sock, FIONREAD, read) == SOCKET_ERROR)
+			{
+				break;
+			}
+			if (received == 0)
+			{
+				break;
+			}
+			int received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
+			if (received == SOCKET_ERROR || received < 0)
+			{
+				break;
+			}
+			stream.write_raw(this->buffer, received);
+			maxBytes -= received;
+			if (maxBytes == 0)
+			{
+				break;
+			}
+		}
 	}
 	
 }

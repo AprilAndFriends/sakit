@@ -17,9 +17,12 @@
 #include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hplatform.h>
+#include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
 #include "sakitExport.h"
+
+#define BUFFER_SIZE 65536
 
 namespace sakit
 {
@@ -33,12 +36,16 @@ namespace sakit
 
 		bool connect(chstr host, unsigned int port);
 		bool disconnect();
+		void receive(hsbase& stream, int maxBytes);
 
 		static void platformInit();
 		static void platformDestroy();
 
 	protected:
 		bool connected;
+		char buffer[BUFFER_SIZE];
+		fd_set readSet;
+
 #if !defined(_WIN32) || !defined(_WINRT)
 		unsigned int sock;
 		struct addrinfo* info;
