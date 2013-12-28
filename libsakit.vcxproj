@@ -128,6 +128,7 @@
   <ItemGroup>
     <ClInclude Include="include\sakit\Ip.h" />
     <ClInclude Include="include\sakit\IpSocket.h" />
+    <ClInclude Include="include\sakit\ReceiverDelegate.h" />
     <ClInclude Include="include\sakit\sakit.h" />
     <ClInclude Include="include\sakit\sakitExport.h" />
     <ClInclude Include="include\sakit\Socket.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="include\sakit\TcpSocket.h" />
     <ClInclude Include="include\sakit\WebSocket.h" />
     <ClInclude Include="src\PlatformSocket.h" />
+    <ClInclude Include="src\ReceiverThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ip.cpp" />
@@ -142,6 +144,8 @@
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
     <ClCompile Include="src\PlatformSocket_WinRT.cpp" />
+    <ClCompile Include="src\ReceiverDelegate.cpp" />
+    <ClCompile Include="src\ReceiverThread.cpp" />
     <ClCompile Include="src\sakit.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />

@@ -16,8 +16,21 @@
 #include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
+#include <sakit/ReceiverDelegate.h>
 #include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
+
+class ClientDelegate : sakit::ReceiverDelegate
+{
+	void onReceived(hsbase& stream)
+	{
+	}
+
+	void onFailure(chstr error)
+	{
+	}
+
+} clientDelegate;
 
 int main(int argc, char **argv)
 {
@@ -29,7 +42,7 @@ int main(int argc, char **argv)
 		hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 		hstream stream;
 		hthread::sleep(2000);
-		int received = client->receive(stream);
+		int received = client->receive(stream, 8);
 		hlog::writef(LOG_TAG, "Received %d bytes.", received);
 		if (received > 0)
 		{

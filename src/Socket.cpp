@@ -12,18 +12,26 @@
 #include <hltypes/hstring.h>
 
 #include "PlatformSocket.h"
+#include "ReceiverThread.h"
 #include "sakit.h"
 #include "Socket.h"
 
 namespace sakit
 {
-	Socket::Socket() : host("")
+	Socket::Socket(ReceiverDelegate* receiverDelegate) : host("")
 	{
+		this->receiverDelegate = receiverDelegate;
 		this->socket = new PlatformSocket();
+		this->receiver = new ReceiverThread(this->socket, this->receiverDelegate);
 	}
 
 	Socket::~Socket()
 	{
+		// TODOsock - update this to work properly
+		this->receiver->mutex.lock();
+		this->receiver->stop();
+		this->receiver->mutex.unlock();
+		delete this->receiver;
 		delete this->socket;
 	}
 
@@ -59,6 +67,47 @@ namespace sakit
 		return this->socket->disconnect();
 	}
 
+	void Socket::receive(int maxBytes)
+	{
+		if (!this->isConnected())
+		{
+			hlog::error(sakit::logTag, "Not connected!");
+			return;
+		}
+		if (maxBytes == 0)
+		{
+			hlog::warn(sakit::logTag, "Cannot receive, maxBytes is 0!");
+			return;
+		}
+		this->receiver->mutex.lock();
+		if (this->receiver->running)
+		{
+			hlog::warn(sakit::logTag, "Cannot receive, already receiving data!");
+			this->receiver->mutex.unlock();
+			return;
+		}
+		this->receiver->mutex.unlock();
+		this->receiver->maxBytes = maxBytes;
+		this->receiver->execute();
+		/*
+		this->receiver = new hthread(&
+		hstream data;
+		this->socket->receive(data, maxBytes);
+		int size = data.size();
+		if (size > 0)
+		{
+			data.rewind();
+			stream.write_raw(data);
+			if (retainPosition)
+			{
+				stream.seek(-size);
+			}
+		}
+		*/
+		// TODOsock - call delegate here?
+		//return size;
+	}
+	/*
 	long Socket::receive(hsbase& stream, bool retainPosition)
 	{
 		return this->receive(stream, INT_MAX, retainPosition);
@@ -85,11 +134,12 @@ namespace sakit
 			stream.write_raw(data);
 			if (retainPosition)
 			{
-				stream.seek(size);
+				stream.seek(-size);
 			}
 		}
 		// TODOsock - call delegate here?
 		return size;
 	}
+	*/
 	
 }

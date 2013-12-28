@@ -15,8 +15,9 @@
 #define SAKIT_SOCKET_H
 
 #include <hltypes/hltypesUtil.h>
-#include <hltypes/hsbase.h>
+#include <hltypes/hmutex.h>
 #include <hltypes/hstring.h>
+#include <hltypes/hthread.h>
 
 #include "Ip.h"
 #include "sakitExport.h"
@@ -24,11 +25,13 @@
 namespace sakit
 {
 	class PlatformSocket;
+	class ReceiverDelegate;
+	class ReceiverThread;
 
 	class sakitExport Socket
 	{
 	public:
-		Socket();
+		Socket(ReceiverDelegate* receiverDelegate);
 		virtual ~Socket();
 
 		HL_DEFINE_GET(Ip, host, Host);
@@ -39,13 +42,17 @@ namespace sakit
 		// TODOsock - make it work with chstr port as well
 		bool connect(Ip host, unsigned short port);
 		bool disconnect();
-		long receive(hsbase& stream, int maxBytes, bool retainPosition = true);
-		long receive(hsbase& stream, bool retainPosition = true);
+		void receive(int maxBytes = INT_MAX);
 
 	protected:
 		PlatformSocket* socket;
+		ReceiverDelegate* receiverDelegate;
+		ReceiverThread* receiver;
+		//hmutex receiverMutex;
 		Ip host;
 		unsigned short port;
+
+		static void _receive(ReceiverDelegate* receiverDelegate);
 
 	};
 

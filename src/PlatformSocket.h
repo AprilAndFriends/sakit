@@ -19,6 +19,7 @@
 #include <hltypes/hplatform.h>
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
+#include <hltypes/hthread.h>
 
 #include "Ip.h"
 #include "sakitExport.h"
@@ -37,7 +38,7 @@ namespace sakit
 
 		bool connect(Ip host, unsigned int port);
 		bool disconnect();
-		void receive(hsbase& stream, int maxBytes);
+		int receive(hsbase& stream, int& maxBytes);
 
 		static void platformInit();
 		static void platformDestroy();

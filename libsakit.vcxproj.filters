@@ -46,6 +46,12 @@
     <ClInclude Include="include\sakit\Ip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\sakit\ReceiverDelegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ReceiverThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\IpSocket.cpp">
@@ -76,6 +82,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Ip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReceiverDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReceiverThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

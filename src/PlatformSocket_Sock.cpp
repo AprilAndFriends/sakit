@@ -149,8 +149,9 @@ namespace sakit
 		return previouslyConnected;
 	}
 
-	void PlatformSocket::receive(hsbase& stream, int maxBytes)
+	int PlatformSocket::receive(hsbase& stream, int maxBytes)
 	{
+		int result = 0;
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
@@ -201,11 +202,13 @@ namespace sakit
 			}
 			stream.write_raw(this->buffer, received);
 			maxBytes -= received;
+			result += received;
 			if (maxBytes == 0)
 			{
 				break;
 			}
 		}
+		return result;
 	}
 
 	void PlatformSocket::_printLastError()
