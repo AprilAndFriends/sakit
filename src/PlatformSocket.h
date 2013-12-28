@@ -20,6 +20,7 @@
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
 
 #define BUFFER_SIZE 65536
@@ -34,7 +35,7 @@ namespace sakit
 
 		HL_DEFINE_IS(connected, Connected);
 
-		bool connect(chstr host, unsigned int port);
+		bool connect(Ip host, unsigned int port);
 		bool disconnect();
 		void receive(hsbase& stream, int maxBytes);
 
@@ -57,6 +58,7 @@ namespace sakit
 		unsigned int _asyncSize;
 		bool _awaitAsync();
 #endif
+		void _printLastError();
 
 	};
 

@@ -8,6 +8,9 @@
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
 #if defined(_WIN32) && !defined(_WINRT)
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
 #define _NO_WIN_H
 #include <hltypes/hplatform.h>
 
@@ -45,14 +48,13 @@ extern int h_errno;
 #define EWOULDBLOCK EAGAIN
 #endif
 
+#include <hltypes/hlog.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "PlatformSocket.h"
-
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#endif
+#include "sakit.h"
 
 namespace sakit
 {
@@ -62,28 +64,36 @@ namespace sakit
 	{
 #if defined(_WIN32) && !defined(_WINRT)
 		WSADATA wsaData;
-		WSAStartup(MAKEWORD(2, 2), &wsaData);
+		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (result != 0)
+		{
+			hlog::error(sakit::logTag, "Error: " + hstr(result));
+		}
 #endif
 	}
 
 	void PlatformSocket::platformDestroy()
 	{
 #if defined(_WIN32) && !defined(_WINRT)
-		WSADATA wsaData;
-		WSAStartup(MAKEWORD(2, 2), &wsaData);
+		int result = WSACleanup();
+		if (result != 0)
+		{
+			hlog::error(sakit::logTag, "Error: " + hstr(result));
+		}
 #endif
 	}
 
 	PlatformSocket::PlatformSocket()
 	{
 		this->connected = false;
-		this->sock = 0;
+		this->sock = -1;
 		this->info = NULL;
 		memset(this->buffer, 0, sizeof(BUFFER_SIZE));
 	}
 
-	bool PlatformSocket::connect(chstr host, unsigned int port)
+	bool PlatformSocket::connect(Ip host, unsigned int port)
 	{
+		int result = 0;
 		// create host info
 		struct addrinfo hints;
 		memset(&hints, 0, sizeof(hints));
@@ -94,24 +104,27 @@ namespace sakit
 #endif
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_protocol = IPPROTO_IP;
-		if (getaddrinfo(host.split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info) != 0)
+		result = getaddrinfo(host.getAddress().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
+		if (result != 0)
 		{
-			// TODOsock - error message
+			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
 			this->disconnect();
 			return false;
 		}
 		// create socket
 		this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
-		if (this->sock == -1)
+		if (this->sock == SOCKET_ERROR)
 		{
-			// TODOsock - error message
+			hlog::debug(sakit::logTag, "socket() error!");
+			this->_printLastError();
 			this->disconnect();
 			return false;
 		}
 		// open socket
-		if (::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen) != 0)
+		if (::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen) == SOCKET_ERROR)
 		{
-			// TODOsock - error message
+			hlog::debug(sakit::logTag, "connect() error!");
+			this->_printLastError();
 			this->disconnect();
 			return false;
 		}
@@ -129,7 +142,7 @@ namespace sakit
 		if (this->sock != -1)
 		{
 			closesocket(this->sock);
-			this->sock = 0;
+			this->sock = -1;
 		}
 		bool previouslyConnected = this->connected;
 		this->connected = false;
@@ -141,31 +154,49 @@ namespace sakit
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
-		int received = 0;
+		unsigned long received = 0;
 #ifdef _WIN32
-		u_long* read = (u_long*)received;
+		u_long* read = (u_long*)&received;
 #else
-		uint32_t* read = (uint32_t*)received;
+		uint32_t* read = (uint32_t*)&received;
 #endif
+		int result = 0;
 		while (true)
 		{
+			/*
+			// select socket
 			FD_ZERO(&this->readSet);
 			FD_SET(this->sock, &this->readSet);
-			if (select(this->sock + 1, &this->readSet, NULL, NULL, &interval) <= 0)
+			result = select(0, &this->readSet, NULL, NULL, &interval);
+			if (result == 0)
 			{
+				hlog::error(sakit::logTag, "Socket select timeout!");
 				break;
 			}
-			if (ioctlsocket(this->sock, FIONREAD, read) == SOCKET_ERROR)
+			if (result == SOCKET_ERROR)
 			{
+				hlog::debug(sakit::logTag, "select() error!");
+				this->_printLastError();
+				break;
+			}
+			//*/
+			// control socket IO
+			result = ioctlsocket(this->sock, FIONREAD, read);
+			if (result == SOCKET_ERROR)
+			{
+				hlog::debug(sakit::logTag, "ioctlsocket() error!");
+				this->_printLastError();
 				break;
 			}
 			if (received == 0)
 			{
 				break;
 			}
-			int received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
-			if (received == SOCKET_ERROR || received < 0)
+			received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
+			if (received == SOCKET_ERROR)
 			{
+				hlog::debug(sakit::logTag, "recv() error!");
+				this->_printLastError();
 				break;
 			}
 			stream.write_raw(this->buffer, received);
@@ -174,6 +205,41 @@ namespace sakit
 			{
 				break;
 			}
+		}
+	}
+
+	void PlatformSocket::_printLastError()
+	{
+		int code = WSAGetLastError();
+		switch (code)
+		{
+		case WSANOTINITIALISED:
+			hlog::error(sakit::logTag, "sakit::init() has not been called!");
+			break;
+		case WSAENETDOWN:
+			hlog::error(sakit::logTag, "The network subsystem has failed!");
+			break;
+		case WSAEINTR: // should not happen
+			hlog::error(sakit::logTag, "The (blocking) call was canceled through WSACancelBlockingCall!");
+			break;
+		case WSAEINPROGRESS: // should not happen
+			hlog::error(sakit::logTag, "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function!");
+			break;
+		case WSAENETRESET:
+			hlog::error(sakit::logTag, "The connection has been broken due to keep-alive activity that detected a failure while the operation was in progress!");
+			break;
+		case WSAECONNABORTED: // TODOsock - this should be handled in a different way maybe
+			hlog::error(sakit::logTag, "The virtual circuit was terminated due to a time-out or other failure. The application should close the socket as it is no longer usable!");
+			break;
+		case WSAETIMEDOUT:
+			hlog::error(sakit::logTag, "The connection has been dropped because of a network failure or because the peer system failed to respond!");
+			break;
+		case WSAECONNRESET:
+			hlog::error(sakit::logTag, "The virtual circuit was reset by the remote side executing a hard or abortive close. The application should close the socket as it is no longer usable!");
+			break;
+		default:
+			hlog::error(sakit::logTag, "Error: " + hstr(code));
+			break;
 		}
 	}
 	

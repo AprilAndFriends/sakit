@@ -18,6 +18,7 @@
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -30,15 +31,21 @@ namespace sakit
 		Socket();
 		virtual ~Socket();
 
+		HL_DEFINE_GET(Ip, host, Host);
+		HL_DEFINE_GET(unsigned short, port, Port);
+		hstr getFullHost();
 		bool isConnected();
 
-		bool connect(chstr host, unsigned short port);
+		// TODOsock - make it work with chstr port as well
+		bool connect(Ip host, unsigned short port);
 		bool disconnect();
 		long receive(hsbase& stream, int maxBytes, bool retainPosition = true);
 		long receive(hsbase& stream, bool retainPosition = true);
 
 	protected:
 		PlatformSocket* socket;
+		Ip host;
+		unsigned short port;
 
 	};
 

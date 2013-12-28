@@ -43,6 +43,9 @@
     <ClInclude Include="src\PlatformSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\sakit\Ip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\IpSocket.cpp">
@@ -70,6 +73,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PlatformSocket_Sock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

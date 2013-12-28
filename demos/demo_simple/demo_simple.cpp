@@ -13,6 +13,7 @@
 #include <hltypes/hlog.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
+#include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
 #include <sakit/TcpSocket.h>
@@ -22,10 +23,12 @@ int main(int argc, char **argv)
 {
 	sakit::init();
 	sakit::Socket* client = new sakit::TcpSocket();
-	if (client->connect("localhost", 80))
+	//if (client->connect(sakit::Ip::Localhost("www.google.com"), 80))
+	if (client->connect(sakit::Ip::Localhost, 54269))
 	{
-		hlog::write(LOG_TAG, "Connected to localhost:80");
+		hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 		hstream stream;
+		hthread::sleep(2000);
 		int received = client->receive(stream);
 		hlog::writef(LOG_TAG, "Received %d bytes.", received);
 		if (received > 0)

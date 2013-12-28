@@ -126,6 +126,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\sakit\Ip.h" />
     <ClInclude Include="include\sakit\IpSocket.h" />
     <ClInclude Include="include\sakit\sakit.h" />
     <ClInclude Include="include\sakit\sakitExport.h" />
@@ -136,6 +137,7 @@
     <ClInclude Include="src\PlatformSocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Ip.cpp" />
     <ClCompile Include="src\IpSocket.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />

@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	Socket::Socket()
+	Socket::Socket() : host("")
 	{
 		this->socket = new PlatformSocket();
 	}
@@ -27,22 +27,35 @@ namespace sakit
 		delete this->socket;
 	}
 
+	hstr Socket::getFullHost()
+	{
+		return (this->isConnected() ? hsprintf("%s:%d", this->host.getAddress().c_str(), this->port) : "");
+	}
+
 	bool Socket::isConnected()
 	{
 		return this->socket->isConnected();
 	}
 
-	bool Socket::connect(chstr host, unsigned short port)
+	bool Socket::connect(Ip host, unsigned short port)
 	{
 		if (this->disconnect()) // disconnect first
 		{
 			hlog::warn(sakit::logTag, "Connection already existed, it was closed.");
 		}
-		return this->socket->connect(host, port);
+		bool result = this->socket->connect(host, port);
+		if (result)
+		{
+			this->host = host;
+			this->port = port;
+		}
+		return result;
 	}
 	
 	bool Socket::disconnect()
 	{
+		this->host = Ip("");
+		this->port = 0;
 		return this->socket->disconnect();
 	}
 
