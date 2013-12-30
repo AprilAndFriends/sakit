@@ -11,7 +11,7 @@
 
 namespace sakit
 {
-	WebSocket::WebSocket(ReceiverDelegate* receiverDelegate) : TcpSocket(receiverDelegate)
+	WebSocket::WebSocket(SocketDelegate* socketDelegate) : TcpSocket(socketDelegate)
 	{
 	}
 

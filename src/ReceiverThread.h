@@ -24,7 +24,7 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class ReceiverDelegate;
+	class SocketDelegate;
 	class Socket;
 
 	class sakitExport ReceiverThread : public hthread

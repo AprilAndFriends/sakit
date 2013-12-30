@@ -26,13 +26,13 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class ReceiverDelegate;
+	class SocketDelegate;
 	class ReceiverThread;
 
 	class sakitExport Socket
 	{
 	public:
-		Socket(ReceiverDelegate* receiverDelegate);
+		Socket(SocketDelegate* socketDelegate);
 		virtual ~Socket();
 
 		HL_DEFINE_GET(Ip, host, Host);
@@ -51,12 +51,12 @@ namespace sakit
 
 	protected:
 		PlatformSocket* socket;
-		ReceiverDelegate* receiverDelegate;
+		SocketDelegate* socketDelegate;
 		ReceiverThread* receiver;
 		Ip host;
 		unsigned short port;
 
-		static void _receive(ReceiverDelegate* receiverDelegate);
+		static void _receive(SocketDelegate* socketDelegate);
 
 	};
 

@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a receiver delegate.
+/// Defines a socket delegate.
 
-#ifndef SAKIT_RECEIVER_DELEGATE_H
-#define SAKIT_RECEIVER_DELEGATE_H
+#ifndef SAKIT_SOCKET_DELEGATE_H
+#define SAKIT_SOCKET_DELEGATE_H
 
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
@@ -23,15 +23,19 @@ namespace sakit
 {
 	class Socket;
 
-	class sakitExport ReceiverDelegate
+	class sakitExport SocketDelegate
 	{
 	public:
-		ReceiverDelegate();
-		virtual ~ReceiverDelegate();
+		SocketDelegate();
+		virtual ~SocketDelegate();
+
+		virtual void onSent(Socket* socket, int byteCount) = 0;
+		virtual void onSendFinished(Socket* socket) = 0;
+		virtual void onSendFailed(Socket* socket) = 0;
 
 		virtual void onReceived(Socket* socket, hsbase* stream) = 0;
-		virtual void onFinished(Socket* socket) = 0;
-		virtual void onFailed(Socket* socket) = 0;
+		virtual void onReceiveFinished(Socket* socket) = 0;
+		virtual void onReceiveFailed(Socket* socket) = 0;
 
 	};
 

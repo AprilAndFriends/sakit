@@ -12,19 +12,19 @@
 #include <hltypes/hstring.h>
 
 #include "PlatformSocket.h"
-#include "ReceiverDelegate.h"
 #include "ReceiverThread.h"
 #include "sakit.h"
 #include "Socket.h"
+#include "SocketDelegate.h"
 
 namespace sakit
 {
 	extern harray<Socket*> sockets;
 
-	Socket::Socket(ReceiverDelegate* receiverDelegate) : host("")
+	Socket::Socket(SocketDelegate* socketDelegate) : host("")
 	{
 		sockets += this;
-		this->receiverDelegate = receiverDelegate;
+		this->socketDelegate = socketDelegate;
 		this->socket = new PlatformSocket();
 		this->receiver = new ReceiverThread(this->socket);
 	}
@@ -104,44 +104,54 @@ namespace sakit
 			hlog::error(sakit::logTag, "Not connected!");
 			return;
 		}
-		this->socket->send(stream);
+		int size = stream->size();
+		int sent = this->socket->send(stream);
+		if (sent > 0)
+		{
+			this->socketDelegate->onSent(this, sent);
+			if (sent == size)
+			{
+				this->socketDelegate->onSendFinished(this);
+			}
+		}
+		if (sent < size)
+		{
+			this->socketDelegate->onSendFailed(this);
+		}
 	}
 
 	void Socket::update(float timeSinceLastFrame)
 	{
 		this->receiver->mutex.lock();
 		ReceiverThread::State state = this->receiver->state;
-		this->receiver->mutex.unlock();
-		if (state != ReceiverThread::RUNNING)
+		if (this->receiver->stream->size() > 0)
 		{
-			if (state == ReceiverThread::FINISHED)
-			{
-				this->receiver->mutex.lock();
-				this->receiver->state = ReceiverThread::IDLE;
-				this->receiver->mutex.unlock();
-				this->receiverDelegate->onFinished(this);
-			}
-			else if (state == ReceiverThread::FAILED)
-			{
-				this->receiver->mutex.lock();
-				this->receiver->state = ReceiverThread::IDLE;
-				this->receiver->mutex.unlock();
-				this->receiverDelegate->onFailed(this);
-			}
+			hstream* stream = this->receiver->stream;
+			this->receiver->stream = new hstream();
+			this->receiver->mutex.unlock();
+			stream->rewind();
+			this->socketDelegate->onReceived(this, stream);
+			delete stream;
+		}
+		else
+		{
+			this->receiver->mutex.unlock();
+		}
+		if (state == ReceiverThread::RUNNING || state == ReceiverThread::IDLE)
+		{
 			return;
 		}
 		this->receiver->mutex.lock();
-		if (this->receiver->stream->size() == 0)
-		{
-			this->receiver->mutex.unlock();
-			return;
-		}
-		hstream* stream = this->receiver->stream;
-		this->receiver->stream = new hstream();
+		this->receiver->state = ReceiverThread::IDLE;
 		this->receiver->mutex.unlock();
-		stream->rewind();
-		this->receiverDelegate->onReceived(this, stream);
-		delete stream;
+		if (state == ReceiverThread::FINISHED)
+		{
+			this->socketDelegate->onReceiveFinished(this);
+		}
+		else if (state == ReceiverThread::FAILED)
+		{
+			this->socketDelegate->onReceiveFailed(this);
+		}
 	}
 	
 }

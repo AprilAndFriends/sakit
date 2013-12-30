@@ -16,34 +16,52 @@
 #include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
-#include <sakit/ReceiverDelegate.h>
+#include <sakit/SocketDelegate.h>
 #include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
 
-class Receiver : public sakit::ReceiverDelegate
+class Sender : public sakit::SocketDelegate
 {
+	void onSent(sakit::Socket* socket, int bytes)
+	{
+		hlog::writef(LOG_TAG, "- sent %d bytes ", bytes);
+	}
+
+	void onSendFinished(sakit::Socket* socket)
+	{
+		hlog::write(LOG_TAG, "- send finished");
+	}
+
+	void onSendFailed(sakit::Socket* socket)
+	{
+		hlog::write(LOG_TAG, "- send failed");
+	}
+
 	void onReceived(sakit::Socket* socket, hsbase* stream)
 	{
 		hlog::writef(LOG_TAG, "- received %d bytes ", stream->size());
 	}
 
-	void onFinished(sakit::Socket* socket)
+	void onReceiveFinished(sakit::Socket* socket)
 	{
+		hlog::write(LOG_TAG, "- receive finished");
+		// TODOsock - change this and add isReceiving() and isSending() instead on main thread
 		socket->disconnect();
 	}
 
-	void onFailed(sakit::Socket* socket)
+	void onReceiveFailed(sakit::Socket* socket)
 	{
-		hlog::write(LOG_TAG, "- failed");
+		hlog::write(LOG_TAG, "- receive failed");
 		socket->disconnect();
 	}
 
-} receiver;
+} socketDelegate;
 
 int main(int argc, char **argv)
 {
+	// TODOsock - test how sockets act when sending \0
 	sakit::init();
-	sakit::Socket* client = new sakit::TcpSocket(&receiver);
+	sakit::Socket* client = new sakit::TcpSocket(&socketDelegate);
 	//if (client->connect(sakit::Ip::Localhost("www.google.com"), 80))
 	if (client->connect(sakit::Ip::Localhost, 54269))
 	{
@@ -51,7 +69,7 @@ int main(int argc, char **argv)
 		hstream stream;
 		stream.write("CON\t1\t1\n");
 		client->send(&stream);
-		client->receive(6); // receive 6 bytes
+		client->receive(16); // receive 16 bytes max
 		while (client->isConnected())
 		{
 			sakit::update(0.0f);

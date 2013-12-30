@@ -214,8 +214,9 @@ namespace sakit
 		return success;
 	}
 
-	bool PlatformSocket::send(hsbase* stream)
+	int PlatformSocket::send(hsbase* stream)
 	{
+		int result = 0;
 		int size = stream->size();
 		int position = stream->position();
 		unsigned char* data = new unsigned char[size];
@@ -229,9 +230,10 @@ namespace sakit
 			sent = ::send(this->sock, buffer, size, 0);
 			buffer += sent;
 			size -= sent;
+			result += sent;
 		}
 		delete [] data;
-		return (size == 0);
+		return result;
 	}
 
 }

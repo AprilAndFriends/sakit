@@ -46,10 +46,10 @@
     <ClInclude Include="include\sakit\Ip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\ReceiverDelegate.h">
+    <ClInclude Include="src\ReceiverThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ReceiverThread.h">
+    <ClInclude Include="include\sakit\SocketDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,10 +84,10 @@
     <ClCompile Include="src\Ip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ReceiverDelegate.cpp">
+    <ClCompile Include="src\ReceiverThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ReceiverThread.cpp">
+    <ClCompile Include="src\SocketDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,7 +13,7 @@
 #include <hltypes/hthread.h>
 
 #include "PlatformSocket.h"
-#include "ReceiverDelegate.h"
+#include "SocketDelegate.h"
 #include "ReceiverThread.h"
 
 namespace sakit
@@ -41,7 +41,6 @@ namespace sakit
 				receiverThread->mutex.lock();
 				receiverThread->state = FAILED;
 				receiverThread->mutex.unlock();
-				receiverThread->running = false;
 				return;
 			}
 			hthread::sleep(100.0f); // TODOsock - make this configurable?
