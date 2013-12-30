@@ -29,8 +29,9 @@ namespace sakit
 		ReceiverDelegate();
 		virtual ~ReceiverDelegate();
 
-		virtual void onReceived(hsbase* stream) = 0;
-		virtual void onFailure() = 0;
+		virtual void onReceived(Socket* socket, hsbase* stream) = 0;
+		virtual void onFinished(Socket* socket) = 0;
+		virtual void onFailed(Socket* socket) = 0;
 
 	};
 

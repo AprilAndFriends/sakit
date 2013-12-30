@@ -181,8 +181,7 @@ namespace sakit
 			}
 			//*/
 			// control socket IO
-			result = ioctlsocket(this->sock, FIONREAD, read);
-			if (result == SOCKET_ERROR)
+			if (ioctlsocket(this->sock, FIONREAD, read) == SOCKET_ERROR)
 			{
 				hlog::debug(sakit::logTag, "ioctlsocket() error!");
 				this->_printLastError();
@@ -205,7 +204,6 @@ namespace sakit
 			stream->write_raw(this->buffer, received);
 			mutex.unlock();
 			maxBytes -= received;
-			result += received;
 			if (maxBytes == 0)
 			{
 				break;
@@ -216,37 +214,23 @@ namespace sakit
 
 	void PlatformSocket::_printLastError()
 	{
+#ifdef _WIN32
+		wchar_t* buffer = L"Unknown error";
 		int code = WSAGetLastError();
-		switch (code)
+		if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, NULL))
 		{
-		case WSANOTINITIALISED:
-			hlog::error(sakit::logTag, "sakit::init() has not been called!");
-			break;
-		case WSAENETDOWN:
-			hlog::error(sakit::logTag, "The network subsystem has failed!");
-			break;
-		case WSAEINTR: // should not happen
-			hlog::error(sakit::logTag, "The (blocking) call was canceled through WSACancelBlockingCall!");
-			break;
-		case WSAEINPROGRESS: // should not happen
-			hlog::error(sakit::logTag, "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function!");
-			break;
-		case WSAENETRESET:
-			hlog::error(sakit::logTag, "The connection has been broken due to keep-alive activity that detected a failure while the operation was in progress!");
-			break;
-		case WSAECONNABORTED: // TODOsock - this should be handled in a different way maybe
-			hlog::error(sakit::logTag, "The virtual circuit was terminated due to a time-out or other failure. The application should close the socket as it is no longer usable!");
-			break;
-		case WSAETIMEDOUT:
-			hlog::error(sakit::logTag, "The connection has been dropped because of a network failure or because the peer system failed to respond!");
-			break;
-		case WSAECONNRESET:
-			hlog::error(sakit::logTag, "The virtual circuit was reset by the remote side executing a hard or abortive close. The application should close the socket as it is no longer usable!");
-			break;
-		default:
-			hlog::error(sakit::logTag, "Error: " + hstr(code));
-			break;
+			hstr message = hstr::from_unicode((wchar_t*)buffer).split('\n').first(); // there's a \n we don't want
+			hlog::error(sakit::logTag, message);
+			LocalFree(buffer);
 		}
+		else
+		{
+			hlog::error(sakit::logTag, "Error: " + hstr(code));
+		}
+#else
+		// TODOsock - Unix
+#endif
 	}
 	
 }

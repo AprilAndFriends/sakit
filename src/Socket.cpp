@@ -85,74 +85,38 @@ namespace sakit
 			return;
 		}
 		this->receiver->mutex.lock();
-		if (this->receiver->running)
+		if (this->receiver->state != ReceiverThread::IDLE)
 		{
 			hlog::warn(sakit::logTag, "Cannot receive, already receiving data!");
 			this->receiver->mutex.unlock();
 			return;
 		}
+		this->receiver->state = ReceiverThread::RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->maxBytes = maxBytes;
-		this->receiver->execute();
-		/*
-		this->receiver = new hthread(&
-		hstream data;
-		this->socket->receive(data, maxBytes);
-		int size = data.size();
-		if (size > 0)
-		{
-			data.rewind();
-			stream.write_raw(data);
-			if (retainPosition)
-			{
-				stream.seek(-size);
-			}
-		}
-		*/
-		// TODOsock - call delegate here?
-		//return size;
+		this->receiver->start();
 	}
-	/*
-	long Socket::receive(hsbase& stream, bool retainPosition)
-	{
-		return this->receive(stream, INT_MAX, retainPosition);
-	}
-	
-	long Socket::receive(hsbase& stream, int maxBytes, bool retainPosition)
-	{
-		if (!this->isConnected())
-		{
-			hlog::error(sakit::logTag, "Not connected!");
-			return 0;
-		}
-		if (maxBytes == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot read: maxBytes is 0!");
-			return 0;
-		}
-		hstream data;
-		this->socket->receive(data, maxBytes);
-		int size = data.size();
-		if (size > 0)
-		{
-			data.rewind();
-			stream.write_raw(data);
-			if (retainPosition)
-			{
-				stream.seek(-size);
-			}
-		}
-		// TODOsock - call delegate here?
-		return size;
-	}
-	*/
-
 	void Socket::update(float timeSinceLastFrame)
 	{
-		if (!this->receiver->running && !this->receiver->hasError)
+		this->receiver->mutex.lock();
+		ReceiverThread::State state = this->receiver->state;
+		this->receiver->mutex.unlock();
+		if (state != ReceiverThread::RUNNING)
 		{
-			this->receiver->hasError = false;
-			this->receiverDelegate->onFailure();
+			if (state == ReceiverThread::FINISHED)
+			{
+				this->receiver->mutex.lock();
+				this->receiver->state = ReceiverThread::IDLE;
+				this->receiver->mutex.unlock();
+				this->receiverDelegate->onFinished(this);
+			}
+			else if (state == ReceiverThread::FAILED)
+			{
+				this->receiver->mutex.lock();
+				this->receiver->state = ReceiverThread::IDLE;
+				this->receiver->mutex.unlock();
+				this->receiverDelegate->onFailed(this);
+			}
 			return;
 		}
 		this->receiver->mutex.lock();
@@ -165,7 +129,7 @@ namespace sakit
 		this->receiver->stream = new hstream();
 		this->receiver->mutex.unlock();
 		stream->rewind();
-		this->receiverDelegate->onReceived(stream);
+		this->receiverDelegate->onReceived(this, stream);
 		delete stream;
 	}
 	

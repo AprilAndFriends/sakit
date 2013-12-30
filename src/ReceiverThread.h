@@ -30,17 +30,25 @@ namespace sakit
 	class sakitExport ReceiverThread : public hthread
 	{
 	public:
+		enum State
+		{
+			IDLE,
+			RUNNING,
+			FINISHED,
+			FAILED
+		};
+
 		friend class Socket;
 
 		ReceiverThread(PlatformSocket* socket);
 		~ReceiverThread();
 
 	protected:
+		State state;
 		PlatformSocket* socket;
 		int maxBytes;
 		hstream* stream;
 		hmutex mutex;
-		bool hasError;
 
 		static void process(hthread*);
 

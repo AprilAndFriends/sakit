@@ -20,37 +20,43 @@
 #include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
 
-class ClientDelegate : sakit::ReceiverDelegate
+class Receiver : public sakit::ReceiverDelegate
 {
-	void onReceived(hsbase& stream)
+	void onReceived(sakit::Socket* socket, hsbase* stream)
 	{
+		hlog::writef(LOG_TAG, "- received %d bytes ", stream->size());
 	}
 
-	void onFailure(chstr error)
+	void onFinished(sakit::Socket* socket)
 	{
+		socket->disconnect();
 	}
 
-} clientDelegate;
+	void onFailed(sakit::Socket* socket)
+	{
+		hlog::write(LOG_TAG, "- failed");
+	}
+
+} receiver;
 
 int main(int argc, char **argv)
 {
 	sakit::init();
-	sakit::Socket* client = new sakit::TcpSocket();
+	sakit::Socket* client = new sakit::TcpSocket(&receiver);
 	//if (client->connect(sakit::Ip::Localhost("www.google.com"), 80))
 	if (client->connect(sakit::Ip::Localhost, 54269))
 	{
 		hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 		hstream stream;
-		hthread::sleep(2000);
-		int received = client->receive(stream, 8);
-		hlog::writef(LOG_TAG, "Received %d bytes.", received);
-		if (received > 0)
+		client->receive(6); // receive 6 bytes
+		while (client->isConnected())
 		{
-			hlog::write(LOG_TAG, stream.read());
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
 		}
+		hlog::write(LOG_TAG, "Disconnected.");
 	}
-
-
+	delete client;
 	sakit::destroy();
 	system("pause");
 	return 0;

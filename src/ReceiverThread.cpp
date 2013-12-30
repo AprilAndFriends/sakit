@@ -18,7 +18,7 @@
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket) : hthread(&process), maxBytes(INT_MAX), hasError(false)
+	ReceiverThread::ReceiverThread(PlatformSocket* socket) : hthread(&process), maxBytes(INT_MAX), state(IDLE)
 	{
 		this->socket = socket;
 		this->stream = new hstream();
@@ -39,11 +39,19 @@ namespace sakit
 			if (!receiverThread->socket->receive(receiverThread->stream, receiverThread->mutex, receiverThread->maxBytes))
 			{
 				receiverThread->running = false;
-				receiverThread->hasError = true;
+				receiverThread->mutex.lock();
+				receiverThread->state = FAILED;
+				receiverThread->mutex.unlock();
 				break;
 			}
 			hthread::sleep(100.0f); // TODOsock - make this configurable?
 		}
+		receiverThread->mutex.lock();
+		if (receiverThread->state == RUNNING)
+		{
+			receiverThread->state = FINISHED;
+		}
+		receiverThread->mutex.unlock();
 	}
 
 }
