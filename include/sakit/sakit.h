@@ -24,6 +24,8 @@ namespace sakit
 
 	sakitFnExport void init();
 	sakitFnExport void destroy();
+	/// @brief A call to this function will trigger delegate callbacks.
+	sakitFnExport void update(float timeSinceLastFrame);
 
 }
 #endif

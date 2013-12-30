@@ -18,15 +18,17 @@
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket, ReceiverDelegate* receiverDelegate) :
-		hthread(&process), maxBytes(INT_MAX)
+	ReceiverThread::ReceiverThread(PlatformSocket* socket) : hthread(&process), maxBytes(INT_MAX), hasError(false)
 	{
 		this->socket = socket;
-		this->receiverDelegate = receiverDelegate;
+		this->stream = new hstream();
 	}
 
 	ReceiverThread::~ReceiverThread()
 	{
+		this->mutex.lock();
+		delete this->stream;
+		this->mutex.unlock();
 	}
 
 	void ReceiverThread::process(hthread* thread)
@@ -34,17 +36,14 @@ namespace sakit
 		ReceiverThread* receiverThread = (ReceiverThread*)thread;
 		while (receiverThread->running && receiverThread->maxBytes > 0)
 		{
-			hstream stream;
-			if (receiverThread->socket->receive(stream, receiverThread->maxBytes) > 0)
+			if (!receiverThread->socket->receive(receiverThread->stream, receiverThread->mutex, receiverThread->maxBytes))
 			{
-				stream.rewind();
-				receiverThread->mutex.lock();
-				receiverThread->receiverDelegate->onReceived(stream);
-				receiverThread->mutex.unlock();
+				receiverThread->running = false;
+				receiverThread->hasError = true;
+				break;
 			}
+			hthread::sleep(100.0f); // TODOsock - make this configurable?
 		}
-
-		//receiverThread->receiverDelegate;
 	}
 
 }

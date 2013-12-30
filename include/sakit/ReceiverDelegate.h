@@ -14,7 +14,6 @@
 #ifndef SAKIT_RECEIVER_DELEGATE_H
 #define SAKIT_RECEIVER_DELEGATE_H
 
-#include <hltypes/hmutex.h>
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
@@ -30,11 +29,8 @@ namespace sakit
 		ReceiverDelegate();
 		virtual ~ReceiverDelegate();
 
-		virtual void onReceived(hsbase& stream) = 0;
-		virtual void onFailure(chstr error) = 0;
-
-	private:
-		hmutex mutex;
+		virtual void onReceived(hsbase* stream) = 0;
+		virtual void onFailure() = 0;
 
 	};
 

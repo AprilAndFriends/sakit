@@ -12,17 +12,21 @@
 #include <hltypes/hstring.h>
 
 #include "PlatformSocket.h"
+#include "ReceiverDelegate.h"
 #include "ReceiverThread.h"
 #include "sakit.h"
 #include "Socket.h"
 
 namespace sakit
 {
+	extern harray<Socket*> sockets;
+
 	Socket::Socket(ReceiverDelegate* receiverDelegate) : host("")
 	{
+		sockets += this;
 		this->receiverDelegate = receiverDelegate;
 		this->socket = new PlatformSocket();
-		this->receiver = new ReceiverThread(this->socket, this->receiverDelegate);
+		this->receiver = new ReceiverThread(this->socket);
 	}
 
 	Socket::~Socket()
@@ -33,6 +37,7 @@ namespace sakit
 		this->receiver->mutex.unlock();
 		delete this->receiver;
 		delete this->socket;
+		sockets -= this;
 	}
 
 	hstr Socket::getFullHost()
@@ -141,5 +146,27 @@ namespace sakit
 		return size;
 	}
 	*/
+
+	void Socket::update(float timeSinceLastFrame)
+	{
+		if (!this->receiver->running && !this->receiver->hasError)
+		{
+			this->receiver->hasError = false;
+			this->receiverDelegate->onFailure();
+			return;
+		}
+		this->receiver->mutex.lock();
+		if (this->receiver->stream->size() == 0)
+		{
+			this->receiver->mutex.unlock();
+			return;
+		}
+		hstream* stream = this->receiver->stream;
+		this->receiver->stream = new hstream();
+		this->receiver->mutex.unlock();
+		stream->rewind();
+		this->receiverDelegate->onReceived(stream);
+		delete stream;
+	}
 	
 }

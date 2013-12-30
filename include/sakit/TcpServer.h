@@ -22,7 +22,7 @@ namespace sakit
 	class sakitExport TcpServer : public TcpSocket
 	{
 	public:
-		TcpServer();
+		TcpServer(ReceiverDelegate* receiverDelegate);
 		~TcpServer();
 
 	};

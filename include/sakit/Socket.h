@@ -44,11 +44,12 @@ namespace sakit
 		bool disconnect();
 		void receive(int maxBytes = INT_MAX);
 
+		void update(float timeSinceLastFrame);
+
 	protected:
 		PlatformSocket* socket;
 		ReceiverDelegate* receiverDelegate;
 		ReceiverThread* receiver;
-		//hmutex receiverMutex;
 		Ip host;
 		unsigned short port;
 

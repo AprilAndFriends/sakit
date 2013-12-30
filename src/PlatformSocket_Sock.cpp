@@ -149,9 +149,9 @@ namespace sakit
 		return previouslyConnected;
 	}
 
-	int PlatformSocket::receive(hsbase& stream, int maxBytes)
+	bool PlatformSocket::receive(hsbase* stream, hmutex& mutex, int& maxBytes)
 	{
-		int result = 0;
+		bool result = false;
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
@@ -161,7 +161,6 @@ namespace sakit
 #else
 		uint32_t* read = (uint32_t*)&received;
 #endif
-		int result = 0;
 		while (true)
 		{
 			/*
@@ -191,6 +190,7 @@ namespace sakit
 			}
 			if (received == 0)
 			{
+				result = true;
 				break;
 			}
 			received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
@@ -200,7 +200,10 @@ namespace sakit
 				this->_printLastError();
 				break;
 			}
-			stream.write_raw(this->buffer, received);
+			result = true;
+			mutex.lock();
+			stream->write_raw(this->buffer, received);
+			mutex.unlock();
 			maxBytes -= received;
 			result += received;
 			if (maxBytes == 0)

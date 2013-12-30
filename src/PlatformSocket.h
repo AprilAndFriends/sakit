@@ -16,6 +16,7 @@
 
 #include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
+#include <hltypes/hmutex.h>
 #include <hltypes/hplatform.h>
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
@@ -38,7 +39,7 @@ namespace sakit
 
 		bool connect(Ip host, unsigned int port);
 		bool disconnect();
-		int receive(hsbase& stream, int& maxBytes);
+		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
 
 		static void platformInit();
 		static void platformDestroy();

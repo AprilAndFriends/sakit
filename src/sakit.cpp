@@ -10,12 +10,14 @@
 #include <hltypes/hlog.h>
 #include <hltypes/hstring.h>
 
-#include "sakit.h"
 #include "PlatformSocket.h"
+#include "sakit.h"
+#include "Socket.h"
 
 namespace sakit
 {
 	hstr logTag = "sakit";
+	harray<Socket*> sockets;
 
 	void init()
 	{
@@ -27,6 +29,18 @@ namespace sakit
 	{
 		hlog::write(sakit::logTag, "Destroying Socket Abstraction Kit.");
 		PlatformSocket::platformDestroy();
+		if (sockets.size() > 0)
+		{
+			hlog::warn(sakit::logTag, "Not all sockets have been destroyed!");
+		}
+	}
+
+	void update(float timeSinceLastFrame)
+	{
+		foreach (Socket*, it, sockets)
+		{
+			(*it)->update(timeSinceLastFrame);
+		}
 	}
 
 }

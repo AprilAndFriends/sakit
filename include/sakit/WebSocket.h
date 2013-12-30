@@ -22,7 +22,7 @@ namespace sakit
 	class sakitExport WebSocket : public TcpSocket
 	{
 	public:
-		WebSocket();
+		WebSocket(ReceiverDelegate* receiverDelegate);
 		~WebSocket();
 
 	};

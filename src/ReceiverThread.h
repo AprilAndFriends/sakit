@@ -16,6 +16,7 @@
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
 #include "sakitExport.h"
@@ -31,14 +32,15 @@ namespace sakit
 	public:
 		friend class Socket;
 
-		ReceiverThread(PlatformSocket* socket, ReceiverDelegate* receiverDelegate);
+		ReceiverThread(PlatformSocket* socket);
 		~ReceiverThread();
 
 	protected:
 		PlatformSocket* socket;
-		ReceiverDelegate* receiverDelegate;
 		int maxBytes;
+		hstream* stream;
 		hmutex mutex;
+		bool hasError;
 
 		static void process(hthread*);
 

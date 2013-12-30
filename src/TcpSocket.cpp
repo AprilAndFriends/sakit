@@ -11,7 +11,7 @@
 
 namespace sakit
 {
-	TcpSocket::TcpSocket() : IpSocket()
+	TcpSocket::TcpSocket(ReceiverDelegate* receiverDelegate) : IpSocket(receiverDelegate)
 	{
 	}
 
