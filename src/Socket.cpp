@@ -96,6 +96,17 @@ namespace sakit
 		this->receiver->maxBytes = maxBytes;
 		this->receiver->start();
 	}
+
+	void Socket::send(hsbase* stream)
+	{
+		if (!this->isConnected())
+		{
+			hlog::error(sakit::logTag, "Not connected!");
+			return;
+		}
+		this->socket->send(stream);
+	}
+
 	void Socket::update(float timeSinceLastFrame)
 	{
 		this->receiver->mutex.lock();

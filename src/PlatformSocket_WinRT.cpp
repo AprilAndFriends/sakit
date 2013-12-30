@@ -95,53 +95,84 @@ namespace sakit
 	
 	void PlatformSocket::receive(hsbase& stream, unsigned int maxBytes)
 	{
-		while (true)
+		/*
+		this->_asyncProcessing = true;
+		this->_asyncFinished = false;
+		int received = 0;
+		try
 		{
-			/*
-
-			this->_asyncProcessing = true;
-			this->_asyncFinished = false;
-			int received = 0;
-			try
+			Buffer^ _buffer = ref new Buffer(HTTP_BUFFER_SIZE - 1);
+			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = this->sock->InputStream->ReadAsync(
+				_buffer, HTTP_BUFFER_SIZE - 1, InputStreamOptions::None);
+			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
+				[this](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 			{
-				Buffer^ _buffer = ref new Buffer(HTTP_BUFFER_SIZE - 1);
-				IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = this->sock->InputStream->ReadAsync(
-					_buffer, HTTP_BUFFER_SIZE - 1, InputStreamOptions::None);
-				operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
-					[this](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
+				if (status == AsyncStatus::Completed)
 				{
-					if (status == AsyncStatus::Completed)
-					{
-						this->_asyncFinished = true;
-					}
-					this->_asyncProcessing = false;
-				});
-				if (!this->_awaitAsync())
-				{
-					return 0;
+					this->_asyncFinished = true;
 				}
-				Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
-				try
-				{
-					DataReader::FromBuffer(_buffer)->ReadBytes(_data);
-				}
-				catch (Platform::OutOfBoundsException^ e)
-				{
-					return 0;
-				}
-				memcpy(buffer, _data->Data, _data->Length);
-				received = (int)_data->Length;
-			}
-			catch (Platform::Exception^ e)
+				this->_asyncProcessing = false;
+			});
+			if (!this->_awaitAsync())
 			{
-				hlog::error(System::logTag, _HL_PSTR_TO_HSTR(e->Message));
 				return 0;
 			}
-			return received;
-			*/
-			break;
+			Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
+			try
+			{
+				DataReader::FromBuffer(_buffer)->ReadBytes(_data);
+			}
+			catch (Platform::OutOfBoundsException^ e)
+			{
+				return 0;
+			}
+			memcpy(buffer, _data->Data, _data->Length);
+			received = (int)_data->Length;
+		}
+		catch (Platform::Exception^ e)
+		{
+			hlog::error(System::logTag, _HL_PSTR_TO_HSTR(e->Message));
+			return 0;
+		}
+		*/
 		}
 	}
-	
+
+	bool PlatformSocket::send(hsbase* stream)
+	{
+		/*
+		this->_asyncProcessing = true;
+		this->_asyncFinished = false;
+		this->_asyncSize = 0;
+		try
+		{
+			DataWriter^ writer = ref new DataWriter();
+			writer->WriteBytes(ref new Platform::Array<unsigned char>((unsigned char*)message.c_str(), message.size()));
+			IAsyncOperationWithProgress<unsigned int, unsigned int>^ operation = this->sock->OutputStream->WriteAsync(writer->DetachBuffer());
+			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<unsigned int, unsigned int>(
+				[this](IAsyncOperationWithProgress<unsigned int, unsigned int>^ operation, AsyncStatus status)
+			{
+				if (status == AsyncStatus::Completed)
+				{
+					this->_asyncSize = operation->GetResults();
+					this->_asyncFinished = true;
+				}
+				this->_asyncProcessing = false;
+			});
+			if (!this->_awaitAsync())
+			{
+				return 0;
+			}
+		}
+		catch (Platform::Exception^ e)
+		{
+			hlog::error(System::logTag, _HL_PSTR_TO_HSTR(e->Message));
+			return 0;
+		}
+		return true;
+		*/
+		return false;
+	}
+
 }
 #endif

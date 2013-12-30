@@ -38,19 +38,16 @@ namespace sakit
 		{
 			if (!receiverThread->socket->receive(receiverThread->stream, receiverThread->mutex, receiverThread->maxBytes))
 			{
-				receiverThread->running = false;
 				receiverThread->mutex.lock();
 				receiverThread->state = FAILED;
 				receiverThread->mutex.unlock();
-				break;
+				receiverThread->running = false;
+				return;
 			}
 			hthread::sleep(100.0f); // TODOsock - make this configurable?
 		}
 		receiverThread->mutex.lock();
-		if (receiverThread->state == RUNNING)
-		{
-			receiverThread->state = FINISHED;
-		}
+		receiverThread->state = FINISHED;
 		receiverThread->mutex.unlock();
 	}
 

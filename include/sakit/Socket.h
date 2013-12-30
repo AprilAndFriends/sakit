@@ -16,6 +16,7 @@
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
+#include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
@@ -43,6 +44,8 @@ namespace sakit
 		bool connect(Ip host, unsigned short port);
 		bool disconnect();
 		void receive(int maxBytes = INT_MAX);
+		void send(hsbase* stream);
+		//void send(chstr data); // TODOsock
 
 		void update(float timeSinceLastFrame);
 

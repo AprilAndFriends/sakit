@@ -151,7 +151,7 @@ namespace sakit
 
 	bool PlatformSocket::receive(hsbase* stream, hmutex& mutex, int& maxBytes)
 	{
-		bool result = false;
+		bool success = false;
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
@@ -161,13 +161,14 @@ namespace sakit
 #else
 		uint32_t* read = (uint32_t*)&received;
 #endif
+		int result = 0;
 		while (true)
 		{
 			/*
 			// select socket
 			FD_ZERO(&this->readSet);
 			FD_SET(this->sock, &this->readSet);
-			result = select(0, &this->readSet, NULL, NULL, &interval);
+			int result = select(0, &this->readSet, NULL, NULL, &interval);
 			if (result == 0)
 			{
 				hlog::error(sakit::logTag, "Socket select timeout!");
@@ -181,7 +182,8 @@ namespace sakit
 			}
 			//*/
 			// control socket IO
-			if (ioctlsocket(this->sock, FIONREAD, read) == SOCKET_ERROR)
+			result = ioctlsocket(this->sock, FIONREAD, read);
+			if (result == SOCKET_ERROR)
 			{
 				hlog::debug(sakit::logTag, "ioctlsocket() error!");
 				this->_printLastError();
@@ -189,7 +191,7 @@ namespace sakit
 			}
 			if (received == 0)
 			{
-				result = true;
+				success = true;
 				break;
 			}
 			received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
@@ -199,7 +201,7 @@ namespace sakit
 				this->_printLastError();
 				break;
 			}
-			result = true;
+			success = true;
 			mutex.lock();
 			stream->write_raw(this->buffer, received);
 			mutex.unlock();
@@ -209,29 +211,28 @@ namespace sakit
 				break;
 			}
 		}
-		return result;
+		return success;
 	}
 
-	void PlatformSocket::_printLastError()
+	bool PlatformSocket::send(hsbase* stream)
 	{
-#ifdef _WIN32
-		wchar_t* buffer = L"Unknown error";
-		int code = WSAGetLastError();
-		if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, NULL))
+		int size = stream->size();
+		int position = stream->position();
+		unsigned char* data = new unsigned char[size];
+		stream->rewind();
+		stream->read_raw(data, size);
+		stream->seek(position, hsbase::START);
+		int sent;
+		const char* buffer = (const char*)data;
+		while (size > 0)
 		{
-			hstr message = hstr::from_unicode((wchar_t*)buffer).split('\n').first(); // there's a \n we don't want
-			hlog::error(sakit::logTag, message);
-			LocalFree(buffer);
+			sent = ::send(this->sock, buffer, size, 0);
+			buffer += sent;
+			size -= sent;
 		}
-		else
-		{
-			hlog::error(sakit::logTag, "Error: " + hstr(code));
-		}
-#else
-		// TODOsock - Unix
-#endif
+		delete [] data;
+		return (size == 0);
 	}
-	
+
 }
 #endif

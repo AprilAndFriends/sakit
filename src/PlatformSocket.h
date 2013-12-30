@@ -40,6 +40,7 @@ namespace sakit
 		bool connect(Ip host, unsigned int port);
 		bool disconnect();
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
+		bool send(hsbase* stream);
 
 		static void platformInit();
 		static void platformDestroy();

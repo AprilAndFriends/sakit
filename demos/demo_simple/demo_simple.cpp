@@ -35,6 +35,7 @@ class Receiver : public sakit::ReceiverDelegate
 	void onFailed(sakit::Socket* socket)
 	{
 		hlog::write(LOG_TAG, "- failed");
+		socket->disconnect();
 	}
 
 } receiver;
@@ -48,6 +49,8 @@ int main(int argc, char **argv)
 	{
 		hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 		hstream stream;
+		stream.write("CON\t1\t1\n");
+		client->send(&stream);
 		client->receive(6); // receive 6 bytes
 		while (client->isConnected())
 		{
