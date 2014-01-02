@@ -14,6 +14,7 @@
 #include "PlatformSocket.h"
 #include "ReceiverThread.h"
 #include "sakit.h"
+#include "SenderThread.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
 
@@ -26,15 +27,16 @@ namespace sakit
 		sockets += this;
 		this->socketDelegate = socketDelegate;
 		this->socket = new PlatformSocket();
+		this->sender = new SenderThread(this->socket);
 		this->receiver = new ReceiverThread(this->socket);
 	}
 
 	Socket::~Socket()
 	{
 		// TODOsock - update this to work properly
-		this->receiver->mutex.lock();
-		this->receiver->stop();
-		this->receiver->mutex.unlock();
+		this->sender->join();
+		delete this->sender;
+		this->receiver->join();
 		delete this->receiver;
 		delete this->socket;
 		sockets -= this;
@@ -72,6 +74,31 @@ namespace sakit
 		return this->socket->disconnect();
 	}
 
+	void Socket::send(hsbase* stream, int maxBytes)
+	{
+		if (!this->isConnected())
+		{
+			hlog::error(sakit::logTag, "Not connected!");
+			return;
+		}
+		this->sender->mutex.lock();
+		if (this->sender->state != ReceiverThread::IDLE)
+		{
+			hlog::warn(sakit::logTag, "Cannot send, already sending data!");
+			this->sender->mutex.unlock();
+			return;
+		}
+		this->sender->state = ReceiverThread::RUNNING;
+		long position = stream->position();
+		stream->rewind();
+		this->sender->stream->clear();
+		this->sender->stream->write_raw(*stream, hmin((long)maxBytes, stream->size()));
+		this->sender->stream->rewind();
+		this->sender->mutex.unlock();
+		this->sender->start();
+		stream->seek(position, hsbase::START);
+	}
+
 	void Socket::receive(int maxBytes)
 	{
 		if (!this->isConnected())
@@ -97,30 +124,45 @@ namespace sakit
 		this->receiver->start();
 	}
 
-	void Socket::send(hsbase* stream)
+	void Socket::update(float timeSinceLastFrame)
 	{
-		if (!this->isConnected())
+		this->_updateSending();
+		this->_updateReceiving();
+	}
+
+	void Socket::_updateSending()
+	{
+		this->sender->mutex.lock();
+		ReceiverThread::State state = this->sender->state;
+		if (this->sender->lastSent > 0)
 		{
-			hlog::error(sakit::logTag, "Not connected!");
+			int sent = this->sender->lastSent;
+			this->sender->lastSent = 0;
+			this->sender->mutex.unlock();
+			this->socketDelegate->onSent(this, sent);
+		}
+		else
+		{
+			this->sender->mutex.unlock();
+		}
+		if (state == ReceiverThread::RUNNING || state == ReceiverThread::IDLE)
+		{
 			return;
 		}
-		int size = stream->size();
-		int sent = this->socket->send(stream);
-		if (sent > 0)
+		this->sender->mutex.lock();
+		this->sender->state = ReceiverThread::IDLE;
+		this->sender->mutex.unlock();
+		if (state == ReceiverThread::FINISHED)
 		{
-			this->socketDelegate->onSent(this, sent);
-			if (sent == size)
-			{
-				this->socketDelegate->onSendFinished(this);
-			}
+			this->socketDelegate->onSendFinished(this);
 		}
-		if (sent < size)
+		else if (state == ReceiverThread::FAILED)
 		{
 			this->socketDelegate->onSendFailed(this);
 		}
 	}
-
-	void Socket::update(float timeSinceLastFrame)
+	
+	void Socket::_updateReceiving()
 	{
 		this->receiver->mutex.lock();
 		ReceiverThread::State state = this->receiver->state;

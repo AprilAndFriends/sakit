@@ -17,12 +17,15 @@
 namespace sakit
 {
 	hstr logTag = "sakit";
+	float retryTimeout = 0.1f;
+	int bufferSize = 65536;
 	harray<Socket*> sockets;
 
-	void init()
+	void init(int bufferSize)
 	{
 		hlog::write(sakit::logTag, "Initializing Socket Abstraction Kit.");
 		PlatformSocket::platformInit();
+		sakit::bufferSize = bufferSize;
 	}
 
 	void destroy()
@@ -41,6 +44,16 @@ namespace sakit
 		{
 			(*it)->update(timeSinceLastFrame);
 		}
+	}
+
+	float getRetryTimeout()
+	{
+		return retryTimeout;
+	}
+
+	void setRetryTimeout(float value)
+	{
+		retryTimeout = value;
 	}
 
 }

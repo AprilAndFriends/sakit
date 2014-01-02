@@ -7,36 +7,39 @@
 /// This program is free software; you can redistribute it and/or modify it under
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
+#include <stdlib.h>
+
 #include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "SocketDelegate.h"
-#include "ReceiverThread.h"
+#include "SenderThread.h"
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(&process, socket), maxBytes(INT_MAX)
+	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(&process, socket), lastSent(0)
 	{
 	}
 
-	ReceiverThread::~ReceiverThread()
+	SenderThread::~SenderThread()
 	{
 	}
 
-	void ReceiverThread::_updateProcess()
+	void SenderThread::_updateProcess()
 	{
 		while (this->running)
 		{
-			if (!this->socket->receive(this->stream, this->mutex, this->maxBytes))
+			if (!this->socket->send(this->stream, this->lastSent))
 			{
 				this->mutex.lock();
 				this->state = FAILED;
+				this->stream->clear();
 				this->mutex.unlock();
 				return;
 			}
-			if (this->maxBytes == 0)
+			if (this->stream->position() >= this->stream->size())
 			{
 				break;
 			}
@@ -44,12 +47,13 @@ namespace sakit
 		}
 		this->mutex.lock();
 		this->state = FINISHED;
+		this->stream->clear();
 		this->mutex.unlock();
 	}
 
-	void ReceiverThread::process(hthread* thread)
+	void SenderThread::process(hthread* thread)
 	{
-		((ReceiverThread*)thread)->_updateProcess();
+		((SenderThread*)thread)->_updateProcess();
 	}
 
 }

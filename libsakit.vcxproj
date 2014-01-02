@@ -137,6 +137,8 @@
     <ClInclude Include="include\sakit\WebSocket.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
+    <ClInclude Include="src\SenderThread.h" />
+    <ClInclude Include="src\WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ip.cpp" />
@@ -146,11 +148,13 @@
     <ClCompile Include="src\PlatformSocket_WinRT.cpp" />
     <ClCompile Include="src\ReceiverThread.cpp" />
     <ClCompile Include="src\sakit.cpp" />
+    <ClCompile Include="src\SenderThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="src\TcpSocket.cpp" />
     <ClCompile Include="src\WebSocket.cpp" />
+    <ClCompile Include="src\WorkerThread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

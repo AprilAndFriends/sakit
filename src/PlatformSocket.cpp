@@ -19,6 +19,8 @@ namespace sakit
 	PlatformSocket::~PlatformSocket()
 	{
 		this->disconnect();
+		delete [] this->sendBuffer;
+		delete [] this->receiveBuffer;
 	}
 	
 	void PlatformSocket::_printLastError()

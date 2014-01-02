@@ -58,6 +58,8 @@ extern int h_errno;
 
 namespace sakit
 {
+	extern int bufferSize;
+
 	static timeval interval = {5, 0};
 
 	void PlatformSocket::platformInit()
@@ -88,7 +90,10 @@ namespace sakit
 		this->connected = false;
 		this->sock = -1;
 		this->info = NULL;
-		memset(this->buffer, 0, sizeof(BUFFER_SIZE));
+		this->sendBuffer = new char[bufferSize];
+		memset(this->sendBuffer, 0, bufferSize);
+		this->receiveBuffer = new char[bufferSize];
+		memset(this->receiveBuffer, 0, bufferSize);
 	}
 
 	bool PlatformSocket::connect(Ip host, unsigned int port)
@@ -151,7 +156,6 @@ namespace sakit
 
 	bool PlatformSocket::receive(hsbase* stream, hmutex& mutex, int& maxBytes)
 	{
-		bool success = false;
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
@@ -162,78 +166,61 @@ namespace sakit
 		uint32_t* read = (uint32_t*)&received;
 #endif
 		int result = 0;
-		while (true)
+		// TODOsock - this will require most likely thread-safe access with mutexes, because of select and multiple TCP servers
+		/*
+		// select socket
+		FD_ZERO(&this->readSet);
+		FD_SET(this->sock, &this->readSet);
+		result = select(0, &this->readSet, NULL, NULL, &interval);
+		if (result == 0)
 		{
-			/*
-			// select socket
-			FD_ZERO(&this->readSet);
-			FD_SET(this->sock, &this->readSet);
-			int result = select(0, &this->readSet, NULL, NULL, &interval);
-			if (result == 0)
-			{
-				hlog::error(sakit::logTag, "Socket select timeout!");
-				break;
-			}
-			if (result == SOCKET_ERROR)
-			{
-				hlog::debug(sakit::logTag, "select() error!");
-				this->_printLastError();
-				break;
-			}
-			//*/
-			// control socket IO
-			result = ioctlsocket(this->sock, FIONREAD, read);
-			if (result == SOCKET_ERROR)
-			{
-				hlog::debug(sakit::logTag, "ioctlsocket() error!");
-				this->_printLastError();
-				break;
-			}
-			if (received == 0)
-			{
-				success = true;
-				break;
-			}
-			received = recv(this->sock, this->buffer, hmin(maxBytes, BUFFER_SIZE), 0);
-			if (received == SOCKET_ERROR)
-			{
-				hlog::debug(sakit::logTag, "recv() error!");
-				this->_printLastError();
-				break;
-			}
-			success = true;
-			mutex.lock();
-			stream->write_raw(this->buffer, received);
-			mutex.unlock();
-			maxBytes -= received;
-			if (maxBytes == 0)
-			{
-				break;
-			}
+			hlog::error(sakit::logTag, "Socket select timeout!");
+			break;
 		}
-		return success;
+		if (result == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, "select() error!");
+			this->_printLastError();
+			break;
+		}
+		//*/
+		// control socket IO
+		result = ioctlsocket(this->sock, FIONREAD, read);
+		if (result == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, "ioctlsocket() error!");
+			this->_printLastError();
+			return false;
+		}
+		if (received == 0)
+		{
+			return true;
+		}
+		received = recv(this->sock, this->receiveBuffer, hmin(maxBytes, bufferSize), 0);
+		if (received == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, "recv() error!");
+			this->_printLastError();
+			return false;
+		}
+		mutex.lock();
+		stream->write_raw(this->receiveBuffer, received);
+		mutex.unlock();
+		maxBytes -= received;
+		return true;
 	}
 
-	int PlatformSocket::send(hsbase* stream)
+	bool PlatformSocket::send(hsbase* stream, int& sent)
 	{
-		int result = 0;
-		int size = stream->size();
-		int position = stream->position();
-		unsigned char* data = new unsigned char[size];
-		stream->rewind();
-		stream->read_raw(data, size);
-		stream->seek(position, hsbase::START);
-		int sent;
-		const char* buffer = (const char*)data;
-		while (size > 0)
+		int size = hmin((int)(stream->size() - stream->position()), bufferSize);
+		stream->read_raw(this->sendBuffer, size);
+		int result = ::send(this->sock, this->sendBuffer, size, 0);
+		if (result >= 0)
 		{
-			sent = ::send(this->sock, buffer, size, 0);
-			buffer += sent;
-			size -= sent;
-			result += sent;
+			sent += result;
+			return true;
 		}
-		delete [] data;
-		return result;
+		return false;
 	}
 
 }

@@ -9,37 +9,41 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for receiving data.
+/// Defines a thread for executing async socket work.
 
-#ifndef SAKIT_RECEIVER_THREAD_H
-#define SAKIT_RECEIVER_THREAD_H
+#ifndef SAKIT_WORKER_THREAD_H
+#define SAKIT_WORKER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
+#include <hltypes/hthread.h>
 
 #include "sakitExport.h"
-#include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
-	class Socket;
-
-	class sakitExport ReceiverThread : public WorkerThread
+	
+	class sakitExport WorkerThread : public hthread
 	{
 	public:
-		friend class Socket;
+		enum State
+		{
+			IDLE,
+			RUNNING,
+			FINISHED,
+			FAILED
+		};
 
-		ReceiverThread(PlatformSocket* socket);
-		~ReceiverThread();
+		WorkerThread(void (*function)(hthread*), PlatformSocket* socket);
+		~WorkerThread();
 
 	protected:
-		int maxBytes;
-
-		void _updateProcess();
-
-		static void process(hthread*);
+		State state;
+		PlatformSocket* socket;
+		hstream* stream;
+		hmutex mutex;
 
 	};
 

@@ -36,7 +36,10 @@ namespace sakit
 		this->connected = false;
 		this->sock = nullptr;
 		this->hostName = nullptr;
-		memset(this->buffer, 0, sizeof(BUFFER_SIZE));
+		this->sendBuffer = new char[bufferSize];
+		memset(this->sendBuffer, 0, bufferSize);
+		this->receiveBuffer = new char[bufferSize];
+		memset(this->receiveBuffer, 0, bufferSize);
 	}
 
 	bool PlatformSocket::connect(chstr host, unsigned int port)

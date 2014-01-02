@@ -25,8 +25,6 @@
 #include "Ip.h"
 #include "sakitExport.h"
 
-#define BUFFER_SIZE 65536
-
 namespace sakit
 {
 	class sakitExport PlatformSocket
@@ -39,15 +37,16 @@ namespace sakit
 
 		bool connect(Ip host, unsigned int port);
 		bool disconnect();
+		bool send(hsbase* stream, int& sent);
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
-		int send(hsbase* stream);
 
 		static void platformInit();
 		static void platformDestroy();
 
 	protected:
 		bool connected;
-		char buffer[BUFFER_SIZE];
+		char* sendBuffer;
+		char* receiveBuffer;
 		fd_set readSet;
 
 #if !defined(_WIN32) || !defined(_WINRT)

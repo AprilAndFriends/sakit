@@ -22,10 +22,12 @@ namespace sakit
 {
 	extern hstr logTag;
 
-	sakitFnExport void init();
+	sakitFnExport void init(int bufferSize = 65536);
 	sakitFnExport void destroy();
 	/// @brief A call to this function will trigger delegate callbacks.
 	sakitFnExport void update(float timeSinceLastFrame);
+	sakitFnExport float getRetryTimeout();
+	sakitFnExport void setRetryTimeout(float value);
 
 }
 #endif

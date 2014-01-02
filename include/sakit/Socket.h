@@ -26,8 +26,9 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class SocketDelegate;
 	class ReceiverThread;
+	class SenderThread;
+	class SocketDelegate;
 
 	class sakitExport Socket
 	{
@@ -43,18 +44,22 @@ namespace sakit
 		// TODOsock - make it work with chstr port as well
 		bool connect(Ip host, unsigned short port);
 		bool disconnect();
-		void receive(int maxBytes = INT_MAX);
-		void send(hsbase* stream);
+		void send(hsbase* stream, int maxBytes = INT_MAX);
 		//void send(chstr data); // TODOsock
+		void receive(int maxBytes = INT_MAX);
 
 		void update(float timeSinceLastFrame);
 
 	protected:
 		PlatformSocket* socket;
 		SocketDelegate* socketDelegate;
+		SenderThread* sender;
 		ReceiverThread* receiver;
 		Ip host;
 		unsigned short port;
+
+		void _updateSending();
+		void _updateReceiving();
 
 		static void _receive(SocketDelegate* socketDelegate);
 
