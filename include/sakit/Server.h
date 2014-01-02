@@ -22,22 +22,34 @@
 
 namespace sakit
 {
+	class AccepterThread;
 	class ServerDelegate;
+	class Socket;
+	class SocketDelegate;
 
 	class sakitExport Server : public Base
 	{
 	public:
-		Server(ServerDelegate* serverDelegate);
+		Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections = 20);
 		~Server();
 
+		HL_DEFINE_GET(harray<Socket*>, sockets, Sockets);
 		bool isBound();
 
 		// TODOsock - allow chstr port as well?
 		bool bind(Ip host, unsigned short port);
 		bool unbind();
+		void start();
+		void stop();
+
+		void update(float timeSinceLastFrame);
 
 	protected:
 		ServerDelegate* serverDelegate;
+		SocketDelegate* socketDelegate;
+		AccepterThread* accepter;
+		harray<Socket*> sockets;
+		int maxConnections;
 
 	};
 

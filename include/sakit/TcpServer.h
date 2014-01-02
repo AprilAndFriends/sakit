@@ -20,11 +20,12 @@
 namespace sakit
 {
 	class PlatformSocket;
+	class SocketDelegate;
 
 	class sakitExport TcpServer : public Server
 	{
 	public:
-		TcpServer(ServerDelegate* serverDelegate);
+		TcpServer(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections = 20);
 		~TcpServer();
 
 	};

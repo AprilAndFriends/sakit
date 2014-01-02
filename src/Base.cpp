@@ -15,14 +15,18 @@
 
 namespace sakit
 {
+	extern harray<Base*> connections;
+
 	Base::Base() : host(""), port(0)
 	{
+		connections += this;
 		this->socket = new PlatformSocket();
 	}
 
 	Base::~Base()
 	{
 		delete this->socket;
+		connections -= this;
 	}
 
 	hstr Base::getFullHost()

@@ -41,6 +41,7 @@ namespace sakit
 		// TODOsock - make it work with chstr port as well
 		bool connect(Ip host, unsigned short port);
 		bool disconnect();
+		// TODOsock - refactor to work more like write_raw with "count" parameter
 		void send(hsbase* stream, int maxBytes = INT_MAX);
 		//void send(chstr data); // TODOsock
 		void receive(int maxBytes = INT_MAX);

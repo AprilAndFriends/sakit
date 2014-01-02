@@ -19,7 +19,7 @@ namespace sakit
 	hstr logTag = "sakit";
 	float retryTimeout = 0.1f;
 	int bufferSize = 65536;
-	harray<Socket*> sockets;
+	harray<Base*> connections;
 
 	void init(int bufferSize)
 	{
@@ -32,15 +32,16 @@ namespace sakit
 	{
 		hlog::write(sakit::logTag, "Destroying Socket Abstraction Kit.");
 		PlatformSocket::platformDestroy();
-		if (sockets.size() > 0)
+		if (connections.size() > 0)
 		{
-			hlog::warn(sakit::logTag, "Not all sockets have been destroyed!");
+			hlog::warn(sakit::logTag, "Not all sockets/servers have been destroyed!");
 		}
 	}
 
 	void update(float timeSinceLastFrame)
 	{
-		foreach (Socket*, it, sockets)
+		harray<Base*> connections = sakit::connections;
+		foreach (Base*, it, connections)
 		{
 			(*it)->update(timeSinceLastFrame);
 		}

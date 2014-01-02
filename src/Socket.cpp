@@ -20,11 +20,8 @@
 
 namespace sakit
 {
-	extern harray<Socket*> sockets;
-
 	Socket::Socket(SocketDelegate* socketDelegate) : Base()
 	{
-		sockets += this;
 		this->socketDelegate = socketDelegate;
 		this->sender = new SenderThread(this->socket);
 		this->receiver = new ReceiverThread(this->socket);
@@ -32,12 +29,13 @@ namespace sakit
 
 	Socket::~Socket()
 	{
-		// TODOsock - update this to work properly
+		// TODOsock - check if this is all that is needed
+		this->sender->running = false;
 		this->sender->join();
 		delete this->sender;
+		this->receiver->running = false;
 		this->receiver->join();
 		delete this->receiver;
-		sockets -= this;
 	}
 
 	bool Socket::isConnected()
@@ -75,13 +73,13 @@ namespace sakit
 			return;
 		}
 		this->sender->mutex.lock();
-		if (this->sender->state != ReceiverThread::IDLE)
+		if (this->sender->state != WorkerThread::IDLE)
 		{
 			hlog::warn(sakit::logTag, "Cannot send, already sending data!");
 			this->sender->mutex.unlock();
 			return;
 		}
-		this->sender->state = ReceiverThread::RUNNING;
+		this->sender->state = WorkerThread::RUNNING;
 		long position = stream->position();
 		stream->rewind();
 		this->sender->stream->clear();
@@ -105,13 +103,13 @@ namespace sakit
 			return;
 		}
 		this->receiver->mutex.lock();
-		if (this->receiver->state != ReceiverThread::IDLE)
+		if (this->receiver->state != WorkerThread::IDLE)
 		{
 			hlog::warn(sakit::logTag, "Cannot receive, already receiving data!");
 			this->receiver->mutex.unlock();
 			return;
 		}
-		this->receiver->state = ReceiverThread::RUNNING;
+		this->receiver->state = WorkerThread::RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->maxBytes = maxBytes;
 		this->receiver->start();
@@ -126,7 +124,7 @@ namespace sakit
 	void Socket::_updateSending()
 	{
 		this->sender->mutex.lock();
-		ReceiverThread::State state = this->sender->state;
+		WorkerThread::State state = this->sender->state;
 		if (this->sender->lastSent > 0)
 		{
 			int sent = this->sender->lastSent;
@@ -138,18 +136,18 @@ namespace sakit
 		{
 			this->sender->mutex.unlock();
 		}
-		if (state == ReceiverThread::RUNNING || state == ReceiverThread::IDLE)
+		if (state == WorkerThread::RUNNING || state == WorkerThread::IDLE)
 		{
 			return;
 		}
 		this->sender->mutex.lock();
-		this->sender->state = ReceiverThread::IDLE;
+		this->sender->state = WorkerThread::IDLE;
 		this->sender->mutex.unlock();
-		if (state == ReceiverThread::FINISHED)
+		if (state == WorkerThread::FINISHED)
 		{
 			this->socketDelegate->onSendFinished(this);
 		}
-		else if (state == ReceiverThread::FAILED)
+		else if (state == WorkerThread::FAILED)
 		{
 			this->socketDelegate->onSendFailed(this);
 		}
@@ -158,7 +156,7 @@ namespace sakit
 	void Socket::_updateReceiving()
 	{
 		this->receiver->mutex.lock();
-		ReceiverThread::State state = this->receiver->state;
+		WorkerThread::State state = this->receiver->state;
 		if (this->receiver->stream->size() > 0)
 		{
 			hstream* stream = this->receiver->stream;
@@ -172,18 +170,18 @@ namespace sakit
 		{
 			this->receiver->mutex.unlock();
 		}
-		if (state == ReceiverThread::RUNNING || state == ReceiverThread::IDLE)
+		if (state == WorkerThread::RUNNING || state == WorkerThread::IDLE)
 		{
 			return;
 		}
 		this->receiver->mutex.lock();
-		this->receiver->state = ReceiverThread::IDLE;
+		this->receiver->state = WorkerThread::IDLE;
 		this->receiver->mutex.unlock();
-		if (state == ReceiverThread::FINISHED)
+		if (state == WorkerThread::FINISHED)
 		{
 			this->socketDelegate->onReceiveFinished(this);
 		}
-		else if (state == ReceiverThread::FAILED)
+		else if (state == WorkerThread::FAILED)
 		{
 			this->socketDelegate->onReceiveFailed(this);
 		}

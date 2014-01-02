@@ -11,7 +11,8 @@
 
 namespace sakit
 {
-	TcpServer::TcpServer(ServerDelegate* serverDelegate) : Server(serverDelegate)
+	TcpServer::TcpServer(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections) :
+		Server(serverDelegate, socketDelegate, maxConnections)
 	{
 	}
 

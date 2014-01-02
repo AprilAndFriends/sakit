@@ -30,12 +30,16 @@ namespace sakit
 	class sakitExport Base
 	{
 	public:
+		friend class PlatformSocket;
+
 		Base();
 		virtual ~Base();
 
 		HL_DEFINE_GET(Ip, host, Host);
 		HL_DEFINE_GET(unsigned short, port, Port);
 		hstr getFullHost();
+
+		virtual void update(float timeSinceLastFrame) = 0;
 
 	protected:
 		PlatformSocket* socket;

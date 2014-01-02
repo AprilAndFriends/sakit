@@ -27,6 +27,8 @@
 
 namespace sakit
 {
+	class Socket;
+
 	class sakitExport PlatformSocket
 	{
 	public:
@@ -40,6 +42,8 @@ namespace sakit
 		bool disconnect();
 		bool send(hsbase* stream, int& sent);
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
+		bool listen(int maxConnections);
+		bool accept(Socket* socket);
 
 		static void platformInit();
 		static void platformDestroy();
@@ -53,6 +57,7 @@ namespace sakit
 #if !defined(_WIN32) || !defined(_WINRT)
 		unsigned int sock;
 		struct addrinfo* info;
+		struct sockaddr_storage* address;
 #else
 		Windows::Networking::Sockets::StreamSocket^ sock;
 		Windows::Networking::HostName^ hostName;

@@ -55,6 +55,8 @@ extern int h_errno;
 #include "Ip.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
+#include "Server.h"
+#include "Socket.h"
 
 namespace sakit
 {
@@ -90,6 +92,7 @@ namespace sakit
 		this->connected = false;
 		this->sock = -1;
 		this->info = NULL;
+		this->address = NULL;
 		this->sendBuffer = new char[bufferSize];
 		memset(this->sendBuffer, 0, bufferSize);
 		this->receiveBuffer = new char[bufferSize];
@@ -168,6 +171,11 @@ namespace sakit
 			freeaddrinfo(this->info);
 			this->info = NULL;
 		}
+		if (this->address != NULL)
+		{
+			free(this->address);
+			this->address = NULL;
+		}
 		if (this->sock != -1)
 		{
 			closesocket(this->sock);
@@ -245,6 +253,38 @@ namespace sakit
 			return true;
 		}
 		return false;
+	}
+
+	bool PlatformSocket::listen(int maxConnections)
+	{
+		if (::listen(this->sock, maxConnections) == SOCKET_ERROR)
+		{
+			this->_printLastError();
+			return false;
+		}
+		return true;
+	}
+
+	bool PlatformSocket::accept(Socket* socket)
+	{
+		PlatformSocket* other = socket->socket;
+		int size = (int)sizeof(sockaddr_storage);
+		other->address = (sockaddr_storage*)malloc(size);
+		other->sock = ::accept(this->sock, (sockaddr*)other->address, &size);
+		if (other->sock == SOCKET_ERROR)
+		{
+			this->_printLastError();
+			other->disconnect();
+			return false;
+		}
+		// get the IP and port of the connected client
+		char host[256] = {'\0'};
+		char port[256] = {'\0'};
+		getnameinfo((sockaddr*)other->address, size, host, 256, port, 256, NI_NUMERICHOST);
+		socket->host = Ip(host);
+		socket->port = (unsigned short)(int)hstr(port);
+		other->connected = true;
+		return true;
 	}
 
 }
