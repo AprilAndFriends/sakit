@@ -16,11 +16,36 @@
 #include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
+#include <sakit/ServerDelegate.h>
 #include <sakit/SocketDelegate.h>
 #include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
 
-class Sender : public sakit::SocketDelegate
+#define TEST_PORT 53334
+
+class ServerDelegate : public sakit::ServerDelegate
+{
+	/*
+	void onBound(sakit::Server* server)
+	{
+		hlog::writef(LOG_TAG, "- server bound to '%d'", server->getFullHost().c_str());
+	}
+
+	void onBindFailed(Server* server)
+	{
+		hlog::writef(LOG_TAG, "- server binding failed for port '%d'", server->getPort());
+	}
+	*/
+
+	void onAccepted(sakit::Server* server, sakit::Socket* socket)
+	{
+		hlog::writef(LOG_TAG, "- server '%s' accepted connection '%s'",
+			server->getFullHost().c_str(), socket->getFullHost().c_str());
+	}
+
+} serverDelegate;
+
+class SocketDelegate : public sakit::SocketDelegate
 {
 	void onSent(sakit::Socket* socket, int bytes)
 	{
@@ -61,23 +86,28 @@ int main(int argc, char **argv)
 {
 	// TODOsock - test how sockets act when sending \0
 	sakit::init();
-	sakit::Socket* client = new sakit::TcpSocket(&socketDelegate);
-	//if (client->connect(sakit::Ip::Localhost("www.google.com"), 80))
-	if (client->connect(sakit::Ip::Localhost, 54269))
+	sakit::Server* server = new sakit::TcpServer(&serverDelegate);
+	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
 	{
-		hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
-		hstream stream;
-		stream.write("CON\t1\t1\n");
-		client->send(&stream);
-		client->receive(16); // receive 16 bytes max
-		while (client->isConnected())
+		hlog::write(LOG_TAG, "Bound to " + server->getFullHost());
+		sakit::Socket* client = new sakit::TcpSocket(&socketDelegate);
+		if (client->connect(sakit::Ip::Localhost, TEST_PORT))
 		{
-			sakit::update(0.0f);
-			hthread::sleep(100.0f);
+			hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
+			hstream stream;
+			stream.write("CON\t1\t1\n");
+			client->send(&stream);
+			client->receive(16); // receive 16 bytes max
+			while (client->isConnected())
+			{
+				sakit::update(0.0f);
+				hthread::sleep(100.0f);
+			}
+			hlog::write(LOG_TAG, "Disconnected.");
 		}
-		hlog::write(LOG_TAG, "Disconnected.");
+		delete client;
 	}
-	delete client;
+	delete server;
 	sakit::destroy();
 	system("pause");
 	return 0;

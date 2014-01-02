@@ -15,14 +15,16 @@
 #define SAKIT_TCP_SERVER_H
 
 #include "sakitExport.h"
-#include "TcpSocket.h"
+#include "Server.h"
 
 namespace sakit
 {
-	class sakitExport TcpServer : public TcpSocket
+	class PlatformSocket;
+
+	class sakitExport TcpServer : public Server
 	{
 	public:
-		TcpServer(SocketDelegate* socketDelegate);
+		TcpServer(ServerDelegate* serverDelegate);
 		~TcpServer();
 
 	};

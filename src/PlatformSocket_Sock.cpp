@@ -96,7 +96,7 @@ namespace sakit
 		memset(this->receiveBuffer, 0, bufferSize);
 	}
 
-	bool PlatformSocket::connect(Ip host, unsigned int port)
+	bool PlatformSocket::_createSocket(Ip host, unsigned int port)
 	{
 		int result = 0;
 		// create host info
@@ -125,10 +125,34 @@ namespace sakit
 			this->disconnect();
 			return false;
 		}
-		// open socket
-		if (::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen) == SOCKET_ERROR)
+		return true;
+	}
+
+	bool PlatformSocket::connect(Ip host, unsigned int port)
+	{
+		if (!this->_createSocket(host, port))
 		{
-			hlog::debug(sakit::logTag, "connect() error!");
+			return false;
+		}
+		// open connection
+		return this->_finishSocket(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
+	}
+
+	bool PlatformSocket::bind(Ip host, unsigned int port)
+	{
+		if (!this->_createSocket(host, port))
+		{
+			return false;
+		}
+		// bind to host:port
+		return this->_finishSocket(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
+	}
+
+	bool PlatformSocket::_finishSocket(int result, chstr functionName)
+	{
+		if (result == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, functionName + " error!");
 			this->_printLastError();
 			this->disconnect();
 			return false;

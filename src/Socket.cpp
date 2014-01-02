@@ -22,11 +22,10 @@ namespace sakit
 {
 	extern harray<Socket*> sockets;
 
-	Socket::Socket(SocketDelegate* socketDelegate) : host("")
+	Socket::Socket(SocketDelegate* socketDelegate) : Base()
 	{
 		sockets += this;
 		this->socketDelegate = socketDelegate;
-		this->socket = new PlatformSocket();
 		this->sender = new SenderThread(this->socket);
 		this->receiver = new ReceiverThread(this->socket);
 	}
@@ -38,13 +37,7 @@ namespace sakit
 		delete this->sender;
 		this->receiver->join();
 		delete this->receiver;
-		delete this->socket;
 		sockets -= this;
-	}
-
-	hstr Socket::getFullHost()
-	{
-		return (this->isConnected() ? hsprintf("%s:%d", this->host.getAddress().c_str(), this->port) : "");
 	}
 
 	bool Socket::isConnected()

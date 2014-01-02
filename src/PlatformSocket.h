@@ -36,6 +36,7 @@ namespace sakit
 		HL_DEFINE_IS(connected, Connected);
 
 		bool connect(Ip host, unsigned int port);
+		bool bind(Ip host, unsigned int port);
 		bool disconnect();
 		bool send(hsbase* stream, int& sent);
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
@@ -60,6 +61,9 @@ namespace sakit
 		unsigned int _asyncSize;
 		bool _awaitAsync();
 #endif
+
+		bool _createSocket(Ip host, unsigned int port);
+		bool _finishSocket(int result, chstr functionName);
 		void _printLastError();
 
 	};

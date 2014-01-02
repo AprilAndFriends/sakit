@@ -29,6 +29,8 @@ namespace sakit
 		SocketDelegate();
 		virtual ~SocketDelegate();
 
+		// TODOsock - add onConnected() and onDisconnected() and make the async as well
+
 		virtual void onSent(Socket* socket, int byteCount) = 0;
 		virtual void onSendFinished(Socket* socket) = 0;
 		virtual void onSendFailed(Socket* socket) = 0;

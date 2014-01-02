@@ -20,25 +20,22 @@
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
+#include "Base.h"
 #include "Ip.h"
 #include "sakitExport.h"
 
 namespace sakit
 {
-	class PlatformSocket;
 	class ReceiverThread;
 	class SenderThread;
 	class SocketDelegate;
 
-	class sakitExport Socket
+	class sakitExport Socket : public Base
 	{
 	public:
 		Socket(SocketDelegate* socketDelegate);
-		virtual ~Socket();
+		~Socket();
 
-		HL_DEFINE_GET(Ip, host, Host);
-		HL_DEFINE_GET(unsigned short, port, Port);
-		hstr getFullHost();
 		bool isConnected();
 
 		// TODOsock - make it work with chstr port as well
@@ -51,12 +48,9 @@ namespace sakit
 		void update(float timeSinceLastFrame);
 
 	protected:
-		PlatformSocket* socket;
 		SocketDelegate* socketDelegate;
 		SenderThread* sender;
 		ReceiverThread* receiver;
-		Ip host;
-		unsigned short port;
 
 		void _updateSending();
 		void _updateReceiving();
