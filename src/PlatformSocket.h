@@ -42,7 +42,7 @@ namespace sakit
 		bool disconnect();
 		bool send(hsbase* stream, int& sent);
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
-		bool listen(int maxConnections);
+		bool listen();
 		bool accept(Socket* socket);
 
 		static void platformInit();
@@ -69,7 +69,9 @@ namespace sakit
 
 		bool _createSocket(Ip host, unsigned int port);
 		bool _finishSocket(int result, chstr functionName);
-		void _printLastError();
+		int _printLastError();
+
+		bool _setNonBlocking(bool value);
 
 	};
 

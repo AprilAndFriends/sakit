@@ -19,7 +19,7 @@
 namespace sakit
 {
 	AccepterThread::AccepterThread(PlatformSocket* socket, SocketDelegate* socketDelegate) :
-		WorkerThread(&process, socket), maxConnections(20)
+		WorkerThread(&process, socket)
 	{
 		this->socketDelegate = socketDelegate;
 	}
@@ -31,9 +31,10 @@ namespace sakit
 	void AccepterThread::_updateProcess()
 	{
 		Socket* socket = NULL;
+		int result = 0;
 		while (this->running)
 		{
-			if (!this->socket->listen(this->maxConnections))
+			if (!this->socket->listen())
 			{
 				this->mutex.lock();
 				this->state = FAILED;

@@ -25,7 +25,7 @@ namespace sakit
 	class sakitExport TcpServer : public Server
 	{
 	public:
-		TcpServer(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections = 20);
+		TcpServer(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate);
 		~TcpServer();
 
 	};

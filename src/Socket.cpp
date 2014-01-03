@@ -29,7 +29,6 @@ namespace sakit
 
 	Socket::~Socket()
 	{
-		// TODOsock - check if this is all that is needed
 		this->sender->running = false;
 		this->sender->join();
 		delete this->sender;

@@ -58,6 +58,12 @@ extern int h_errno;
 #include "Server.h"
 #include "Socket.h"
 
+#define CHAR_BUFFER 256
+
+#if defined(_WIN32) && !defined(uint32_t)
+typedef u_long uint32_t;
+#endif
+
 namespace sakit
 {
 	extern int bufferSize;
@@ -97,6 +103,20 @@ namespace sakit
 		memset(this->sendBuffer, 0, bufferSize);
 		this->receiveBuffer = new char[bufferSize];
 		memset(this->receiveBuffer, 0, bufferSize);
+	}
+
+	bool PlatformSocket::_setNonBlocking(bool value)
+	{
+		// set to blocking or non-blocking
+		int setValue = (value ? 1 : 0);
+		if (ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue) == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, "Blocking mode could not be changed!");
+			this->_printLastError();
+			this->disconnect();
+			return false;
+		}
+		return true;
 	}
 
 	bool PlatformSocket::_createSocket(Ip host, unsigned int port)
@@ -192,33 +212,8 @@ namespace sakit
 		interval.tv_usec = 0;
 		memset(&this->readSet, 0, sizeof(this->readSet));
 		unsigned long received = 0;
-#ifdef _WIN32
-		u_long* read = (u_long*)&received;
-#else
-		uint32_t* read = (uint32_t*)&received;
-#endif
-		int result = 0;
-		// TODOsock - this will require most likely thread-safe access with mutexes, because of select and multiple TCP servers
-		/*
-		// select socket
-		FD_ZERO(&this->readSet);
-		FD_SET(this->sock, &this->readSet);
-		result = select(0, &this->readSet, NULL, NULL, &interval);
-		if (result == 0)
-		{
-			hlog::error(sakit::logTag, "Socket select timeout!");
-			break;
-		}
-		if (result == SOCKET_ERROR)
-		{
-			hlog::debug(sakit::logTag, "select() error!");
-			this->_printLastError();
-			break;
-		}
-		//*/
 		// control socket IO
-		result = ioctlsocket(this->sock, FIONREAD, read);
-		if (result == SOCKET_ERROR)
+		if (ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received) == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "ioctlsocket() error!");
 			this->_printLastError();
@@ -255,9 +250,9 @@ namespace sakit
 		return false;
 	}
 
-	bool PlatformSocket::listen(int maxConnections)
+	bool PlatformSocket::listen()
 	{
-		if (::listen(this->sock, maxConnections) == SOCKET_ERROR)
+		if (::listen(this->sock, SOMAXCONN) == SOCKET_ERROR)
 		{
 			this->_printLastError();
 			return false;
@@ -270,17 +265,20 @@ namespace sakit
 		PlatformSocket* other = socket->socket;
 		int size = (int)sizeof(sockaddr_storage);
 		other->address = (sockaddr_storage*)malloc(size);
+		this->_setNonBlocking(true);
 		other->sock = ::accept(this->sock, (sockaddr*)other->address, &size);
 		if (other->sock == SOCKET_ERROR)
 		{
 			this->_printLastError();
+			this->_setNonBlocking(false);
 			other->disconnect();
 			return false;
 		}
+		this->_setNonBlocking(false);
 		// get the IP and port of the connected client
-		char host[256] = {'\0'};
-		char port[256] = {'\0'};
-		getnameinfo((sockaddr*)other->address, size, host, 256, port, 256, NI_NUMERICHOST);
+		char host[CHAR_BUFFER] = {'\0'};
+		char port[CHAR_BUFFER] = {'\0'};
+		getnameinfo((sockaddr*)other->address, size, host, CHAR_BUFFER, port, CHAR_BUFFER, NI_NUMERICHOST);
 		socket->host = Ip(host);
 		socket->port = (unsigned short)(int)hstr(port);
 		other->connected = true;

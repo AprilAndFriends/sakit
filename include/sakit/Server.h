@@ -30,7 +30,7 @@ namespace sakit
 	class sakitExport Server : public Base
 	{
 	public:
-		Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections = 20);
+		Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate);
 		~Server();
 
 		HL_DEFINE_GET(harray<Socket*>, sockets, Sockets);
@@ -49,7 +49,6 @@ namespace sakit
 		SocketDelegate* socketDelegate;
 		AccepterThread* accepter;
 		harray<Socket*> sockets;
-		int maxConnections;
 
 	};
 

@@ -39,7 +39,6 @@ namespace sakit
 	protected:
 		SocketDelegate* socketDelegate;
 		harray<Socket*> sockets;
-		int maxConnections;
 
 		void _updateProcess();
 

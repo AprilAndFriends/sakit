@@ -7,6 +7,7 @@
 /// This program is free software; you can redistribute it and/or modify it under
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
+#include <hltypes/harray.h>
 #include <hltypes/hlog.h>
 #include <hltypes/hstring.h>
 
@@ -15,14 +16,14 @@
 #include "sakit.h"
 #include "Server.h"
 #include "ServerDelegate.h"
+#include "Socket.h"
 
 namespace sakit
 {
-	Server::Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate, int maxConnections) : Base()
+	Server::Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate) : Base()
 	{
 		this->serverDelegate = serverDelegate;
 		this->socketDelegate = socketDelegate;
-		this->maxConnections = hmax(maxConnections, 1);
 		this->accepter = new AccepterThread(this->socket, this->socketDelegate);
 	}
 
@@ -31,6 +32,10 @@ namespace sakit
 		this->accepter->running = false;
 		this->accepter->join();
 		delete this->accepter;
+		foreach (Socket*, it, this->sockets)
+		{
+			delete (*it);
+		}
 	}
 
 	bool Server::isBound()
@@ -75,17 +80,8 @@ namespace sakit
 			return;
 		}
 		this->accepter->state = WorkerThread::RUNNING;
-		/*
-		long position = stream->position();
-		stream->rewind();
-		this->accepter->stream->clear();
-		this->accepter->stream->write_raw(*stream, hmin((long)maxBytes, stream->size()));
-		this->accepter->stream->rewind();
-		*/
 		this->accepter->mutex.unlock();
 		this->accepter->start();
-		//stream->seek(position, hsbase::START);
-
 	}
 
 	void Server::stop()
