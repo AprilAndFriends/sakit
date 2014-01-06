@@ -9,36 +9,39 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for receiving data.
+/// Defines a thread for connecting/disconnecting a socket.
 
-#ifndef SAKIT_RECEIVER_THREAD_H
-#define SAKIT_RECEIVER_THREAD_H
+#ifndef SAKIT_SOCKET_THREAD_H
+#define SAKIT_SOCKET_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
-#include "Socket.h"
+#include "Server.h"
 #include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
+	class ServerDelegate;
+	class SocketDelegate;
 
-	class sakitExport ReceiverThread : public WorkerThread
+	class sakitExport SocketThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
 
-		ReceiverThread(PlatformSocket* socket);
-		~ReceiverThread();
+		SocketThread(PlatformSocket* socket);
+		~SocketThread();
 
 	protected:
 		Socket::State state;
-		hstream* stream;
-		int maxBytes;
 
+		void _updateConnecting();
+		void _updateDisconnecting();
 		void _updateProcess();
 
 		static void process(hthread*);

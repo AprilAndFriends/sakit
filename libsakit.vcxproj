@@ -142,6 +142,7 @@
     <ClInclude Include="src\ReceiverThread.h" />
     <ClInclude Include="src\SenderThread.h" />
     <ClInclude Include="src\ServerThread.h" />
+    <ClInclude Include="src\SocketThread.h" />
     <ClInclude Include="src\WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +160,7 @@
     <ClCompile Include="src\ServerThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
+    <ClCompile Include="src\SocketThread.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="src\TcpSocket.cpp" />
     <ClCompile Include="src\WebSocket.cpp" />

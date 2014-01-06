@@ -15,15 +15,14 @@
 
 namespace sakit
 {
-	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) : hthread(function), result(IDLE)
+	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) :
+		hthread(function), result(IDLE), host(""), port(0)
 	{
 		this->socket = socket;
-		this->stream = new hstream();
 	}
 
 	WorkerThread::~WorkerThread()
 	{
-		delete this->stream;
 	}
 
 }

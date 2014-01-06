@@ -24,7 +24,7 @@ namespace sakit
 	{
 		this->serverDelegate = serverDelegate;
 		this->acceptedDelegate = acceptedDelegate;
-		this->thread = new ServerThread(this->socket, this->serverDelegate, this->acceptedDelegate);
+		this->thread = new ServerThread(this->socket, this->acceptedDelegate);
 	}
 
 	Server::~Server()
@@ -49,7 +49,7 @@ namespace sakit
 	bool Server::isBound()
 	{
 		this->thread->mutex.lock();
-		bool result = (this->thread->state == BOUND || this->thread->state == RUNNING);
+		bool result = (this->thread->state == BOUND || this->thread->state == UNBINDING || this->thread->state == RUNNING);
 		this->thread->mutex.unlock();
 		return result;
 	}
@@ -81,6 +81,8 @@ namespace sakit
 			this->thread->mutex.lock();
 			this->thread->state = BOUND;
 			this->thread->mutex.unlock();
+			this->host = host;
+			this->port = port;
 		}
 		return result;
 	}
@@ -93,11 +95,11 @@ namespace sakit
 		bool result = (this->_checkUnbindStatus(state) && this->socket->disconnect());
 		if (result)
 		{
-			this->host = Ip("");
-			this->port = 0;
 			this->thread->mutex.lock();
 			this->thread->state = IDLE;
 			this->thread->mutex.unlock();
+			this->host = Ip("");
+			this->port = 0;
 		}
 		return result;
 	}
@@ -108,7 +110,7 @@ namespace sakit
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		this->thread->mutex.unlock();
-		if (this->_checkStartStatus(state) && this->socket->disconnect())
+		if (this->_checkStartStatus(state))
 		{
 			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 			timeout *= 1000.0f;
@@ -133,6 +135,25 @@ namespace sakit
 		return socket;
 	}
 
+	bool Server::destroy(Socket* socket)
+	{
+		// TODOsock - refactor this mechanism to have a safer environment for server-created sockets
+		// (problems during sakit::update() and destruction of sockets in delegate callbacks)
+		if (socket == NULL)
+		{
+			hlog::error(sakit::logTag, "Socket is NULL!");
+			return false;
+		}
+		if (!this->sockets.contains(socket))
+		{
+			hlog::error(sakit::logTag, "Socket does not belong to the given server!");
+			return false;
+		}
+		this->sockets -= socket;
+		delete socket;
+		return true;
+	}
+
 	bool Server::bindAsync(Ip host, unsigned short port)
 	{
 		this->thread->mutex.lock();
@@ -145,6 +166,21 @@ namespace sakit
 		this->thread->host = host;
 		this->thread->port = port;
 		this->thread->state = BINDING;
+		this->thread->mutex.unlock();
+		this->thread->start();
+		return true;
+	}
+
+	bool Server::unbindAsync()
+	{
+		this->thread->mutex.lock();
+		State state = this->thread->state;
+		if (!this->_checkUnbindStatus(state))
+		{
+			this->thread->mutex.unlock();
+			return false;
+		}
+		this->thread->state = UNBINDING;
 		this->thread->mutex.unlock();
 		this->thread->start();
 		return true;
@@ -178,23 +214,21 @@ namespace sakit
 		return true;
 	}
 
-	bool Server::unbindAsync()
-	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		if (!this->_checkUnbindStatus(state))
-		{
-			this->thread->mutex.unlock();
-			return false;
-		}
-		this->thread->state = UNBINDING;
-		this->thread->mutex.unlock();
-		this->thread->start();
-		return true;
-	}
-
 	void Server::update(float timeSinceLastFrame)
 	{
+		harray<Socket*> sockets = this->sockets;
+		this->sockets.clear();
+		foreach (Socket*, it, sockets)
+		{
+			if ((*it)->isConnected())
+			{
+				this->sockets += (*it);
+			}
+			else
+			{
+				delete (*it);
+			}
+		}
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		WorkerThread::Result result = this->thread->result;

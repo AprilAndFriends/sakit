@@ -17,12 +17,12 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "sakitExport.h"
+#include "Socket.h"
 #include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
-	class Socket;
 
 	class sakitExport SenderThread : public WorkerThread
 	{
@@ -33,6 +33,8 @@ namespace sakit
 		~SenderThread();
 
 	protected:
+		Socket::State state;
+		hstream* stream;
 		int lastSent;
 
 		void _updateProcess();

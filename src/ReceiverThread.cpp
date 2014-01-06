@@ -17,12 +17,15 @@
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(&process, socket), maxBytes(INT_MAX)
+	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(&process, socket),
+		state(Socket::IDLE), maxBytes(INT_MAX)
 	{
+		this->stream = new hstream();
 	}
 
 	ReceiverThread::~ReceiverThread()
 	{
+		delete this->stream;
 	}
 
 	void ReceiverThread::_updateProcess()

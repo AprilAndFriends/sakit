@@ -40,7 +40,7 @@ namespace sakit
 		bool connect(Ip host, unsigned int port);
 		bool bind(Ip host, unsigned int port);
 		bool disconnect();
-		bool send(hsbase* stream, int& sent);
+		bool send(hsbase* stream, int& sent, int& maxBytes);
 		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
 		bool listen();
 		bool accept(Socket* socket);

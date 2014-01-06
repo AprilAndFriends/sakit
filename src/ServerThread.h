@@ -9,7 +9,7 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for binding a server.
+/// Defines a thread for handling a server.
 
 #ifndef SAKIT_SERVER_THREAD_H
 #define SAKIT_SERVER_THREAD_H
@@ -26,7 +26,6 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class ServerDelegate;
 	class SocketDelegate;
 
 	class sakitExport ServerThread : public WorkerThread
@@ -34,16 +33,13 @@ namespace sakit
 	public:
 		friend class Server;
 
-		ServerThread(PlatformSocket* socket, ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
+		ServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
 		~ServerThread();
 
 	protected:
 		Server::State state;
-		ServerDelegate* serverDelegate;
 		SocketDelegate* acceptedDelegate;
 		harray<Socket*> sockets;
-		Ip host;
-		unsigned short port;
 
 		void _updateBinding();
 		void _updateRunning();

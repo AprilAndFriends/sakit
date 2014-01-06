@@ -19,19 +19,23 @@
 
 namespace sakit
 {
-	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(&process, socket), lastSent(0)
+	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(&process, socket),
+		state(Socket::IDLE), lastSent(0)
 	{
+		this->stream = new hstream();
 	}
 
 	SenderThread::~SenderThread()
 	{
+		delete this->stream;
 	}
 
 	void SenderThread::_updateProcess()
 	{
+		int maxBytes = this->stream->size();
 		while (this->running)
 		{
-			if (!this->socket->send(this->stream, this->lastSent))
+			if (!this->socket->send(this->stream, this->lastSent, maxBytes))
 			{
 				this->mutex.lock();
 				this->result = FAILED;

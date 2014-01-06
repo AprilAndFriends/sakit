@@ -42,7 +42,8 @@ namespace sakit
 	protected:
 		Result result;
 		PlatformSocket* socket;
-		hstream* stream;
+		Ip host;
+		unsigned short port;
 		hmutex mutex;
 
 	};

@@ -46,6 +46,8 @@ namespace sakit
 		Ip host;
 		unsigned short port;
 
+		virtual void _activateConnection(Ip host, unsigned short port);
+
 	};
 
 }

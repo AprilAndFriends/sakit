@@ -34,4 +34,10 @@ namespace sakit
 		return (this->socket->isConnected() ? hsprintf("%s:%d", this->host.getAddress().c_str(), this->port) : "");
 	}
 
+	void Base::_activateConnection(Ip host, unsigned short port)
+	{
+		this->host = host;
+		this->port = port;
+	}
+
 }

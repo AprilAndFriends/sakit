@@ -237,14 +237,15 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::send(hsbase* stream, int& sent)
+	bool PlatformSocket::send(hsbase* stream, int& sent, int& maxBytes)
 	{
-		int size = hmin((int)(stream->size() - stream->position()), bufferSize);
+		int size = hmin(hmin((int)(stream->size() - stream->position()), bufferSize), maxBytes);
 		stream->read_raw(this->sendBuffer, size);
 		int result = ::send(this->sock, this->sendBuffer, size, 0);
 		if (result >= 0)
 		{
 			sent += result;
+			maxBytes -= result;
 			return true;
 		}
 		return false;
@@ -279,8 +280,7 @@ namespace sakit
 		char host[CHAR_BUFFER] = {'\0'};
 		char port[CHAR_BUFFER] = {'\0'};
 		getnameinfo((sockaddr*)other->address, size, host, CHAR_BUFFER, port, CHAR_BUFFER, NI_NUMERICHOST);
-		socket->host = Ip(host);
-		socket->port = (unsigned short)(int)hstr(port);
+		((Base*)socket)->_activateConnection(Ip(host), (unsigned short)(int)hstr(port));
 		other->connected = true;
 		return true;
 	}

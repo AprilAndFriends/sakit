@@ -17,6 +17,7 @@
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -29,7 +30,10 @@ namespace sakit
 		SocketDelegate();
 		virtual ~SocketDelegate();
 
-		// TODOsock - add onConnected() and onDisconnected() and make the async as well
+		virtual void onConnected(Socket* socket) = 0;
+		virtual void onDisconnected(Socket* socket, Ip host, unsigned short port) = 0;
+		virtual void onConnectFailed(Socket* socket, Ip host, unsigned short port) = 0;
+		virtual void onDisconnectFailed(Socket* socket) = 0;
 
 		virtual void onSent(Socket* socket, int byteCount) = 0;
 		virtual void onSendFinished(Socket* socket) = 0;

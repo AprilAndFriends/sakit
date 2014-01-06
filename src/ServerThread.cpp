@@ -19,10 +19,9 @@
 
 namespace sakit
 {
-	ServerThread::ServerThread(PlatformSocket* socket, ServerDelegate* serverDelegate,
-		SocketDelegate* acceptedDelegate) : WorkerThread(&process, socket), state(Server::IDLE), host(""), port(0)
+	ServerThread::ServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) :
+		WorkerThread(&process, socket), state(Server::IDLE)
 	{
-		this->serverDelegate = serverDelegate;
 		this->acceptedDelegate = acceptedDelegate;
 	}
 

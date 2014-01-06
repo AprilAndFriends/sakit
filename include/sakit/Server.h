@@ -49,13 +49,14 @@ namespace sakit
 		bool isUnbinding();
 
 		bool bind(Ip host, unsigned short port);
-		Socket* accept(float timeout);
 		bool unbind();
+		Socket* accept(float timeout);
+		bool destroy(Socket* socket);
 
 		bool bindAsync(Ip host, unsigned short port);
+		bool unbindAsync();
 		bool startAsync();
 		bool stopAsync();
-		bool unbindAsync();
 
 		void update(float timeSinceLastFrame);
 
