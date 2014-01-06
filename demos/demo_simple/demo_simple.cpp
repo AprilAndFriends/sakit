@@ -21,7 +21,7 @@
 #include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
 
-#define TEST_PORT 53332
+#define TEST_PORT 53334
 
 class ServerDelegate : public sakit::ServerDelegate
 {

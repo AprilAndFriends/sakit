@@ -216,19 +216,6 @@ namespace sakit
 
 	void Server::update(float timeSinceLastFrame)
 	{
-		harray<Socket*> sockets = this->sockets;
-		this->sockets.clear();
-		foreach (Socket*, it, sockets)
-		{
-			if ((*it)->isConnected())
-			{
-				this->sockets += (*it);
-			}
-			else
-			{
-				delete (*it);
-			}
-		}
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		WorkerThread::Result result = this->thread->result;
@@ -316,18 +303,10 @@ namespace sakit
 	{
 		switch (state)
 		{
-		case BINDING:
-			hlog::warn(sakit::logTag, "Cannot bind, already binding!");
-			return false;
-		case BOUND:
-			hlog::warn(sakit::logTag, "Cannot bind, already bound!");
-			return false;
-		case RUNNING:
-			hlog::warn(sakit::logTag, "Cannot bind, already running!");
-			return false;
-		case UNBINDING:
-			hlog::warn(sakit::logTag, "Cannot bind, already unbinding!");
-			return false;
+		case BINDING:	hlog::warn(sakit::logTag, "Cannot bind, already binding!");		return false;
+		case BOUND:		hlog::warn(sakit::logTag, "Cannot bind, already bound!");		return false;
+		case RUNNING:	hlog::warn(sakit::logTag, "Cannot bind, already running!");		return false;
+		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot bind, already unbinding!");	return false;
 		}
 		return true;
 	}
@@ -336,18 +315,10 @@ namespace sakit
 	{
 		switch (state)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot start, not bound!");
-			return false;
-		case BINDING:
-			hlog::warn(sakit::logTag, "Cannot start, still binding!");
-			return false;
-		case RUNNING:
-			hlog::warn(sakit::logTag, "Cannot start, already running!");
-			return false;
-		case UNBINDING:
-			hlog::warn(sakit::logTag, "Cannot start, already unbinding!");
-			return false;
+		case IDLE:		hlog::warn(sakit::logTag, "Cannot start, not bound!");			return false;
+		case BINDING:	hlog::warn(sakit::logTag, "Cannot start, still binding!");		return false;
+		case RUNNING:	hlog::warn(sakit::logTag, "Cannot start, already running!");	return false;
+		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot start, already unbinding!");	return false;
 		}
 		return true;
 	}
@@ -356,18 +327,10 @@ namespace sakit
 	{
 		switch (state)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot stop, not bound!");
-			return false;
-		case BINDING:
-			hlog::warn(sakit::logTag, "Cannot stop, still binding!");
-			return false;
-		case BOUND:
-			hlog::warn(sakit::logTag, "Cannot stop, not running!");
-			return false;
-		case UNBINDING:
-			hlog::warn(sakit::logTag, "Cannot stop, already unbinding!");
-			return false;
+		case IDLE:		hlog::warn(sakit::logTag, "Cannot stop, not bound!");			return false;
+		case BINDING:	hlog::warn(sakit::logTag, "Cannot stop, still binding!");		return false;
+		case BOUND:		hlog::warn(sakit::logTag, "Cannot stop, not running!");			return false;
+		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot stop, already unbinding!");	return false;
 		}
 		return true;
 	}
@@ -376,18 +339,10 @@ namespace sakit
 	{
 		switch (state)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot unbind, not bound!");
-			return false;
-		case BINDING:
-			hlog::warn(sakit::logTag, "Cannot unbind, still binding!");
-			return false;
-		case RUNNING:
-			hlog::warn(sakit::logTag, "Cannot unbind, already running!");
-			return false;
-		case UNBINDING:
-			hlog::warn(sakit::logTag, "Cannot unbind, already unbinding!");
-			return false;
+		case IDLE:		hlog::warn(sakit::logTag, "Cannot unbind, not bound!");			return false;
+		case BINDING:	hlog::warn(sakit::logTag, "Cannot unbind, still binding!");		return false;
+		case RUNNING:	hlog::warn(sakit::logTag, "Cannot unbind, already running!");	return false;
+		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot unbind, already unbinding!");	return false;
 		}
 		return true;
 	}

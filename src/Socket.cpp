@@ -151,7 +151,7 @@ namespace sakit
 			{
 				break;
 			}
-			if (stream->position() >= stream->size())
+			if (stream->eof())
 			{
 				break;
 			}
@@ -432,15 +432,9 @@ namespace sakit
 	{
 		switch (socketState)
 		{
-		case CONNECTING:
-			hlog::warn(sakit::logTag, "Cannot connect, already connecting!");
-			return false;
-		case CONNECTED:
-			hlog::warn(sakit::logTag, "Cannot connect, already connected!");
-			return false;
-		case DISCONNECTING:
-			hlog::warn(sakit::logTag, "Cannot connect, already disconnecting!");
-			return false;
+		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot connect, already connecting!");		return false;
+		case CONNECTED:		hlog::warn(sakit::logTag, "Cannot connect, already connected!");		return false;
+		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot connect, already disconnecting!");	return false;
 		}
 		return true;
 	}
@@ -449,21 +443,13 @@ namespace sakit
 	{
 		switch (socketState)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot send, not connected!");
-			return false;
-		case CONNECTING:
-			hlog::warn(sakit::logTag, "Cannot send, still connecting!");
-			return false;
-		case DISCONNECTING:
-			hlog::warn(sakit::logTag, "Cannot send, already disconnecting!");
-			return false;
+		case IDLE:			hlog::warn(sakit::logTag, "Cannot send, not connected!");			return false;
+		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot send, still connecting!");		return false;
+		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot send, already disconnecting!");	return false;
 		}
 		switch (senderState)
 		{
-		case RUNNING:
-			hlog::warn(sakit::logTag, "Cannot send, already sending!");
-			return false;
+		case RUNNING:	hlog::warn(sakit::logTag, "Cannot send, already sending!");	return false;
 		}
 		return true;
 	}
@@ -472,21 +458,13 @@ namespace sakit
 	{
 		switch (socketState)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot receive, not connected!");
-			return false;
-		case CONNECTING:
-			hlog::warn(sakit::logTag, "Cannot receive, still connecting!");
-			return false;
-		case DISCONNECTING:
-			hlog::warn(sakit::logTag, "Cannot receive, already disconnecting!");
-			return false;
+		case IDLE:			hlog::warn(sakit::logTag, "Cannot receive, not connected!");			return false;
+		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, still connecting!");			return false;
+		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, already disconnecting!");	return false;
 		}
 		switch (receiverState)
 		{
-		case RUNNING:
-			hlog::warn(sakit::logTag, "Cannot receive, already receiving!");
-			return false;
+		case RUNNING:	hlog::warn(sakit::logTag, "Cannot receive, already receiving!");	return false;
 		}
 		return true;
 	}
@@ -495,15 +473,9 @@ namespace sakit
 	{
 		switch (socketState)
 		{
-		case IDLE:
-			hlog::warn(sakit::logTag, "Cannot disconnect, not connected!");
-			return false;
-		case CONNECTING:
-			hlog::warn(sakit::logTag, "Cannot disconnect, still connecting!");
-			return false;
-		case DISCONNECTING:
-			hlog::warn(sakit::logTag, "Cannot disconnect, already disconnecting!");
-			return false;
+		case IDLE:			hlog::warn(sakit::logTag, "Cannot disconnect, not connected!");			return false;
+		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot disconnect, still connecting!");		return false;
+		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot disconnect, already disconnecting!");	return false;
 		}
 		bool result = true;
 		if (senderState == RUNNING)

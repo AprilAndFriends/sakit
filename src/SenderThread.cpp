@@ -43,7 +43,7 @@ namespace sakit
 				this->mutex.unlock();
 				return;
 			}
-			if (this->stream->position() >= this->stream->size())
+			if (this->stream->eof())
 			{
 				break;
 			}

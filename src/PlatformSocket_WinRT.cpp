@@ -23,6 +23,7 @@ using namespace Windows::System::Threading;
 
 namespace sakit
 {
+	// TODOsock - implement and test this properly
 	void PlatformSocket::platformInit()
 	{
 	}
