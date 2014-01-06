@@ -28,7 +28,7 @@ namespace sakit
 	class sakitExport WorkerThread : public hthread
 	{
 	public:
-		enum State
+		enum Result
 		{
 			IDLE,
 			RUNNING,
@@ -40,7 +40,7 @@ namespace sakit
 		~WorkerThread();
 
 	protected:
-		State state;
+		Result result;
 		PlatformSocket* socket;
 		hstream* stream;
 		hmutex mutex;

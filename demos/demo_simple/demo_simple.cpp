@@ -25,17 +25,35 @@
 
 class ServerDelegate : public sakit::ServerDelegate
 {
-	/*
 	void onBound(sakit::Server* server)
 	{
-		hlog::writef(LOG_TAG, "- server bound to '%d'", server->getFullHost().c_str());
+		hlog::writef(LOG_TAG, "- server bound to '%s'", server->getFullHost().c_str());
 	}
 
-	void onBindFailed(Server* server)
+	void onBindFailed(sakit::Server* server, sakit::Ip host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- server binding failed for port '%d'", server->getPort());
+		hlog::errorf(LOG_TAG, "- server bind failed to '%s:%d'", host.getAddress().c_str(), port);
 	}
-	*/
+
+	void onUnbound(sakit::Server* server, sakit::Ip host, unsigned short port)
+	{
+		hlog::writef(LOG_TAG, "- server unbound from '%s:%d'", host.getAddress().c_str(), port);
+	}
+
+	void onUnbindFailed(sakit::Server* server)
+	{
+		hlog::errorf(LOG_TAG, "- server unbind failed from '%s'", server->getFullHost().c_str());
+	}
+
+	void onStopped(sakit::Server* server)
+	{
+		hlog::write(LOG_TAG, "- server stopped");
+	}
+
+	void onRunFailed(sakit::Server* server)
+	{
+		hlog::error(LOG_TAG, "- server running error");
+	}
 
 	void onAccepted(sakit::Server* server, sakit::Socket* socket)
 	{
@@ -157,14 +175,75 @@ public:
 
 } acceptedDelegate;
 
-int main(int argc, char **argv)
+void _testAsyncServer()
 {
-	sakit::init();
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: async server, blocking client");
+	hlog::debug(LOG_TAG, "");
+	sakit::Server* server = new sakit::TcpServer(&serverDelegate, &acceptedDelegate);
+	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
+	{
+		while (server->isBinding())
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		}
+		if (server->isBound())
+		{
+			if (server->startAsync())
+			{
+				sakit::Socket* client = new sakit::TcpSocket(&clientDelegate);
+				if (client->connect(sakit::Ip::Localhost, TEST_PORT))
+				{
+					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
+					hstream stream;
+					char data[12] = "Hi there.\0g";
+					stream.write_raw(data, 12);
+					client->send(&stream);
+					client->receive(6); // receive 16 bytes max
+					while (client->isConnected())
+					{
+						sakit::update(0.0f);
+						hthread::sleep(100.0f);
+					}
+					hlog::write(LOG_TAG, "Disconnected.");
+				}
+				server->stopAsync();
+				while (server->isRunning())
+				{
+					sakit::update(0.0f);
+					hthread::sleep(100.0f);
+				}
+				delete client;
+			}
+			if (server->unbindAsync())
+			{
+				while (server->isBinding())
+				{
+					sakit::update(0.0f);
+					hthread::sleep(100.0f);
+				}
+				if (!server->isBound())
+				{
+					hlog::write(LOG_TAG, "Unbound");
+				}
+			}
+		}
+	}
+	delete server;
+}
+
+void _testAsyncClient()
+{
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: blocking server, async client");
+	hlog::debug(LOG_TAG, "");
+	/*
 	sakit::Server* server = new sakit::TcpServer(&serverDelegate, &acceptedDelegate);
 	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
 	{
 		hlog::write(LOG_TAG, "Bound to " + server->getFullHost());
-		server->start();
+		server->startAsync();
 		sakit::Socket* client = new sakit::TcpSocket(&clientDelegate);
 		if (client->connect(sakit::Ip::Localhost, TEST_PORT))
 		{
@@ -181,10 +260,19 @@ int main(int argc, char **argv)
 			}
 			hlog::write(LOG_TAG, "Disconnected.");
 		}
-		server->stop();
+		server->stopAsync();
 		delete client;
 	}
 	delete server;
+	*/
+}
+
+int main(int argc, char **argv)
+{
+	sakit::init();
+	hlog::setLevelDebug(true);
+	_testAsyncServer();
+	_testAsyncClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

@@ -138,14 +138,13 @@
     <ClInclude Include="include\sakit\TcpServer.h" />
     <ClInclude Include="include\sakit\TcpSocket.h" />
     <ClInclude Include="include\sakit\WebSocket.h" />
-    <ClInclude Include="src\AccepterThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
     <ClInclude Include="src\SenderThread.h" />
+    <ClInclude Include="src\ServerThread.h" />
     <ClInclude Include="src\WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AccepterThread.cpp" />
     <ClCompile Include="src\Base.cpp" />
     <ClCompile Include="src\Ip.cpp" />
     <ClCompile Include="src\IpSocket.cpp" />
@@ -157,6 +156,7 @@
     <ClCompile Include="src\SenderThread.cpp" />
     <ClCompile Include="src\Server.cpp" />
     <ClCompile Include="src\ServerDelegate.cpp" />
+    <ClCompile Include="src\ServerThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />

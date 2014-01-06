@@ -17,6 +17,7 @@
 #include <hltypes/hsbase.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -30,9 +31,12 @@ namespace sakit
 		ServerDelegate();
 		virtual ~ServerDelegate();
 
-		// TODOsock
-		//virtual void onBound(Server* server) = 0;
-		//virtual void onBindFailed(Server* server) = 0;
+		virtual void onBound(Server* server) = 0;
+		virtual void onBindFailed(Server* server, Ip host, unsigned short port) = 0;
+		virtual void onUnbound(Server* server, Ip host, unsigned short port) = 0;
+		virtual void onUnbindFailed(Server* server) = 0;
+		virtual void onStopped(Server* server) = 0;
+		virtual void onRunFailed(Server* server) = 0;
 		virtual void onAccepted(Server* server, Socket* socket) = 0;
 
 	};

@@ -22,33 +22,53 @@
 
 namespace sakit
 {
-	class AccepterThread;
 	class ServerDelegate;
+	class ServerThread;
 	class Socket;
 	class SocketDelegate;
 
 	class sakitExport Server : public Base
 	{
 	public:
-		Server(ServerDelegate* serverDelegate, SocketDelegate* socketDelegate);
+		enum State
+		{
+			IDLE,
+			BINDING,
+			BOUND,
+			RUNNING,
+			UNBINDING
+		};
+
+		Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
 		~Server();
 
 		HL_DEFINE_GET(harray<Socket*>, sockets, Sockets);
+		bool isBinding();
 		bool isBound();
+		bool isRunning();
+		bool isUnbinding();
 
-		// TODOsock - allow chstr port as well?
 		bool bind(Ip host, unsigned short port);
+		Socket* accept(float timeout);
 		bool unbind();
-		void start();
-		void stop();
+
+		bool bindAsync(Ip host, unsigned short port);
+		bool startAsync();
+		bool stopAsync();
+		bool unbindAsync();
 
 		void update(float timeSinceLastFrame);
 
 	protected:
 		ServerDelegate* serverDelegate;
-		SocketDelegate* socketDelegate;
-		AccepterThread* accepter;
+		SocketDelegate* acceptedDelegate;
+		ServerThread* thread;
 		harray<Socket*> sockets;
+
+		bool _checkBindStatus(State state);
+		bool _checkStartStatus(State state);
+		bool _checkStopStatus(State state);
+		bool _checkUnbindStatus(State state);
 
 	};
 

@@ -15,7 +15,7 @@
 
 namespace sakit
 {
-	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) : hthread(function), state(IDLE)
+	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) : hthread(function), result(IDLE)
 	{
 		this->socket = socket;
 		this->stream = new hstream();

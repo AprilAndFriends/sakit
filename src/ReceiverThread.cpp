@@ -32,7 +32,7 @@ namespace sakit
 			if (!this->socket->receive(this->stream, this->mutex, this->maxBytes))
 			{
 				this->mutex.lock();
-				this->state = FAILED;
+				this->result = FAILED;
 				this->mutex.unlock();
 				return;
 			}
@@ -43,7 +43,7 @@ namespace sakit
 			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}
 		this->mutex.lock();
-		this->state = FINISHED;
+		this->result = FINISHED;
 		this->mutex.unlock();
 	}
 

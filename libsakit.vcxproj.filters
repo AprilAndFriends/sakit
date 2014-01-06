@@ -85,7 +85,7 @@
     <ClInclude Include="include\sakit\Base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\AccepterThread.h">
+    <ClInclude Include="src\ServerThread.h">
       <Filter>Header Files\Platform</Filter>
     </ClInclude>
   </ItemGroup>
@@ -141,7 +141,7 @@
     <ClCompile Include="src\Base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\AccepterThread.cpp">
+    <ClCompile Include="src\ServerThread.cpp">
       <Filter>Source Files\Platform</Filter>
     </ClCompile>
   </ItemGroup>

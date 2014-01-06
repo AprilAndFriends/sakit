@@ -9,37 +9,45 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for accepting incoming connections.
+/// Defines a thread for binding a server.
 
-#ifndef SAKIT_ACCEPTER_THREAD_H
-#define SAKIT_ACCEPTER_THREAD_H
+#ifndef SAKIT_SERVER_THREAD_H
+#define SAKIT_SERVER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
+#include "Ip.h"
 #include "sakitExport.h"
+#include "Server.h"
 #include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
-	class Server;
-	class Socket;
+	class ServerDelegate;
 	class SocketDelegate;
 
-	class sakitExport AccepterThread : public WorkerThread
+	class sakitExport ServerThread : public WorkerThread
 	{
 	public:
 		friend class Server;
 
-		AccepterThread(PlatformSocket* socket, SocketDelegate* socketDelegate);
-		~AccepterThread();
+		ServerThread(PlatformSocket* socket, ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
+		~ServerThread();
 
 	protected:
-		SocketDelegate* socketDelegate;
+		Server::State state;
+		ServerDelegate* serverDelegate;
+		SocketDelegate* acceptedDelegate;
 		harray<Socket*> sockets;
+		Ip host;
+		unsigned short port;
 
+		void _updateBinding();
+		void _updateRunning();
+		void _updateUnbinding();
 		void _updateProcess();
 
 		static void process(hthread*);
