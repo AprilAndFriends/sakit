@@ -9,40 +9,39 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a TCP server.
+/// Defines a thread for handling a TCP server.
 
-#ifndef SAKIT_TCP_SERVER_H
-#define SAKIT_TCP_SERVER_H
+#ifndef SAKIT_TCP_SERVER_THREAD_H
+#define SAKIT_TCP_SERVER_THREAD_H
+
+#include <hltypes/harray.h>
+#include <hltypes/hltypesUtil.h>
 
 #include "sakitExport.h"
 #include "Server.h"
+#include "ServerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class SocketDelegate;
-	class TcpServerDelegate;
-	class TcpServerThread;
+	class TcpServer;
 	class TcpSocket;
 
-	class sakitExport TcpServer : public Server
+	class sakitExport TcpServerThread : public ServerThread
 	{
 	public:
-		TcpServer(TcpServerDelegate* serverDelegate, SocketDelegate* socketDelegate);
-		~TcpServer();
+		friend class Server;
+		friend class TcpServer;
 
-		harray<TcpSocket*> getSockets();
-
-		void update(float timeSinceLastFrame);
-
-		TcpSocket* accept(float timeout = 0.0f);
+		TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
+		~TcpServerThread();
 
 	protected:
-		harray<TcpSocket*> sockets;
 		TcpServerThread* thread;
-		TcpServerDelegate* serverDelegate;
+		harray<TcpSocket*> sockets;
 
-		void _updateSockets();
+		void _updateRunning();
 
 	};
 

@@ -10,24 +10,24 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
+#include "ConnectorThread.h"
 #include "Ip.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
-#include "SocketThread.h"
 
 namespace sakit
 {
-	SocketThread::SocketThread(PlatformSocket* socket) : WorkerThread(&process, socket), state(Socket::IDLE)
+	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(&process, socket), state(Socket::IDLE)
 	{
 	}
 
-	SocketThread::~SocketThread()
+	ConnectorThread::~ConnectorThread()
 	{
 	}
 
-	void SocketThread::_updateConnecting()
+	void ConnectorThread::_updateConnecting()
 	{
 		if (!this->socket->connect(this->host, this->port))
 		{
@@ -41,7 +41,7 @@ namespace sakit
 		this->mutex.unlock();
 	}
 
-	void SocketThread::_updateDisconnecting()
+	void ConnectorThread::_updateDisconnecting()
 	{
 		if (!this->socket->disconnect())
 		{
@@ -55,7 +55,7 @@ namespace sakit
 		this->mutex.unlock();
 	}
 
-	void SocketThread::_updateProcess()
+	void ConnectorThread::_updateProcess()
 	{
 		switch (this->state)
 		{
@@ -68,9 +68,9 @@ namespace sakit
 		}
 	}
 
-	void SocketThread::process(hthread* thread)
+	void ConnectorThread::process(hthread* thread)
 	{
-		((SocketThread*)thread)->_updateProcess();
+		((ConnectorThread*)thread)->_updateProcess();
 	}
 
 }

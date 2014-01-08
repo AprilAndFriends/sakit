@@ -16,9 +16,13 @@
 #include "Socket.h"
 #include "SocketDelegate.h"
 #include "ServerThread.h"
+#include "TcpSocket.h"
 
 namespace sakit
 {
+	extern harray<Base*> connections;
+	extern hmutex connectionsMutex;
+
 	ServerThread::ServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) :
 		WorkerThread(&process, socket), state(Server::IDLE)
 	{
@@ -37,35 +41,6 @@ namespace sakit
 			this->result = FAILED;
 			this->mutex.unlock();
 			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
-	}
-
-	void ServerThread::_updateRunning()
-	{
-		Socket* socket = NULL;
-		while (this->running)
-		{
-			if (!this->socket->listen())
-			{
-				this->mutex.lock();
-				this->result = FAILED;
-				this->mutex.unlock();
-				return;
-			}
-			socket = new Socket(this->acceptedDelegate);
-			if (!this->socket->accept(socket))
-			{
-				delete socket;
-				hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
-				continue;
-			}
-			this->mutex.lock();
-			this->sockets += socket;
-			this->mutex.unlock();
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}
 		this->mutex.lock();
 		this->result = FINISHED;

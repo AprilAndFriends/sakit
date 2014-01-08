@@ -9,23 +9,26 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a socket operating with IP addresses.
+/// Defines a TCP server delegate.
 
-#ifndef SAKIT_IP_SOCKET_H
-#define SAKIT_IP_SOCKET_H
+#ifndef SAKIT_TCP_SERVER_DELEGATE_H
+#define SAKIT_TCP_SERVER_DELEGATE_H
 
 #include "sakitExport.h"
-#include "Socket.h"
+#include "ServerDelegate.h"
 
 namespace sakit
 {
-	class sakitExport IpSocket : public Socket
+	class TcpServer;
+	class TcpSocket;
+
+	class sakitExport TcpServerDelegate : public ServerDelegate
 	{
 	public:
-		~IpSocket();
+		TcpServerDelegate();
+		~TcpServerDelegate();
 
-	protected:
-		IpSocket(SocketDelegate* socketDelegate);
+		virtual void onAccepted(TcpServer* server, TcpSocket* socket) = 0;
 
 	};
 

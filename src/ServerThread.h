@@ -39,12 +39,12 @@ namespace sakit
 	protected:
 		Server::State state;
 		SocketDelegate* acceptedDelegate;
-		harray<Socket*> sockets;
 
 		void _updateBinding();
-		void _updateRunning();
 		void _updateUnbinding();
 		void _updateProcess();
+
+		virtual void _updateRunning() = 0;
 
 		static void process(hthread*);
 

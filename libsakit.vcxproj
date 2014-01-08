@@ -136,17 +136,20 @@
     <ClInclude Include="include\sakit\Socket.h" />
     <ClInclude Include="include\sakit\SocketDelegate.h" />
     <ClInclude Include="include\sakit\TcpServer.h" />
+    <ClInclude Include="include\sakit\TcpServerDelegate.h" />
     <ClInclude Include="include\sakit\TcpSocket.h" />
     <ClInclude Include="include\sakit\WebSocket.h" />
+    <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
     <ClInclude Include="src\SenderThread.h" />
     <ClInclude Include="src\ServerThread.h" />
-    <ClInclude Include="src\SocketThread.h" />
+    <ClInclude Include="src\TcpServerThread.h" />
     <ClInclude Include="src\WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Base.cpp" />
+    <ClCompile Include="src\ConnectorThread.cpp" />
     <ClCompile Include="src\Ip.cpp" />
     <ClCompile Include="src\IpSocket.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
@@ -160,8 +163,9 @@
     <ClCompile Include="src\ServerThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
-    <ClCompile Include="src\SocketThread.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
+    <ClCompile Include="src\TcpServerDelegate.cpp" />
+    <ClCompile Include="src\TcpServerThread.cpp" />
     <ClCompile Include="src\TcpSocket.cpp" />
     <ClCompile Include="src\WebSocket.cpp" />
     <ClCompile Include="src\WorkerThread.cpp" />

@@ -25,11 +25,14 @@
 namespace sakit
 {
 	class PlatformSocket;
+	class Socket;
+	class TcpSocket;
 
 	class sakitExport ReceiverThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
+		friend class TcpSocket;
 
 		ReceiverThread(PlatformSocket* socket);
 		~ReceiverThread();

@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for connecting/disconnecting a socket.
+/// Defines a thread for connecting/disconnecting a TCP socket.
 
-#ifndef SAKIT_SOCKET_THREAD_H
-#define SAKIT_SOCKET_THREAD_H
+#ifndef SAKIT_CONNECTOR_THREAD_H
+#define SAKIT_CONNECTOR_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
@@ -21,6 +21,7 @@
 #include "Ip.h"
 #include "sakitExport.h"
 #include "Server.h"
+#include "Socket.h"
 #include "WorkerThread.h"
 
 namespace sakit
@@ -28,14 +29,15 @@ namespace sakit
 	class PlatformSocket;
 	class ServerDelegate;
 	class SocketDelegate;
+	class TcpSocket;
 
-	class sakitExport SocketThread : public WorkerThread
+	class sakitExport ConnectorThread : public WorkerThread
 	{
 	public:
-		friend class Socket;
+		friend class TcpSocket;
 
-		SocketThread(PlatformSocket* socket);
-		~SocketThread();
+		ConnectorThread(PlatformSocket* socket);
+		~ConnectorThread();
 
 	protected:
 		Socket::State state;

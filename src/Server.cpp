@@ -17,70 +17,67 @@
 #include "ServerDelegate.h"
 #include "ServerThread.h"
 #include "Socket.h"
+#include "TcpSocket.h"
 
 namespace sakit
 {
 	Server::Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate) : Base()
 	{
-		this->serverDelegate = serverDelegate;
+		this->basicDelegate = serverDelegate;
 		this->acceptedDelegate = acceptedDelegate;
-		this->thread = new ServerThread(this->socket, this->acceptedDelegate);
+		this->basicThread = NULL;
 	}
 
 	Server::~Server()
 	{
-		this->thread->running = false;
-		this->thread->join();
-		delete this->thread;
-		foreach (Socket*, it, this->sockets)
-		{
-			delete (*it);
-		}
+		this->basicThread->running = false;
+		this->basicThread->join();
+		delete this->basicThread;
 	}
 
 	bool Server::isBinding()
 	{
-		this->thread->mutex.lock();
-		bool result = (this->thread->state == BINDING);
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		bool result = (this->basicThread->state == BINDING);
+		this->basicThread->mutex.unlock();
 		return result;
 	}
 
 	bool Server::isBound()
 	{
-		this->thread->mutex.lock();
-		bool result = (this->thread->state == BOUND || this->thread->state == UNBINDING || this->thread->state == RUNNING);
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		bool result = (this->basicThread->state == BOUND || this->basicThread->state == UNBINDING || this->basicThread->state == RUNNING);
+		this->basicThread->mutex.unlock();
 		return result;
 	}
 
 	bool Server::isRunning()
 	{
-		this->thread->mutex.lock();
-		bool result = (this->thread->state == RUNNING);
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		bool result = (this->basicThread->state == RUNNING);
+		this->basicThread->mutex.unlock();
 		return result;
 	}
 
 	bool Server::isUnbinding()
 	{
-		this->thread->mutex.lock();
-		bool result = (this->thread->state == UNBINDING);
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		bool result = (this->basicThread->state == UNBINDING);
+		this->basicThread->mutex.unlock();
 		return result;
 	}
 
 	bool Server::bind(Ip host, unsigned short port)
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
+		this->basicThread->mutex.unlock();
 		bool result = (this->_checkBindStatus(state) && this->socket->bind(host, port));
 		if (result)
 		{
-			this->thread->mutex.lock();
-			this->thread->state = BOUND;
-			this->thread->mutex.unlock();
+			this->basicThread->mutex.lock();
+			this->basicThread->state = BOUND;
+			this->basicThread->mutex.unlock();
 			this->host = host;
 			this->port = port;
 		}
@@ -89,187 +86,123 @@ namespace sakit
 
 	bool Server::unbind()
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
+		this->basicThread->mutex.unlock();
 		bool result = (this->_checkUnbindStatus(state) && this->socket->disconnect());
 		if (result)
 		{
-			this->thread->mutex.lock();
-			this->thread->state = IDLE;
-			this->thread->mutex.unlock();
+			this->basicThread->mutex.lock();
+			this->basicThread->state = IDLE;
+			this->basicThread->mutex.unlock();
 			this->host = Ip("");
 			this->port = 0;
 		}
 		return result;
 	}
 
-	Socket* Server::accept(float timeout)
-	{
-		Socket* socket = NULL;
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		this->thread->mutex.unlock();
-		if (this->_checkStartStatus(state))
-		{
-			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-			timeout *= 1000.0f;
-			while (timeout > 0.0f)
-			{
-				if (!this->socket->listen())
-				{
-					break;
-				}
-				socket = new Socket(this->acceptedDelegate);
-				if (this->socket->accept(socket))
-				{
-					this->sockets += socket;
-					break;
-				}
-				delete socket;
-				socket = NULL;
-				timeout -= retryTimeout;
-				hthread::sleep(retryTimeout);
-			}
-		}
-		return socket;
-	}
-
-	bool Server::destroy(Socket* socket)
-	{
-		// TODOsock - refactor this mechanism to have a safer environment for server-created sockets
-		// (problems during sakit::update() and destruction of sockets in delegate callbacks)
-		if (socket == NULL)
-		{
-			hlog::error(sakit::logTag, "Socket is NULL!");
-			return false;
-		}
-		if (!this->sockets.contains(socket))
-		{
-			hlog::error(sakit::logTag, "Socket does not belong to the given server!");
-			return false;
-		}
-		this->sockets -= socket;
-		delete socket;
-		return true;
-	}
-
 	bool Server::bindAsync(Ip host, unsigned short port)
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
 		if (!this->_checkBindStatus(state))
 		{
-			this->thread->mutex.unlock();
+			this->basicThread->mutex.unlock();
 			return false;
 		}
-		this->thread->host = host;
-		this->thread->port = port;
-		this->thread->state = BINDING;
-		this->thread->mutex.unlock();
-		this->thread->start();
+		this->basicThread->host = host;
+		this->basicThread->port = port;
+		this->basicThread->state = BINDING;
+		this->basicThread->mutex.unlock();
+		this->basicThread->start();
 		return true;
 	}
 
 	bool Server::unbindAsync()
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
 		if (!this->_checkUnbindStatus(state))
 		{
-			this->thread->mutex.unlock();
+			this->basicThread->mutex.unlock();
 			return false;
 		}
-		this->thread->state = UNBINDING;
-		this->thread->mutex.unlock();
-		this->thread->start();
+		this->basicThread->state = UNBINDING;
+		this->basicThread->mutex.unlock();
+		this->basicThread->start();
 		return true;
 	}
 
 	bool Server::startAsync()
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
 		if (!this->_checkStartStatus(state))
 		{
-			this->thread->mutex.unlock();
+			this->basicThread->mutex.unlock();
 			return false;
 		}
-		this->thread->state = RUNNING;
-		this->thread->mutex.unlock();
-		this->thread->start();
+		this->basicThread->state = RUNNING;
+		this->basicThread->mutex.unlock();
+		this->basicThread->start();
 		return true;
 	}
 
 	bool Server::stopAsync()
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
+		this->basicThread->mutex.unlock();
 		if (!this->_checkStopStatus(state))
 		{
 			return false;
 		}
-		this->thread->running = false;
+		this->basicThread->running = false;
 		return true;
 	}
 
 	void Server::update(float timeSinceLastFrame)
 	{
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		WorkerThread::Result result = this->thread->result;
-		Ip host = this->thread->host;
-		unsigned short port = this->thread->port;
-		if (this->thread->sockets.size() > 0)
-		{
-			harray<Socket*> sockets = this->thread->sockets;
-			this->thread->sockets.clear();
-			this->thread->mutex.unlock();
-			this->sockets += sockets;
-			foreach (Socket*, it, sockets)
-			{
-				this->serverDelegate->onAccepted(this, (*it));
-			}
-		}
-		else
-		{
-			this->thread->mutex.unlock();
-		}
+		this->basicThread->mutex.lock();
+		State state = this->basicThread->state;
+		WorkerThread::Result result = this->basicThread->result;
+		Ip host = this->basicThread->host;
+		unsigned short port = this->basicThread->port;
+		this->basicThread->mutex.unlock();
 		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
 		{
 			return;
 		}
-		this->thread->mutex.lock();
-		this->thread->result = WorkerThread::IDLE;
-		this->thread->mutex.unlock();
+		this->basicThread->mutex.lock();
+		this->basicThread->result = WorkerThread::IDLE;
+		this->basicThread->mutex.unlock();
 		if (result == WorkerThread::FINISHED)
 		{
 			switch (state)
 			{
 			case BINDING:
-				this->thread->mutex.lock();
-				this->thread->state = BOUND;
-				this->thread->mutex.unlock();
+				this->basicThread->mutex.lock();
+				this->basicThread->state = BOUND;
+				this->basicThread->mutex.unlock();
 				this->host = host;
 				this->port = port;
-				this->serverDelegate->onBound(this);
+				this->basicDelegate->onBound(this);
 				break;
 			case UNBINDING:
-				this->thread->mutex.lock();
-				this->thread->state = IDLE;
-				this->thread->mutex.unlock();
+				this->basicThread->mutex.lock();
+				this->basicThread->state = IDLE;
+				this->basicThread->mutex.unlock();
 				host = this->host;
 				port = this->port;
 				this->host = Ip("");
 				this->port = 0;
-				this->serverDelegate->onUnbound(this, host, port);
+				this->basicDelegate->onUnbound(this, host, port);
 				break;
 			case RUNNING:
-				this->thread->mutex.lock();
-				this->thread->state = BOUND;
-				this->thread->mutex.unlock();
-				this->serverDelegate->onStopped(this);
+				this->basicThread->mutex.lock();
+				this->basicThread->state = BOUND;
+				this->basicThread->mutex.unlock();
+				this->basicDelegate->onStopped(this);
 				break;
 			}
 		}
@@ -278,27 +211,27 @@ namespace sakit
 			switch (state)
 			{
 			case BINDING:
-				this->thread->mutex.lock();
-				this->thread->state = IDLE;
-				this->thread->mutex.unlock();
-				this->serverDelegate->onBindFailed(this, host, port);
+				this->basicThread->mutex.lock();
+				this->basicThread->state = IDLE;
+				this->basicThread->mutex.unlock();
+				this->basicDelegate->onBindFailed(this, host, port);
 				break;
 			case UNBINDING:
-				this->thread->mutex.lock();
-				this->thread->state = BOUND;
-				this->thread->mutex.unlock();
-				this->serverDelegate->onUnbindFailed(this);
+				this->basicThread->mutex.lock();
+				this->basicThread->state = BOUND;
+				this->basicThread->mutex.unlock();
+				this->basicDelegate->onUnbindFailed(this);
 				break;
 			case RUNNING:
-				this->thread->mutex.lock();
-				this->thread->state = BOUND;
-				this->thread->mutex.unlock();
-				this->serverDelegate->onRunFailed(this);
+				this->basicThread->mutex.lock();
+				this->basicThread->state = BOUND;
+				this->basicThread->mutex.unlock();
+				this->basicDelegate->onRunFailed(this);
 				break;
 			}
 		}
 	}
-	
+
 	bool Server::_checkBindStatus(State state)
 	{
 		switch (state)

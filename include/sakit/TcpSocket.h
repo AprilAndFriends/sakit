@@ -19,11 +19,45 @@
 
 namespace sakit
 {
+	class ConnectorThread;
+
 	class sakitExport TcpSocket : public IpSocket
 	{
 	public:
 		TcpSocket(SocketDelegate* socketDelegate);
 		~TcpSocket();
+
+		bool isConnecting();
+		bool isConnected();
+		bool isDisconnecting();
+
+		void update(float timeSinceLastFrame);
+
+		// TODOsock - make it work with chstr port as well
+		bool connect(Ip host, unsigned short port);
+		bool disconnect();
+		// TODOsock - refactor to work more like write_raw with "count" parameter
+		int send(hsbase* stream, int maxBytes = INT_MAX);
+		//int send(chstr data); // TODOsock
+		hsbase* receive(int maxBytes = INT_MAX);
+
+		// TODOsock - make it work with chstr port as well
+		bool connectAsync(Ip host, unsigned short port);
+		bool disconnectAsync();
+		// TODOsock - refactor to work more like write_raw with "count" parameter
+		bool sendAsync(hsbase* stream, int maxBytes = INT_MAX);
+		//bool sendAsync(chstr data); // TODOsock
+		bool receiveAsync(int maxBytes = INT_MAX);
+
+	protected:
+		ConnectorThread* thread;
+
+		void _activateConnection(Ip host, unsigned short port);
+
+		bool _checkConnectStatus(State socketState);
+		bool _checkDisconnectStatus(State socketState, State senderState, State receiverState);
+		bool _checkSendStatus(State socketState, State senderState);
+		bool _checkReceiveStatus(State socketState, State receiverState);
 
 	};
 

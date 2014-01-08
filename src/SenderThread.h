@@ -15,6 +15,7 @@
 #define SAKIT_SENDER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
+#include <hltypes/hstream.h>
 
 #include "sakitExport.h"
 #include "Socket.h"
@@ -23,11 +24,14 @@
 namespace sakit
 {
 	class PlatformSocket;
+	class Socket;
+	class TcpSocket;
 
 	class sakitExport SenderThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
+		friend class TcpSocket;
 
 		SenderThread(PlatformSocket* socket);
 		~SenderThread();

@@ -16,14 +16,14 @@
 #include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
-#include <sakit/ServerDelegate.h>
 #include <sakit/SocketDelegate.h>
-#include <sakit/TcpSocket.h>
 #include <sakit/TcpServer.h>
+#include <sakit/TcpServerDelegate.h>
+#include <sakit/TcpSocket.h>
 
 #define TEST_PORT 53334
 
-class ServerDelegate : public sakit::ServerDelegate
+class ServerDelegate : public sakit::TcpServerDelegate
 {
 	void onBound(sakit::Server* server)
 	{
@@ -55,7 +55,7 @@ class ServerDelegate : public sakit::ServerDelegate
 		hlog::error(LOG_TAG, "- SERVER running error");
 	}
 
-	void onAccepted(sakit::Server* server, sakit::Socket* socket)
+	void onAccepted(sakit::TcpServer* server, sakit::TcpSocket* socket)
 	{
 		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'",
 			server->getFullHost().c_str(), socket->getFullHost().c_str());
@@ -68,7 +68,7 @@ class ServerDelegate : public sakit::ServerDelegate
 		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 	}
 
-} serverDelegate;
+} tcpServerDelegate;
 
 class SocketDelegate : public sakit::SocketDelegate
 {
@@ -152,7 +152,7 @@ void _testAsyncServer()
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: async server, blocking client");
 	hlog::debug(LOG_TAG, "");
-	sakit::Server* server = new sakit::TcpServer(&serverDelegate, &acceptedDelegate);
+	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
 	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
 	{
 		while (server->isBinding())
@@ -164,7 +164,7 @@ void _testAsyncServer()
 		{
 			if (server->startAsync())
 			{
-				sakit::Socket* client = new sakit::TcpSocket(&clientDelegate);
+				sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
 				if (client->connect(sakit::Ip::Localhost, TEST_PORT))
 				{
 					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
@@ -182,7 +182,7 @@ void _testAsyncServer()
 					hlog::write(LOG_TAG, "Client received: " + hstr(newStream->size()));
 					delete newStream;
 					hlog::write(LOG_TAG, "Disconnected.");
-					server->destroy(server->getSockets()[0]);
+					server->getSockets()[0]->disconnect();
 				}
 				server->stopAsync();
 				while (server->isRunning())
@@ -210,14 +210,14 @@ void _testAsyncClient()
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: blocking server, async client");
 	hlog::debug(LOG_TAG, "");
-	sakit::Server* server = new sakit::TcpServer(&serverDelegate, &acceptedDelegate);
+	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
 	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
 	{
 		hlog::writef(LOG_TAG, "Server bound to '%s'", server->getFullHost().c_str());
-		sakit::Socket* client = new sakit::TcpSocket(&clientDelegate);
+		sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
 		if (client->connectAsync(sakit::Ip::Localhost, TEST_PORT))
 		{
-			sakit::Socket* accepted = NULL;
+			sakit::TcpSocket* accepted = NULL;
 			while (accepted == NULL)
 			{
 				sakit::update(0.0f);
@@ -262,7 +262,7 @@ void _testAsyncClient()
 					hthread::sleep(100.0f);
 				} while (client->isDisconnecting());
 			}
-			server->destroy(accepted);
+			accepted->disconnect();
 		}
 		delete client;
 		if (server->unbind())
@@ -272,6 +272,8 @@ void _testAsyncClient()
 	}
 	delete server;
 }
+
+#define HTTP_LINE_ENDING "\r\n"
 
 int main(int argc, char **argv)
 {

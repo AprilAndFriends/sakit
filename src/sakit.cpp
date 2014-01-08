@@ -20,6 +20,7 @@ namespace sakit
 	float retryTimeout = 0.1f;
 	int bufferSize = 65536;
 	harray<Base*> connections;
+	hmutex connectionsMutex;
 
 	void init(int bufferSize)
 	{
@@ -40,7 +41,9 @@ namespace sakit
 
 	void update(float timeSinceLastFrame)
 	{
+		connectionsMutex.lock();
 		harray<Base*> connections = sakit::connections;
+		connectionsMutex.unlock();
 		foreach (Base*, it, connections)
 		{
 			(*it)->update(timeSinceLastFrame);

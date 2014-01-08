@@ -39,32 +39,29 @@ namespace sakit
 			UNBINDING
 		};
 
-		Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
 		~Server();
 
-		HL_DEFINE_GET(harray<Socket*>, sockets, Sockets);
 		bool isBinding();
 		bool isBound();
 		bool isRunning();
 		bool isUnbinding();
 
+		void update(float timeSinceLastFrame);
+
 		bool bind(Ip host, unsigned short port);
 		bool unbind();
-		Socket* accept(float timeout);
-		bool destroy(Socket* socket);
 
 		bool bindAsync(Ip host, unsigned short port);
 		bool unbindAsync();
 		bool startAsync();
 		bool stopAsync();
 
-		void update(float timeSinceLastFrame);
-
 	protected:
-		ServerDelegate* serverDelegate;
-		SocketDelegate* acceptedDelegate;
-		ServerThread* thread;
-		harray<Socket*> sockets;
+		ServerDelegate* basicDelegate;
+		SocketDelegate* acceptedDelegate; // TODOsock - leave this as it is?
+		ServerThread* basicThread;
+
+		Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
 
 		bool _checkBindStatus(State state);
 		bool _checkStartStatus(State state);
