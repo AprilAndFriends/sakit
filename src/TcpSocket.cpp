@@ -22,8 +22,9 @@
 
 namespace sakit
 {
-	TcpSocket::TcpSocket(SocketDelegate* socketDelegate) : IpSocket(socketDelegate)
+	TcpSocket::TcpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate)
 	{
+		this->socket->setConnectionLess(false);
 		this->thread = new ConnectorThread(this->socket);
 	}
 
@@ -98,16 +99,10 @@ namespace sakit
 		return result;
 	}
 
-	int TcpSocket::send(hsbase* stream, int maxBytes)
+	int TcpSocket::send(hstream* stream, int count)
 	{
-		if (stream->size() == 0)
+		if (!this->_canSend(stream, count))
 		{
-			hlog::warn(sakit::logTag, "Cannot send, no data to send!");
-			return false;
-		}
-		if (maxBytes == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot send, maxBytes is 0!");
 			return false;
 		}
 		this->thread->mutex.lock();
@@ -120,32 +115,19 @@ namespace sakit
 		{
 			return false;
 		}
-		int sent = 0;
-		long position = stream->position();
-		stream->rewind();
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		while (maxBytes > 0)
-		{
-			if (!this->socket->send(stream, sent, maxBytes))
-			{
-				break;
-			}
-			if (stream->eof())
-			{
-				break;
-			}
-			hthread::sleep(retryTimeout);
-		}
-		stream->seek(position, hsbase::START);
-		return sent;
+		return this->_send(stream, count);
 	}
 
-	hsbase* TcpSocket::receive(int maxBytes)
+	int TcpSocket::send(chstr data)
 	{
-		if (maxBytes == 0)
+		return Socket::send(data);
+	}
+
+	int TcpSocket::receive(hstream* stream, int count)
+	{
+		if (!this->_canReceive(stream, count))
 		{
-			hlog::warn(sakit::logTag, "Cannot receive, maxBytes is 0!");
-			return NULL;
+			return false;
 		}
 		this->thread->mutex.lock();
 		this->receiver->mutex.lock();
@@ -157,10 +139,9 @@ namespace sakit
 		{
 			return NULL;
 		}
-		hstream* stream = new hstream();
 		hmutex mutex;
 		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int remaining = maxBytes;
+		int remaining = count;
 		while (remaining > 0)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
@@ -169,7 +150,7 @@ namespace sakit
 			}
 			hthread::sleep(retryTimeout);
 		}
-		return stream;
+		return (count - remaining);
 	}
 
 	bool TcpSocket::connectAsync(Ip host, unsigned short port)
@@ -212,16 +193,10 @@ namespace sakit
 		return true;
 	}
 
-	bool TcpSocket::sendAsync(hsbase* stream, int maxBytes)
+	bool TcpSocket::sendAsync(hstream* stream, int count)
 	{
-		if (stream->size() == 0)
+		if (!this->_canSend(stream, count))
 		{
-			hlog::warn(sakit::logTag, "Cannot send, no data to send!");
-			return false;
-		}
-		if (maxBytes == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot send, maxBytes is 0!");
 			return false;
 		}
 		this->thread->mutex.lock();
@@ -234,24 +209,25 @@ namespace sakit
 			this->thread->mutex.unlock();
 			return false;
 		}
-		long position = stream->position();
-		stream->rewind();
 		this->sender->stream->clear();
-		this->sender->stream->write_raw(*stream, hmin((long)maxBytes, stream->size()));
+		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
 		this->sender->state = RUNNING;
 		this->sender->mutex.unlock();
 		this->thread->mutex.unlock();
 		this->sender->start();
-		stream->seek(position, hsbase::START);
 		return true;
 	}
 
-	bool TcpSocket::receiveAsync(int maxBytes)
+	bool TcpSocket::sendAsync(chstr data)
 	{
-		if (maxBytes == 0)
+		return Socket::sendAsync(data);
+	}
+
+	bool TcpSocket::receiveAsync(int count)
+	{
+		if (!this->_canReceive(count))
 		{
-			hlog::warn(sakit::logTag, "Cannot receive, maxBytes is 0!");
 			return false;
 		}
 		this->thread->mutex.lock();
@@ -264,7 +240,7 @@ namespace sakit
 			this->thread->mutex.unlock();
 			return false;
 		}
-		this->receiver->maxBytes = maxBytes;
+		this->receiver->count = count;
 		this->receiver->result = WorkerThread::RUNNING;
 		this->receiver->mutex.unlock();
 		this->thread->mutex.unlock();
@@ -379,11 +355,7 @@ namespace sakit
 		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot send, still connecting!");		return false;
 		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot send, already disconnecting!");	return false;
 		}
-		switch (senderState)
-		{
-		case RUNNING:	hlog::warn(sakit::logTag, "Cannot send, already sending!");	return false;
-		}
-		return true;
+		return Socket::_checkSendStatus(senderState);
 	}
 
 	bool TcpSocket::_checkReceiveStatus(State socketState, State receiverState)
@@ -394,11 +366,7 @@ namespace sakit
 		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, still connecting!");			return false;
 		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, already disconnecting!");	return false;
 		}
-		switch (receiverState)
-		{
-		case RUNNING:	hlog::warn(sakit::logTag, "Cannot receive, already receiving!");	return false;
-		}
-		return true;
+		return Socket::_checkSendStatus(receiverState);
 	}
 
 }

@@ -32,10 +32,10 @@ namespace sakit
 
 	void SenderThread::_updateProcess()
 	{
-		int maxBytes = this->stream->size();
+		int count = this->stream->size();
 		while (this->running)
 		{
-			if (!this->socket->send(this->stream, this->lastSent, maxBytes))
+			if (!this->socket->send(this->stream, this->lastSent, count))
 			{
 				this->mutex.lock();
 				this->result = FAILED;

@@ -15,10 +15,8 @@
 #define SAKIT_BASE_H
 
 #include <hltypes/hltypesUtil.h>
-#include <hltypes/hmutex.h>
-#include <hltypes/hsbase.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
-#include <hltypes/hthread.h>
 
 #include "Ip.h"
 #include "sakitExport.h"
@@ -45,6 +43,13 @@ namespace sakit
 		PlatformSocket* socket;
 		Ip host;
 		unsigned short port;
+
+		int _send(hstream* stream, int count);
+		int _receive(hstream* stream, int count);
+
+		bool _canSend(hstream* stream, int count);
+		bool _canReceive(hstream* stream, int count);
+		bool _canReceive(int count);
 
 		virtual void _activateConnection(Ip host, unsigned short port);
 

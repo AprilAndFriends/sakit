@@ -93,14 +93,12 @@ namespace sakit
 #endif
 	}
 
-	PlatformSocket::PlatformSocket()
+	PlatformSocket::PlatformSocket() : connectionLess(false)
 	{
 		this->connected = false;
 		this->sock = -1;
 		this->info = NULL;
 		this->address = NULL;
-		this->sendBuffer = new char[bufferSize];
-		memset(this->sendBuffer, 0, bufferSize);
 		this->receiveBuffer = new char[bufferSize];
 		memset(this->receiveBuffer, 0, bufferSize);
 	}
@@ -119,8 +117,9 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::_createSocket(Ip host, unsigned int port)
+	bool PlatformSocket::createSocket(Ip host, unsigned int port)
 	{
+		this->connected = true;
 		int result = 0;
 		// create host info
 		struct addrinfo hints;
@@ -130,7 +129,7 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
-		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		hints.ai_protocol = IPPROTO_IP;
 		result = getaddrinfo(host.getAddress().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
 		if (result != 0)
@@ -153,7 +152,7 @@ namespace sakit
 
 	bool PlatformSocket::connect(Ip host, unsigned int port)
 	{
-		if (!this->_createSocket(host, port))
+		if (!this->createSocket(host, port))
 		{
 			return false;
 		}
@@ -163,7 +162,7 @@ namespace sakit
 
 	bool PlatformSocket::bind(Ip host, unsigned int port)
 	{
-		if (!this->_createSocket(host, port))
+		if (!this->createSocket(host, port))
 		{
 			return false;
 		}
@@ -180,7 +179,6 @@ namespace sakit
 			this->disconnect();
 			return false;
 		}
-		this->connected = true;
 		return true;
 	}
 
@@ -206,7 +204,30 @@ namespace sakit
 		return previouslyConnected;
 	}
 
-	bool PlatformSocket::receive(hsbase* stream, hmutex& mutex, int& maxBytes)
+	bool PlatformSocket::send(hstream* stream, int& sent, int& count)
+	{
+		const char* data = (const char*)&(*stream)[stream->position()];
+		int size = hmin((int)(stream->size() - stream->position()), count);
+		int result = 0;
+		if (!this->connectionLess)
+		{
+			result = ::send(this->sock, data, size, 0);
+		}
+		else
+		{
+			result = ::sendto(this->sock, data, size, 0, this->info->ai_addr, this->info->ai_addrlen);
+		}
+		if (result >= 0)
+		{
+			stream->seek(result);
+			sent += result;
+			count -= result;
+			return true;
+		}
+		return false;
+	}
+
+	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& count)
 	{
 		interval.tv_sec = 5;
 		interval.tv_usec = 0;
@@ -223,7 +244,7 @@ namespace sakit
 		{
 			return true;
 		}
-		received = recv(this->sock, this->receiveBuffer, hmin(maxBytes, bufferSize), 0);
+		received = recv(this->sock, this->receiveBuffer, hmin(count, bufferSize), 0);
 		if (received == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "recv() error!");
@@ -233,22 +254,8 @@ namespace sakit
 		mutex.lock();
 		stream->write_raw(this->receiveBuffer, received);
 		mutex.unlock();
-		maxBytes -= received;
+		count -= received;
 		return true;
-	}
-
-	bool PlatformSocket::send(hsbase* stream, int& sent, int& maxBytes)
-	{
-		int size = hmin(hmin((int)(stream->size() - stream->position()), bufferSize), maxBytes);
-		stream->read_raw(this->sendBuffer, size);
-		int result = ::send(this->sock, this->sendBuffer, size, 0);
-		if (result >= 0)
-		{
-			sent += result;
-			maxBytes -= result;
-			return true;
-		}
-		return false;
 	}
 
 	bool PlatformSocket::listen()
@@ -277,11 +284,35 @@ namespace sakit
 		}
 		this->_setNonBlocking(false);
 		// get the IP and port of the connected client
-		char host[CHAR_BUFFER] = {'\0'};
-		char port[CHAR_BUFFER] = {'\0'};
-		getnameinfo((sockaddr*)other->address, size, host, CHAR_BUFFER, port, CHAR_BUFFER, NI_NUMERICHOST);
-		((Base*)socket)->_activateConnection(Ip(host), (unsigned short)(int)hstr(port));
+		char hostString[CHAR_BUFFER] = {'\0'};
+		char portString[CHAR_BUFFER] = {'\0'};
+		getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+		((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
 		other->connected = true;
+		return true;
+	}
+
+	bool PlatformSocket::receiveFrom(hstream* stream, Ip* host, unsigned short* port)
+	{
+		sockaddr_storage address;
+		int size = (int)sizeof(sockaddr_storage);
+		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)&address, &size);
+		if (received == SOCKET_ERROR)
+		{
+			hlog::debug(sakit::logTag, "recvfrom() error!");
+			this->_printLastError();
+			return false;
+		}
+		if (received > 0)
+		{
+			stream->write_raw(this->receiveBuffer, received);
+			// get the IP and port of the connected client
+			char hostString[CHAR_BUFFER] = {'\0'};
+			char portString[CHAR_BUFFER] = {'\0'};
+			getnameinfo((sockaddr*)&address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+			*host = Ip(hostString);
+			*port = (unsigned short)(int)hstr(portString);
+		}
 		return true;
 	}
 

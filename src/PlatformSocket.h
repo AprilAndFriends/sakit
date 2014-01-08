@@ -18,7 +18,7 @@
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hplatform.h>
-#include <hltypes/hsbase.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
@@ -36,21 +36,24 @@ namespace sakit
 		~PlatformSocket();
 
 		HL_DEFINE_IS(connected, Connected);
+		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
 
+		bool createSocket(Ip host, unsigned int port);
 		bool connect(Ip host, unsigned int port);
 		bool bind(Ip host, unsigned int port);
 		bool disconnect();
-		bool send(hsbase* stream, int& sent, int& maxBytes);
-		bool receive(hsbase* stream, hmutex& mutex, int& maxBytes);
+		bool send(hstream* stream, int& sent, int& count);
+		bool receive(hstream* stream, hmutex& mutex, int& count);
 		bool listen();
 		bool accept(Socket* socket);
-
+		bool receiveFrom(hstream* stream, Ip* host, unsigned short* port);
+		
 		static void platformInit();
 		static void platformDestroy();
 
 	protected:
 		bool connected;
-		char* sendBuffer;
+		bool connectionLess;
 		char* receiveBuffer;
 		fd_set readSet;
 
@@ -67,7 +70,6 @@ namespace sakit
 		bool _awaitAsync();
 #endif
 
-		bool _createSocket(Ip host, unsigned int port);
 		bool _finishSocket(int result, chstr functionName);
 		int _printLastError();
 

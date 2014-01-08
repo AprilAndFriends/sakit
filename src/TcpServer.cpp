@@ -21,11 +21,12 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServer::TcpServer(TcpServerDelegate* serverDelegate, SocketDelegate* socketDelegate) :
-		Server(serverDelegate, socketDelegate)
+	TcpServer::TcpServer(TcpServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate) : Server(serverDelegate)
 	{
 		this->basicThread = this->thread = new TcpServerThread(this->socket, this->acceptedDelegate);
 		this->basicDelegate = this->serverDelegate = serverDelegate;
+		this->acceptedDelegate = acceptedDelegate;
+		this->socket->setConnectionLess(false);
 	}
 
 	TcpServer::~TcpServer()
@@ -50,10 +51,6 @@ namespace sakit
 		}
 		this->_updateSockets();
 		this->thread->mutex.lock();
-		State state = this->thread->state;
-		WorkerThread::Result result = this->thread->result;
-		Ip host = this->thread->host;
-		unsigned short port = this->thread->port;
 		if (this->thread->sockets.size() > 0)
 		{
 			harray<TcpSocket*> sockets = this->thread->sockets;

@@ -26,12 +26,16 @@ namespace sakit
 	class PlatformSocket;
 	class Socket;
 	class TcpSocket;
+	class UdpServer;
+	class UdpSocket;
 
 	class sakitExport SenderThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
 		friend class TcpSocket;
+		friend class UdpServer;
+		friend class UdpSocket;
 
 		SenderThread(PlatformSocket* socket);
 		~SenderThread();

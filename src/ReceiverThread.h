@@ -27,12 +27,14 @@ namespace sakit
 	class PlatformSocket;
 	class Socket;
 	class TcpSocket;
+	class UdpSocket;
 
 	class sakitExport ReceiverThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
 		friend class TcpSocket;
+		friend class UdpSocket;
 
 		ReceiverThread(PlatformSocket* socket);
 		~ReceiverThread();
@@ -40,7 +42,7 @@ namespace sakit
 	protected:
 		Socket::State state;
 		hstream* stream;
-		int maxBytes;
+		int count;
 
 		void _updateProcess();
 

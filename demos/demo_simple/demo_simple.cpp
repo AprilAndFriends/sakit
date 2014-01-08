@@ -16,14 +16,18 @@
 #include <hltypes/hthread.h>
 
 #include <sakit/sakit.h>
+#include <sakit/Socket.h>
 #include <sakit/SocketDelegate.h>
 #include <sakit/TcpServer.h>
 #include <sakit/TcpServerDelegate.h>
 #include <sakit/TcpSocket.h>
+#include <sakit/UdpServer.h>
+#include <sakit/UdpServerDelegate.h>
+#include <sakit/UdpSocket.h>
 
 #define TEST_PORT 53334
 
-class ServerDelegate : public sakit::TcpServerDelegate
+class TcpServerDelegate : public sakit::TcpServerDelegate
 {
 	void onBound(sakit::Server* server)
 	{
@@ -57,18 +61,72 @@ class ServerDelegate : public sakit::TcpServerDelegate
 
 	void onAccepted(sakit::TcpServer* server, sakit::TcpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'",
-			server->getFullHost().c_str(), socket->getFullHost().c_str());
-		hsbase* newStream = socket->receive(12); // receive 12 bytes max
-		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(newStream->size()));
-		delete newStream;
+		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'", server->getFullHost().c_str(), socket->getFullHost().c_str());
 		hstream stream;
-		stream.write("Hello.");
-		int sent = socket->send(&stream);
+		socket->receive(&stream, 12); // receive 12 bytes max
+		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream.size()));
+		int sent = socket->send("Hello.");
 		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 	}
 
 } tcpServerDelegate;
+
+class UdpServerDelegate : public sakit::UdpServerDelegate
+{
+	void onBound(sakit::Server* server)
+	{
+		hlog::writef(LOG_TAG, "- SERVER bound to '%s'", server->getFullHost().c_str());
+	}
+
+	void onBindFailed(sakit::Server* server, sakit::Ip host, unsigned short port)
+	{
+		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.getAddress().c_str(), port);
+	}
+
+	void onUnbound(sakit::Server* server, sakit::Ip host, unsigned short port)
+	{
+		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.getAddress().c_str(), port);
+	}
+
+	void onUnbindFailed(sakit::Server* server)
+	{
+		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s'", server->getFullHost().c_str());
+	}
+
+	void onStopped(sakit::Server* server)
+	{
+		hlog::write(LOG_TAG, "- SERVER stopped");
+	}
+
+	void onRunFailed(sakit::Server* server)
+	{
+		hlog::error(LOG_TAG, "- SERVER running error");
+	}
+
+	void onSent(sakit::UdpServer* server, sakit::Ip host, unsigned short port, int byteCount)
+	{
+		hlog::writef(LOG_TAG, "- SERVER '%s' sent %d bytes to '%s:%d'", server->getFullHost().c_str(), byteCount, host.getAddress().c_str(), port);
+	}
+
+	void onSendFinished(sakit::UdpServer* server, sakit::Ip host, unsigned short port)
+	{
+		hlog::writef(LOG_TAG, "- SERVER '%s' finished sending to '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
+	}
+
+	void onSendFailed(sakit::UdpServer* server, sakit::Ip host, unsigned short port)
+	{
+		hlog::writef(LOG_TAG, "- SERVER '%s' failed sending to '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
+	}
+
+	void onReceived(sakit::UdpServer* server, hstream* stream, sakit::Ip host, unsigned short port)
+	{
+		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
+		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream->size()));
+		int sent = server->send(host, port, "Hello.");
+		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
+	}
+
+} udpServerDelegate;
 
 class SocketDelegate : public sakit::SocketDelegate
 {
@@ -113,7 +171,7 @@ public:
 		hlog::writef(LOG_TAG, "- %s send failed", this->name.c_str());
 	}
 
-	void onReceived(sakit::Socket* socket, hsbase* stream)
+	void onReceived(sakit::Socket* socket, hstream* stream)
 	{
 		hstr data;
 		hstr hex = "0x";
@@ -147,10 +205,10 @@ protected:
 SocketDelegate clientDelegate("CLIENT");
 SocketDelegate acceptedDelegate("ACCEPTED");
 
-void _testAsyncServer()
+void _testAsyncTcpServer()
 {
 	hlog::debug(LOG_TAG, "");
-	hlog::debug(LOG_TAG, "starting test: async server, blocking client");
+	hlog::debug(LOG_TAG, "starting test: async TCP server, blocking TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
 	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
@@ -171,6 +229,7 @@ void _testAsyncServer()
 					hstream stream;
 					char data[12] = "Hi there.\0g";
 					stream.write_raw(data, 12);
+					stream.rewind();
 					int sent = client->send(&stream);
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
 					while (server->getSockets().size() == 0)
@@ -178,9 +237,9 @@ void _testAsyncServer()
 						sakit::update(0.0f);
 						hthread::sleep(100.0f);
 					}
-					hsbase* newStream = client->receive(6); // receive 6 bytes max
-					hlog::write(LOG_TAG, "Client received: " + hstr(newStream->size()));
-					delete newStream;
+					stream.clear();
+					client->receive(&stream, 6); // receive 6 bytes max
+					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
 					server->getSockets()[0]->disconnect();
 				}
@@ -205,10 +264,10 @@ void _testAsyncServer()
 	delete server;
 }
 
-void _testAsyncClient()
+void _testAsyncTcpClient()
 {
 	hlog::debug(LOG_TAG, "");
-	hlog::debug(LOG_TAG, "starting test: blocking server, async client");
+	hlog::debug(LOG_TAG, "starting test: blocking TCP server, async TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
 	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
@@ -234,6 +293,7 @@ void _testAsyncClient()
 				hstream stream;
 				char data[12] = "Hi there.\0g";
 				stream.write_raw(data, 12);
+				stream.rewind();
 				client->sendAsync(&stream);
 				do
 				{
@@ -241,12 +301,10 @@ void _testAsyncClient()
 					hthread::sleep(100.0f);
 				} while (client->isSending());
 				// accepted handling
-				hsbase* newStream = accepted->receive(12); // receive 12 bytes max
-				hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(newStream->size()));
-				delete newStream;
 				stream.clear();
-				stream.write("Hello.");
-				int sent = accepted->send(&stream);
+				accepted->receive(&stream, 12); // receive 12 bytes max
+				hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream.size()));
+				int sent = accepted->send("Hello.");
 				hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 				// back to client
 				client->receiveAsync(6); // receive 6 bytes max
@@ -273,14 +331,76 @@ void _testAsyncClient()
 	delete server;
 }
 
+void _testUdp()
+{
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: basic UDP");
+	hlog::debug(LOG_TAG, "");
+	/*
+	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate);
+	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
+	{
+		while (server->isBinding())
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		}
+		if (server->isBound())
+		{
+			if (server->startAsync())
+			{
+				sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
+				if (client->connect(sakit::Ip::Localhost, TEST_PORT))
+				{
+					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
+					hstream stream;
+					char data[12] = "Hi there.\0g";
+					stream.write_raw(data, 12);
+					stream.rewind();
+					int sent = client->send(&stream);
+					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
+					while (server->getSockets().size() == 0)
+					{
+						sakit::update(0.0f);
+						hthread::sleep(100.0f);
+					}
+					stream.clear();
+					client->receive(&stream, 6); // receive 6 bytes max
+					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
+					hlog::write(LOG_TAG, "Disconnected.");
+					server->getSockets()[0]->disconnect();
+				}
+				server->stopAsync();
+				while (server->isRunning())
+				{
+					sakit::update(0.0f);
+					hthread::sleep(100.0f);
+				}
+				delete client;
+			}
+			if (server->unbindAsync())
+			{
+				while (server->isUnbinding())
+				{
+					sakit::update(0.0f);
+					hthread::sleep(100.0f);
+				}
+			}
+		}
+	}
+	delete server;
+	*/
+}
+
 #define HTTP_LINE_ENDING "\r\n"
 
 int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	_testAsyncServer();
-	_testAsyncClient();
+	_testAsyncTcpServer();
+	_testAsyncTcpClient();
+	_testUdp();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

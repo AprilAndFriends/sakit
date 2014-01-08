@@ -21,10 +21,9 @@
 
 namespace sakit
 {
-	Server::Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate) : Base()
+	Server::Server(ServerDelegate* serverDelegate) : Base()
 	{
 		this->basicDelegate = serverDelegate;
-		this->acceptedDelegate = acceptedDelegate;
 		this->basicThread = NULL;
 	}
 

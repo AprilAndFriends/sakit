@@ -26,19 +26,17 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class SocketDelegate;
 
 	class sakitExport ServerThread : public WorkerThread
 	{
 	public:
 		friend class Server;
 
-		ServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
+		ServerThread(PlatformSocket* socket);
 		~ServerThread();
 
 	protected:
 		Server::State state;
-		SocketDelegate* acceptedDelegate;
 
 		void _updateBinding();
 		void _updateUnbinding();

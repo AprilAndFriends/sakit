@@ -7,16 +7,16 @@
 /// This program is free software; you can redistribute it and/or modify it under
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
-#include "IpSocket.h"
+#include "UdpServerDelegate.h"
 
 namespace sakit
 {
-	IpSocket::IpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate)
+	UdpServerDelegate::UdpServerDelegate()
 	{
 	}
 
-	IpSocket::~IpSocket()
+	UdpServerDelegate::~UdpServerDelegate()
 	{
 	}
-	
+
 }

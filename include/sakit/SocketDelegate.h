@@ -14,7 +14,7 @@
 #ifndef SAKIT_SOCKET_DELEGATE_H
 #define SAKIT_SOCKET_DELEGATE_H
 
-#include <hltypes/hsbase.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
 #include "Ip.h"
@@ -39,7 +39,7 @@ namespace sakit
 		virtual void onSendFinished(Socket* socket) = 0;
 		virtual void onSendFailed(Socket* socket) = 0;
 
-		virtual void onReceived(Socket* socket, hsbase* stream) = 0;
+		virtual void onReceived(Socket* socket, hstream* stream) = 0;
 		virtual void onReceiveFinished(Socket* socket) = 0;
 		virtual void onReceiveFailed(Socket* socket) = 0;
 

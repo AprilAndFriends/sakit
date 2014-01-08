@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for handling a TCP server.
+/// Defines a thread for handling a UDP server.
 
-#ifndef SAKIT_TCP_SERVER_THREAD_H
-#define SAKIT_TCP_SERVER_THREAD_H
+#ifndef SAKIT_UDP_SERVER_THREAD_H
+#define SAKIT_UDP_SERVER_THREAD_H
 
 #include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
@@ -25,20 +25,20 @@ namespace sakit
 {
 	class PlatformSocket;
 	class SocketDelegate;
-	class TcpServer;
-	class TcpSocket;
+	class UdpServer;
 
-	class sakitExport TcpServerThread : public ServerThread
+	class sakitExport UdpServerThread : public ServerThread
 	{
 	public:
-		friend class TcpServer;
+		friend class UdpServer;
 
-		TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
-		~TcpServerThread();
+		UdpServerThread(PlatformSocket* socket);
+		~UdpServerThread();
 
 	protected:
-		harray<TcpSocket*> sockets;
-		SocketDelegate* acceptedDelegate;
+		harray<hstream*> streams;
+		harray<Ip> hosts;
+		harray<unsigned short> ports;
 
 		void _updateRunning();
 

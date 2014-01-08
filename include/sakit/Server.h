@@ -58,10 +58,9 @@ namespace sakit
 
 	protected:
 		ServerDelegate* basicDelegate;
-		SocketDelegate* acceptedDelegate; // TODOsock - leave this as it is?
 		ServerThread* basicThread;
 
-		Server(ServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
+		Server(ServerDelegate* serverDelegate);
 
 		bool _checkBindStatus(State state);
 		bool _checkStartStatus(State state);

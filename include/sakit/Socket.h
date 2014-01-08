@@ -16,7 +16,7 @@
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
-#include <hltypes/hsbase.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
@@ -50,12 +50,20 @@ namespace sakit
 
 		void update(float timeSinceLastFrame);
 
+		virtual int send(hstream* stream, int count = INT_MAX) = 0;
+		virtual int send(chstr data);
+		virtual bool sendAsync(hstream* stream, int count = INT_MAX) = 0;
+		virtual bool sendAsync(chstr data);
+
 	protected:
 		SocketDelegate* socketDelegate;
 		SenderThread* sender;
 		ReceiverThread* receiver;
 
 		Socket(SocketDelegate* socketDelegate);
+
+		bool _checkSendStatus(State senderState);
+		bool _checkReceiveStatus(State receiverState);
 
 	};
 

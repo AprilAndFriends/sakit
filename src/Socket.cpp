@@ -117,5 +117,41 @@ namespace sakit
 			this->socketDelegate->onReceiveFailed(this);
 		}
 	}
-	
+
+	int Socket::send(chstr data)
+	{
+		hstream stream;
+		stream.write(data);
+		stream.rewind();
+		return this->send(&stream);
+	}
+
+	bool Socket::sendAsync(chstr data)
+	{
+		hstream stream;
+		stream.write(data);
+		stream.rewind();
+		return this->sendAsync(&stream);
+	}
+
+	bool Socket::_checkSendStatus(State senderState)
+	{
+		if (senderState == RUNNING)
+		{
+			hlog::warn(sakit::logTag, "Cannot send, already sending!");
+			return false;
+		}
+		return true;
+	}
+
+	bool Socket::_checkReceiveStatus(State receiverState)
+	{
+		if (receiverState == RUNNING)
+		{
+			hlog::warn(sakit::logTag, "Cannot receive, already receiving!");
+			return false;
+		}
+		return true;
+	}
+
 }

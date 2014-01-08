@@ -55,9 +55,6 @@
     <ClInclude Include="include\sakit\WebSocket.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\IpSocket.h">
-      <Filter>Header Files\Sockets</Filter>
-    </ClInclude>
     <ClInclude Include="src\PlatformSocket.h">
       <Filter>Header Files\Platform</Filter>
     </ClInclude>
@@ -97,6 +94,18 @@
     <ClInclude Include="include\sakit\TcpServerDelegate.h">
       <Filter>Header Files\Servers</Filter>
     </ClInclude>
+    <ClInclude Include="include\sakit\UdpSocket.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\UdpServer.h">
+      <Filter>Header Files\Servers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\UdpServerDelegate.h">
+      <Filter>Header Files\Servers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UdpServerThread.h">
+      <Filter>Header Files\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -121,9 +130,6 @@
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\WebSocket.cpp">
-      <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\IpSocket.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\ReceiverThread.cpp">
@@ -161,6 +167,18 @@
     </ClCompile>
     <ClCompile Include="src\TcpServerDelegate.cpp">
       <Filter>Source Files\Servers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpSocket.cpp">
+      <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpServer.cpp">
+      <Filter>Source Files\Servers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpServerDelegate.cpp">
+      <Filter>Source Files\Servers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpServerThread.cpp">
+      <Filter>Source Files\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
