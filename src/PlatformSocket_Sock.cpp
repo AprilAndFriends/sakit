@@ -213,9 +213,13 @@ namespace sakit
 		{
 			result = ::send(this->sock, data, size, 0);
 		}
-		else
+		else if (this->info != NULL)
 		{
 			result = ::sendto(this->sock, data, size, 0, this->info->ai_addr, this->info->ai_addrlen);
+		}
+		else
+		{
+			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->address, sizeof(*this->address));
 		}
 		if (result >= 0)
 		{
@@ -292,26 +296,29 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::receiveFrom(hstream* stream, Ip* host, unsigned short* port)
+	bool PlatformSocket::receiveFrom(hstream* stream, Socket* socket)
 	{
-		sockaddr_storage address;
+		PlatformSocket* other = socket->socket;
 		int size = (int)sizeof(sockaddr_storage);
-		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)&address, &size);
+		other->address = (sockaddr_storage*)malloc(size);
+		this->_setNonBlocking(true);
+		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)other->address, &size);
 		if (received == SOCKET_ERROR)
 		{
-			hlog::debug(sakit::logTag, "recvfrom() error!");
 			this->_printLastError();
+			this->_setNonBlocking(false);
+			other->disconnect();
 			return false;
 		}
+		this->_setNonBlocking(false);
 		if (received > 0)
 		{
 			stream->write_raw(this->receiveBuffer, received);
 			// get the IP and port of the connected client
 			char hostString[CHAR_BUFFER] = {'\0'};
 			char portString[CHAR_BUFFER] = {'\0'};
-			getnameinfo((sockaddr*)&address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-			*host = Ip(hostString);
-			*port = (unsigned short)(int)hstr(portString);
+			getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+			((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
 		}
 		return true;
 	}

@@ -28,29 +28,22 @@ namespace sakit
 	class sakitExport UdpServer : public Server
 	{
 	public:
-		UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* senderDelegate);
+		UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* receivedDelegate);
 		~UdpServer();
 
-		harray<UdpSocket*> getSenderSockets();
+		harray<UdpSocket*> getSockets();
 
 		void update(float timeSinceLastFrame);
 
-		int send(Ip host, unsigned short port, hstream* stream, int count = INT_MAX);
-		int send(Ip host, unsigned short port, chstr data);
-		bool receive(hstream* stream, Ip* host, unsigned short* port);
-
-		bool sendAsync(Ip host, unsigned short port, hstream* stream, int count = INT_MAX);
-		bool sendAsync(Ip host, unsigned short port, chstr data);
+		UdpSocket* receive(hstream* stream, float timeout = 0.0f);
 
 	protected:
-		harray<UdpSocket*> senderSockets;
+		harray<UdpSocket*> sockets;
 		UdpServerThread* thread;
 		UdpServerDelegate* serverDelegate;
-		SocketDelegate* senderDelegate;
+		SocketDelegate* receivedDelegate;
 
 		void _updateSockets();
-
-		bool _checkSendStatus(Ip host, unsigned short port);
 
 	};
 

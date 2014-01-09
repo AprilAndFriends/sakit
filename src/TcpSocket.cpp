@@ -241,7 +241,7 @@ namespace sakit
 			return false;
 		}
 		this->receiver->count = count;
-		this->receiver->result = WorkerThread::RUNNING;
+		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->thread->mutex.unlock();
 		this->receiver->start();

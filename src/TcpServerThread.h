@@ -38,7 +38,6 @@ namespace sakit
 
 	protected:
 		harray<TcpSocket*> sockets;
-		SocketDelegate* acceptedDelegate;
 
 		void _updateRunning();
 

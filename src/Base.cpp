@@ -115,7 +115,7 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Cannot receive, count is 0!");
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	bool Base::_canReceive(int count)
@@ -125,7 +125,7 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Cannot receive, count is 0!");
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	void Base::_activateConnection(Ip host, unsigned short port)

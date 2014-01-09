@@ -23,6 +23,7 @@
 namespace sakit
 {
 	class UdpServer;
+	class UdpSocket;
 
 	class sakitExport UdpServerDelegate : public ServerDelegate
 	{
@@ -30,7 +31,7 @@ namespace sakit
 		UdpServerDelegate();
 		~UdpServerDelegate();
 
-		virtual void onReceived(UdpServer* server, hstream* stream, Ip host, unsigned short port) = 0;
+		virtual void onReceived(UdpServer* server, UdpSocket* socket, hstream* stream) = 0;
 
 	};
 

@@ -44,7 +44,7 @@ namespace sakit
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& count);
-		bool receiveFrom(hstream* stream, Ip* host, unsigned short* port);
+		bool receiveFrom(hstream* stream, Socket* socket);
 		bool listen();
 		bool accept(Socket* socket);
 		

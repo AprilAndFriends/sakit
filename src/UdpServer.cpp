@@ -25,11 +25,11 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	UdpServer::UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* senderDelegate) : Server(serverDelegate)
+	UdpServer::UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* receivedDelegate) : Server(serverDelegate)
 	{
-		this->basicThread = this->thread = new UdpServerThread(this->socket);
 		this->basicDelegate = this->serverDelegate = serverDelegate;
-		this->senderDelegate = senderDelegate;
+		this->receivedDelegate = receivedDelegate;
+		this->basicThread = this->thread = new UdpServerThread(this->socket, this->receivedDelegate);
 		this->socket->setConnectionLess(true);
 	}
 
@@ -37,15 +37,15 @@ namespace sakit
 	{
 	}
 	
-	harray<UdpSocket*> UdpServer::getSenderSockets()
+	harray<UdpSocket*> UdpServer::getSockets()
 	{
 		this->_updateSockets();
-		return this->senderSockets;
+		return this->sockets;
 	}
 
 	void UdpServer::update(float timeSinceLastFrame)
 	{
-		foreach (UdpSocket*, it, this->senderSockets)
+		foreach (UdpSocket*, it, this->sockets)
 		{
 			(*it)->update(timeSinceLastFrame);
 		}
@@ -53,16 +53,15 @@ namespace sakit
 		this->thread->mutex.lock();
 		if (this->thread->streams.size() > 0)
 		{
+			harray<UdpSocket*> sockets = this->thread->sockets;
 			harray<hstream*> streams = this->thread->streams;
-			harray<Ip> hosts = this->thread->hosts;
-			harray<unsigned short> ports = this->thread->ports;
+			this->thread->sockets.clear();
 			this->thread->streams.clear();
-			this->thread->hosts.clear();
-			this->thread->ports.clear();
 			this->thread->mutex.unlock();
-			for_iter (i, 0, streams.size())
+			this->sockets += sockets;
+			for_iter (i, 0, sockets.size())
 			{
-				this->serverDelegate->onReceived(this, streams[i], hosts[i], ports[i]);
+				this->serverDelegate->onReceived(this, sockets[i], streams[i]);
 				delete streams[i];
 			}
 		}
@@ -75,13 +74,13 @@ namespace sakit
 
 	void UdpServer::_updateSockets()
 	{
-		harray<UdpSocket*> sockets = this->senderSockets;
-		this->senderSockets.clear();
+		harray<UdpSocket*> sockets = this->sockets;
+		this->sockets.clear();
 		foreach (UdpSocket*, it, sockets)
 		{
-			if ((*it)->isSending())
+			if ((*it)->hasDestination())
 			{
-				this->senderSockets += (*it);
+				this->sockets += (*it);
 			}
 			else
 			{
@@ -90,87 +89,44 @@ namespace sakit
 		}
 	}
 	
-	int UdpServer::send(Ip host, unsigned short port, hstream* stream, int count)
+	UdpSocket* UdpServer::receive(hstream* stream, float timeout)
 	{
-		if (!this->_canSend(stream, count))
-		{
-			return false;
-		}
-		if (!this->_checkSendStatus(host, port))
-		{
-			return false;
-		}
-		int sent = 0;
-		UdpSocket* socket = new UdpSocket(this->senderDelegate);
-		if (socket->setDestination(host, port))
-		{
-			sent = socket->send(stream, count);
-		}
-		delete socket;
-		return sent;
-	}
-
-	int UdpServer::send(Ip host, unsigned short port, chstr data)
-	{
-		hstream stream;
-		stream.write(data);
-		stream.rewind();
-		return this->send(host, port, &stream);
-	}
-
-	bool UdpServer::receive(hstream* stream, Ip* host, unsigned short* port)
-	{
+		UdpSocket* socket = NULL;
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		this->thread->mutex.unlock();
-		return (this->_checkStartStatus(state) && this->socket->receiveFrom(stream, host, port));
-	}
-
-	bool UdpServer::sendAsync(Ip host, unsigned short port, hstream* stream, int count)
-	{
-		if (!this->_canSend(stream, count))
+		if (this->_checkStartStatus(state))
 		{
-			return false;
-		}
-		if (!this->_checkSendStatus(host, port))
-		{
-			return false;
-		}
-		UdpSocket* socket = new UdpSocket(this->senderDelegate);
-		connectionsMutex.lock();
-		connections -= socket;
-		connectionsMutex.unlock();
-		bool result = (socket->setDestination(host, port) && socket->sendAsync(stream, count));
-		if (result)
-		{
-			this->senderSockets += socket;
-		}
-		else
-		{
-			delete socket;
-		}
-		return result;
-	}
-
-	bool UdpServer::sendAsync(Ip host, unsigned short port, chstr data)
-	{
-		hstream stream;
-		stream.write(data);
-		stream.rewind();
-		return this->sendAsync(host, port, &stream);
-	}
-
-	bool UdpServer::_checkSendStatus(Ip host, unsigned short port)
-	{
-		foreach (UdpSocket*, it, this->senderSockets)
-		{
-			if ((*it)->hasDestination() && (*it)->getHost() == host && (*it)->getPort() == port)
+			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+			timeout *= 1000.0f;
+			while (true)
 			{
-				hlog::warn(sakit::logTag, "Cannot send, already sending!");
-				return false;
+				socket = new UdpSocket(this->receivedDelegate);
+				connectionsMutex.lock();
+				connections -= socket;
+				connectionsMutex.unlock();
+				if (!this->socket->receiveFrom(stream, socket))
+				{
+					delete socket;
+					socket = NULL;
+					break;
+				}
+				if (stream->size() > 0)
+				{
+					this->sockets += socket;
+					break;
+				}
+				delete socket;
+				socket = NULL;
+				timeout -= retryTimeout;
+				if (timeout <= 0.0f)
+				{
+					break;
+				}
+				hthread::sleep(retryTimeout);
 			}
 		}
-		return true;
+		return socket;
 	}
 
 }

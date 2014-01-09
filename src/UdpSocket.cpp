@@ -90,7 +90,7 @@ namespace sakit
 		{
 			return NULL;
 		}
-		return this->_send(stream, count);
+		return this->_receive(stream, count);
 	}
 
 	bool UdpSocket::sendAsync(hstream* stream, int count)
@@ -134,10 +134,16 @@ namespace sakit
 			return false;
 		}
 		this->receiver->count = count;
-		this->receiver->result = WorkerThread::RUNNING;
+		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->start();
 		return true;
+	}
+
+	void UdpSocket::_activateConnection(Ip host, unsigned short port)
+	{
+		Base::_activateConnection(host, port);
+		this->setDestination(host, port);
 	}
 
 }

@@ -23,9 +23,8 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServerThread::TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) : ServerThread(socket)
+	TcpServerThread::TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) : ServerThread(socket, acceptedDelegate)
 	{
-		this->acceptedDelegate = acceptedDelegate;
 	}
 
 	TcpServerThread::~TcpServerThread()

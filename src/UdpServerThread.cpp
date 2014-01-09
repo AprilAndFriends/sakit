@@ -23,7 +23,7 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	UdpServerThread::UdpServerThread(PlatformSocket* socket) : ServerThread(socket)
+	UdpServerThread::UdpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) : ServerThread(socket, acceptedDelegate)
 	{
 	}
 
@@ -33,27 +33,31 @@ namespace sakit
 
 	void UdpServerThread::_updateRunning()
 	{
+		UdpSocket* socket = NULL;
 		hstream* stream = new hstream();
-		Ip host("");
-		unsigned short port = 0;
 		while (this->running)
 		{
-			if (!this->socket->receiveFrom(stream, &host, &port))
+			socket = new UdpSocket(this->acceptedDelegate);
+			connectionsMutex.lock();
+			connections -= socket;
+			connectionsMutex.unlock();
+			if (!this->socket->receiveFrom(stream, socket))
 			{
-				delete stream;
-				this->mutex.lock();
-				this->result = FAILED;
-				this->mutex.unlock();
-				return;
+				delete socket;
+				hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+				continue;
 			}
 			if (stream->size() > 0)
 			{
 				this->mutex.lock();
+				this->sockets += socket;
 				this->streams += stream;
-				this->hosts += host;
-				this->ports += port;
 				this->mutex.unlock();
 				stream = new hstream();
+			}
+			else
+			{
+				delete socket;
 			}
 			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}

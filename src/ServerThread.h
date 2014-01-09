@@ -32,11 +32,12 @@ namespace sakit
 	public:
 		friend class Server;
 
-		ServerThread(PlatformSocket* socket);
+		ServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
 		~ServerThread();
 
 	protected:
 		Server::State state;
+		SocketDelegate* acceptedDelegate;
 
 		void _updateBinding();
 		void _updateUnbinding();

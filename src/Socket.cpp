@@ -55,9 +55,14 @@ namespace sakit
 
 	void Socket::update(float timeSinceLastFrame)
 	{
-		WorkerThread::Result result = WorkerThread::IDLE;
+		this->_updateSending();
+		this->_updateReceiving();
+	}
+
+	void Socket::_updateSending()
+	{
 		this->sender->mutex.lock();
-		result = this->sender->result;
+		WorkerThread::Result result = this->sender->result;
 		if (this->sender->lastSent > 0)
 		{
 			int sent = this->sender->lastSent;
@@ -85,8 +90,12 @@ namespace sakit
 		{
 			this->socketDelegate->onSendFailed(this);
 		}
+	}
+
+	void Socket::_updateReceiving()
+	{
 		this->receiver->mutex.lock();
-		result = this->receiver->result;
+		WorkerThread::Result result = this->receiver->result;
 		if (this->receiver->stream->size() > 0)
 		{
 			hstream* stream = this->receiver->stream;

@@ -26,19 +26,19 @@ namespace sakit
 	class PlatformSocket;
 	class SocketDelegate;
 	class UdpServer;
+	class UdpSocket;
 
 	class sakitExport UdpServerThread : public ServerThread
 	{
 	public:
 		friend class UdpServer;
 
-		UdpServerThread(PlatformSocket* socket);
+		UdpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
 		~UdpServerThread();
 
 	protected:
+		harray<UdpSocket*> sockets;
 		harray<hstream*> streams;
-		harray<Ip> hosts;
-		harray<unsigned short> ports;
 
 		void _updateRunning();
 

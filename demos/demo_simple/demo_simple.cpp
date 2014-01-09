@@ -103,11 +103,11 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::error(LOG_TAG, "- SERVER running error");
 	}
 
-	void onReceived(sakit::UdpServer* server, hstream* stream, sakit::Ip host, unsigned short port)
+	void onReceived(sakit::UdpServer* server, sakit::UdpSocket* socket, hstream* stream)
 	{
-		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'", server->getFullHost().c_str(), socket->getFullHost().c_str());
 		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream->size()));
-		int sent = server->send(host, port, "Hello.");
+		int sent = socket->send("Hello.");
 		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 	}
 
@@ -189,6 +189,7 @@ protected:
 
 SocketDelegate clientDelegate("CLIENT");
 SocketDelegate acceptedDelegate("ACCEPTED");
+SocketDelegate receivedDelegate("RECEIVED");
 
 void _testAsyncTcpServer()
 {
@@ -321,7 +322,7 @@ void _testAsyncUdpServer()
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: async UDP server, blocking UDP client");
 	hlog::debug(LOG_TAG, "");
-	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &acceptedDelegate);
+	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &receivedDelegate);
 	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
 	{
 		while (server->isBinding())
@@ -343,7 +344,7 @@ void _testAsyncUdpServer()
 					stream.rewind();
 					int sent = client->send(&stream);
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
-					for_iter (i, 0, 20) // wait 2 seconds here
+					while (server->getSockets().size() == 0)
 					{
 						sakit::update(0.0f);
 						hthread::sleep(100.0f);
@@ -374,15 +375,63 @@ void _testAsyncUdpServer()
 	delete server;
 }
 
+void _testAsyncUdpClient()
+{
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: blocking TCP server, async TCP client");
+	hlog::debug(LOG_TAG, "");
+	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &receivedDelegate);
+	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
+	{
+		hlog::writef(LOG_TAG, "Server bound to '%s'", server->getFullHost().c_str());
+		sakit::UdpSocket* client = new sakit::UdpSocket(&clientDelegate);
+		if (client->setDestination(sakit::Ip::Localhost, TEST_PORT)) // there is no async destination setting, it's not needed
+		{
+			hstream stream;
+			char data[12] = "Hi there.\0g";
+			stream.write_raw(data, 12);
+			stream.rewind();
+			client->sendAsync(&stream);
+			do
+			{
+				sakit::update(0.0f);
+				hthread::sleep(100.0f);
+			} while (client->isSending());
+			// received handling
+			stream.clear();
+			sakit::UdpSocket* received = server->receive(&stream);
+			hlog::write(LOG_TAG, "RECEIVED received: " + hstr(stream.size()));
+			int sent = received->send("Hello.");
+			hlog::write(LOG_TAG, "RECEIVED sent: " + hstr(sent));
+			// back to client
+			client->receiveAsync(6); // receive 6 bytes max
+			do
+			{
+				sakit::update(0.0f);
+				hthread::sleep(100.0f);
+			} while (client->isReceiving());
+			client->clearDestination(); // there is no async destination clearing, it's not needed
+			received->clearDestination();
+		}
+		delete client;
+		if (server->unbind())
+		{
+			hlog::write(LOG_TAG, "Server unbound.");
+		}
+	}
+	delete server;
+}
+
 #define HTTP_LINE_ENDING "\r\n"
 
 int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	//_testAsyncTcpServer();
-	//_testAsyncTcpClient();
+	_testAsyncTcpServer();
+	_testAsyncTcpClient();
 	_testAsyncUdpServer();
+	_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

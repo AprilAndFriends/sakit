@@ -62,6 +62,9 @@ namespace sakit
 
 		Socket(SocketDelegate* socketDelegate);
 
+		void _updateSending();
+		void _updateReceiving();
+
 		bool _checkSendStatus(State senderState);
 		bool _checkReceiveStatus(State receiverState);
 
