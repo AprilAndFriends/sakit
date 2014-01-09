@@ -30,10 +30,6 @@ namespace sakit
 		UdpServerDelegate();
 		~UdpServerDelegate();
 
-		virtual void onSent(UdpServer* server, Ip host, unsigned short port, int byteCount) = 0;
-		virtual void onSendFinished(UdpServer* server, Ip host, unsigned short port) = 0;
-		virtual void onSendFailed(UdpServer* server, Ip host, unsigned short port) = 0;
-
 		virtual void onReceived(UdpServer* server, hstream* stream, Ip host, unsigned short port) = 0;
 
 	};

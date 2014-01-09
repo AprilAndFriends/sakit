@@ -27,4 +27,14 @@ namespace sakit
 	{
 	}
 	
+	bool Ip::operator==(const Ip& other) const
+	{
+		return (this->address == other.address);
+	}
+
+	bool Ip::operator!=(const Ip& other) const
+	{
+		return (this->address !=  other.address);
+	}
+
 }

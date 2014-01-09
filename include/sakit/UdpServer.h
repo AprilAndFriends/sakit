@@ -20,7 +20,6 @@
 
 namespace sakit
 {
-	class SenderThread;
 	class SocketDelegate;
 	class UdpServerDelegate;
 	class UdpServerThread;
@@ -29,8 +28,10 @@ namespace sakit
 	class sakitExport UdpServer : public Server
 	{
 	public:
-		UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* socketDelegate);
+		UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* senderDelegate);
 		~UdpServer();
+
+		harray<UdpSocket*> getSenderSockets();
 
 		void update(float timeSinceLastFrame);
 
@@ -42,11 +43,14 @@ namespace sakit
 		bool sendAsync(Ip host, unsigned short port, chstr data);
 
 	protected:
+		harray<UdpSocket*> senderSockets;
 		UdpServerThread* thread;
-		SenderThread* sender;
 		UdpServerDelegate* serverDelegate;
+		SocketDelegate* senderDelegate;
 
-		bool _checkSendStatus(Socket::State senderState);
+		void _updateSockets();
+
+		bool _checkSendStatus(Ip host, unsigned short port);
 
 	};
 

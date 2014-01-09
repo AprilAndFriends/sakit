@@ -30,6 +30,9 @@ namespace sakit
 
 		HL_DEFINE_GET(hstr, address, Address);
 
+		bool operator==(const Ip& other) const;
+		bool operator!=(const Ip& other) const;
+
 		static Ip Localhost;
 
 	protected:

@@ -103,21 +103,6 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::error(LOG_TAG, "- SERVER running error");
 	}
 
-	void onSent(sakit::UdpServer* server, sakit::Ip host, unsigned short port, int byteCount)
-	{
-		hlog::writef(LOG_TAG, "- SERVER '%s' sent %d bytes to '%s:%d'", server->getFullHost().c_str(), byteCount, host.getAddress().c_str(), port);
-	}
-
-	void onSendFinished(sakit::UdpServer* server, sakit::Ip host, unsigned short port)
-	{
-		hlog::writef(LOG_TAG, "- SERVER '%s' finished sending to '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
-	}
-
-	void onSendFailed(sakit::UdpServer* server, sakit::Ip host, unsigned short port)
-	{
-		hlog::writef(LOG_TAG, "- SERVER '%s' failed sending to '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
-	}
-
 	void onReceived(sakit::UdpServer* server, hstream* stream, sakit::Ip host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s:%d'", server->getFullHost().c_str(), host.getAddress().c_str(), port);
@@ -331,13 +316,12 @@ void _testAsyncTcpClient()
 	delete server;
 }
 
-void _testUdp()
+void _testAsyncUdpServer()
 {
 	hlog::debug(LOG_TAG, "");
-	hlog::debug(LOG_TAG, "starting test: basic UDP");
+	hlog::debug(LOG_TAG, "starting test: async UDP server, blocking UDP client");
 	hlog::debug(LOG_TAG, "");
-	/*
-	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate);
+	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &acceptedDelegate);
 	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
 	{
 		while (server->isBinding())
@@ -349,8 +333,8 @@ void _testUdp()
 		{
 			if (server->startAsync())
 			{
-				sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
-				if (client->connect(sakit::Ip::Localhost, TEST_PORT))
+				sakit::UdpSocket* client = new sakit::UdpSocket(&clientDelegate);
+				if (client->setDestination(sakit::Ip::Localhost, TEST_PORT))
 				{
 					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 					hstream stream;
@@ -359,7 +343,7 @@ void _testUdp()
 					stream.rewind();
 					int sent = client->send(&stream);
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
-					while (server->getSockets().size() == 0)
+					for_iter (i, 0, 20) // wait 2 seconds here
 					{
 						sakit::update(0.0f);
 						hthread::sleep(100.0f);
@@ -368,7 +352,6 @@ void _testUdp()
 					client->receive(&stream, 6); // receive 6 bytes max
 					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
-					server->getSockets()[0]->disconnect();
 				}
 				server->stopAsync();
 				while (server->isRunning())
@@ -389,7 +372,6 @@ void _testUdp()
 		}
 	}
 	delete server;
-	*/
 }
 
 #define HTTP_LINE_ENDING "\r\n"
@@ -398,9 +380,9 @@ int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	_testAsyncTcpServer();
-	_testAsyncTcpClient();
-	_testUdp();
+	//_testAsyncTcpServer();
+	//_testAsyncTcpClient();
+	_testAsyncUdpServer();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

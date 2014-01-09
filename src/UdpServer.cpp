@@ -22,22 +22,34 @@
 
 namespace sakit
 {
-	UdpServer::UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* socketDelegate) : Server(serverDelegate)
+	extern harray<Base*> connections;
+	extern hmutex connectionsMutex;
+
+	UdpServer::UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* senderDelegate) : Server(serverDelegate)
 	{
 		this->basicThread = this->thread = new UdpServerThread(this->socket);
-		this->sender = new SenderThread(this->socket);
 		this->basicDelegate = this->serverDelegate = serverDelegate;
+		this->senderDelegate = senderDelegate;
 		this->socket->setConnectionLess(true);
-
 	}
 
 	UdpServer::~UdpServer()
 	{
-		delete this->sender;
 	}
 	
+	harray<UdpSocket*> UdpServer::getSenderSockets()
+	{
+		this->_updateSockets();
+		return this->senderSockets;
+	}
+
 	void UdpServer::update(float timeSinceLastFrame)
 	{
+		foreach (UdpSocket*, it, this->senderSockets)
+		{
+			(*it)->update(timeSinceLastFrame);
+		}
+		this->_updateSockets();
 		this->thread->mutex.lock();
 		if (this->thread->streams.size() > 0)
 		{
@@ -58,57 +70,44 @@ namespace sakit
 		{
 			this->thread->mutex.unlock();
 		}
-		// TODOsock - implement a different sender for UDP servers
-		/*
-		this->sender->mutex.lock();
-		Ip host = this->sender->host;
-		unsigned short port = this->sender->port;
-		WorkerThread::Result result = this->sender->result;
-		if (this->sender->lastSent > 0)
-		{
-			int sent = this->sender->lastSent;
-			this->sender->lastSent = 0;
-			this->sender->mutex.unlock();
-			this->serverDelegate->onSent(this, host, port, sent);
-		}
-		else
-		{
-			this->sender->mutex.unlock();
-		}
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
-		{
-			return;
-		}
-		this->sender->mutex.lock();
-		this->sender->result = WorkerThread::IDLE;
-		this->sender->state = Socket::IDLE;
-		this->sender->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
-		{
-			this->serverDelegate->onSendFinished(this, host, port);
-		}
-		else if (result == WorkerThread::FAILED)
-		{
-			this->serverDelegate->onSendFailed(this, host, port);
-		}
-		*/
 		Server::update(timeSinceLastFrame);
 	}
 
+	void UdpServer::_updateSockets()
+	{
+		harray<UdpSocket*> sockets = this->senderSockets;
+		this->senderSockets.clear();
+		foreach (UdpSocket*, it, sockets)
+		{
+			if ((*it)->isSending())
+			{
+				this->senderSockets += (*it);
+			}
+			else
+			{
+				delete (*it);
+			}
+		}
+	}
+	
 	int UdpServer::send(Ip host, unsigned short port, hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
 		{
 			return false;
 		}
-		this->sender->mutex.lock();
-		Socket::State senderState = this->sender->state;
-		this->sender->mutex.unlock();
-		if (!this->_checkSendStatus(senderState))
+		if (!this->_checkSendStatus(host, port))
 		{
 			return false;
 		}
-		return this->_send(stream, count);
+		int sent = 0;
+		UdpSocket* socket = new UdpSocket(this->senderDelegate);
+		if (socket->setDestination(host, port))
+		{
+			sent = socket->send(stream, count);
+		}
+		delete socket;
+		return sent;
 	}
 
 	int UdpServer::send(Ip host, unsigned short port, chstr data)
@@ -133,20 +132,24 @@ namespace sakit
 		{
 			return false;
 		}
-		this->sender->mutex.lock();
-		Socket::State senderState = this->sender->state;
-		if (!this->_checkSendStatus(senderState))
+		if (!this->_checkSendStatus(host, port))
 		{
-			this->sender->mutex.unlock();
 			return false;
 		}
-		this->sender->stream->clear();
-		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
-		this->sender->stream->rewind();
-		this->sender->state = Socket::RUNNING;
-		this->sender->mutex.unlock();
-		this->sender->start();
-		return true;
+		UdpSocket* socket = new UdpSocket(this->senderDelegate);
+		connectionsMutex.lock();
+		connections -= socket;
+		connectionsMutex.unlock();
+		bool result = (socket->setDestination(host, port) && socket->sendAsync(stream, count));
+		if (result)
+		{
+			this->senderSockets += socket;
+		}
+		else
+		{
+			delete socket;
+		}
+		return result;
 	}
 
 	bool UdpServer::sendAsync(Ip host, unsigned short port, chstr data)
@@ -157,12 +160,15 @@ namespace sakit
 		return this->sendAsync(host, port, &stream);
 	}
 
-	bool UdpServer::_checkSendStatus(Socket::State senderState)
+	bool UdpServer::_checkSendStatus(Ip host, unsigned short port)
 	{
-		if (senderState == Socket::RUNNING)
+		foreach (UdpSocket*, it, this->senderSockets)
 		{
-			hlog::warn(sakit::logTag, "Cannot send, already sending!");
-			return false;
+			if ((*it)->hasDestination() && (*it)->getHost() == host && (*it)->getPort() == port)
+			{
+				hlog::warn(sakit::logTag, "Cannot send, already sending!");
+				return false;
+			}
 		}
 		return true;
 	}
