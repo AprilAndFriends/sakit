@@ -51,7 +51,7 @@ namespace sakit
 
 	bool UdpSocket::clearDestination()
 	{
-		this->host = Ip("");
+		this->host = Ip();
 		this->port = 0;
 		return this->socket->disconnect();
 	}
@@ -144,6 +144,14 @@ namespace sakit
 	{
 		Base::_activateConnection(host, port);
 		this->setDestination(host, port);
+	}
+
+	bool UdpSocket::broadcast(unsigned short port, chstr data)
+	{
+		hstream stream;
+		stream.write(data);
+		stream.rewind();
+		return PlatformSocket::broadcast(port, &stream);
 	}
 
 }

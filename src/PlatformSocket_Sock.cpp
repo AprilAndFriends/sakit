@@ -18,6 +18,7 @@
 #define _WIN32_WINNT 0x602
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <Iphlpapi.h>
 #else
 #include <sys/time.h>
 #include <sys/types.h>
@@ -26,6 +27,7 @@
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -110,7 +112,7 @@ namespace sakit
 		if (ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue) == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "Blocking mode could not be changed!");
-			this->_printLastError();
+			_printLastError();
 			this->disconnect();
 			return false;
 		}
@@ -143,7 +145,7 @@ namespace sakit
 		if (this->sock == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "socket() error!");
-			this->_printLastError();
+			_printLastError();
 			this->disconnect();
 			return false;
 		}
@@ -175,7 +177,7 @@ namespace sakit
 		if (result == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, functionName + " error!");
-			this->_printLastError();
+			_printLastError();
 			this->disconnect();
 			return false;
 		}
@@ -241,7 +243,7 @@ namespace sakit
 		if (ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received) == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "ioctlsocket() error!");
-			this->_printLastError();
+			_printLastError();
 			return false;
 		}
 		if (received == 0)
@@ -252,7 +254,7 @@ namespace sakit
 		if (received == SOCKET_ERROR)
 		{
 			hlog::debug(sakit::logTag, "recv() error!");
-			this->_printLastError();
+			_printLastError();
 			return false;
 		}
 		mutex.lock();
@@ -266,7 +268,7 @@ namespace sakit
 	{
 		if (::listen(this->sock, SOMAXCONN) == SOCKET_ERROR)
 		{
-			this->_printLastError();
+			_printLastError();
 			return false;
 		}
 		return true;
@@ -281,7 +283,7 @@ namespace sakit
 		other->sock = ::accept(this->sock, (sockaddr*)other->address, &size);
 		if (other->sock == SOCKET_ERROR)
 		{
-			this->_printLastError();
+			_printLastError();
 			this->_setNonBlocking(false);
 			other->disconnect();
 			return false;
@@ -305,7 +307,7 @@ namespace sakit
 		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)other->address, &size);
 		if (received == SOCKET_ERROR)
 		{
-			this->_printLastError();
+			_printLastError();
 			this->_setNonBlocking(false);
 			other->disconnect();
 			return false;
@@ -321,6 +323,197 @@ namespace sakit
 			((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
 		}
 		return true;
+	}
+
+	harray<NetworkAdapter> PlatformSocket::getNetworkAdapters()
+	{
+		harray<NetworkAdapter> result;
+#ifdef _WIN32
+		PIP_ADAPTER_INFO info = NULL;
+		unsigned long size = sizeof(IP_ADAPTER_INFO);
+		info = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+		if (info == NULL)
+		{
+			hlog::error(sakit::logTag, "Not enough memory!");
+			return result;
+		}
+		if (GetAdaptersInfo(info, &size) == ERROR_BUFFER_OVERFLOW) // gets the size required if necessary
+		{
+			free(info);
+			info = (IP_ADAPTER_INFO*)malloc(size);
+			if (info == NULL)
+			{
+				hlog::error(sakit::logTag, "Not enough memory!");
+				return result;
+			}
+		}
+		if ((GetAdaptersInfo(info, &size)) != NO_ERROR)
+		{
+			hlog::error(sakit::logTag, "Not enough memory!");
+			return result;
+		}
+		int comboIndex;
+		int index;
+		hstr name;
+		hstr description;
+		hstr type;
+		Ip address;
+		Ip mask;
+		Ip gateway;
+		PIP_ADAPTER_INFO pAdapter = info;
+        while (pAdapter != NULL)
+		{
+			comboIndex = pAdapter->ComboIndex;
+			index = pAdapter->Index;
+			name = pAdapter->AdapterName;
+			description = pAdapter->Description;
+            switch (pAdapter->Type)
+			{
+            case MIB_IF_TYPE_ETHERNET:
+                type = "Ethernet";
+                break;
+            case MIB_IF_TYPE_TOKENRING:
+                type = "Token Ring";
+                break;
+            case MIB_IF_TYPE_FDDI:
+                type = "FDDI";
+                break;
+            case MIB_IF_TYPE_PPP:
+                type = "PPP";
+                break;
+            case MIB_IF_TYPE_LOOPBACK:
+                type = "Lookback";
+                break;
+            case MIB_IF_TYPE_SLIP:
+                type = "Slip";
+                break;
+            case MIB_IF_TYPE_OTHER:
+                type = "Other";
+                break;
+            default:
+                type = "Unknown type " + hstr(pAdapter->Type);
+                break;
+            }
+			address = Ip(pAdapter->IpAddressList.IpAddress.String);
+			mask = Ip(pAdapter->IpAddressList.IpMask.String);
+			gateway = Ip(pAdapter->GatewayList.IpAddress.String);
+			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
+            pAdapter = pAdapter->Next;
+		}
+#else
+		// TODOsock - implement Unix variant
+		/*
+		struct ifaddrs* ifaddr;
+		struct ifaddrs* ifa;
+        int family;
+		int s;
+		char host[NI_MAXHOST];
+
+		if (getifaddrs(&ifaddr) == -1) {
+			perror("getifaddrs");
+			exit(EXIT_FAILURE);
+		}
+
+		// Walk through linked list, maintaining head pointer so we can free list later
+
+		for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+			if (ifa->ifa_addr == NULL)
+				continue;
+
+			family = ifa->ifa_addr->sa_family;
+
+			// Display interface name and family (including symbolic form of the latter for the common families)
+
+			printf("%s  address family: %d%s\n",
+					ifa->ifa_name, family,
+					(family == AF_PACKET) ? " (AF_PACKET)" :
+					(family == AF_INET) ?   " (AF_INET)" :
+					(family == AF_INET6) ?  " (AF_INET6)" : "");
+
+			// For an AF_INET* interface address, display the address
+
+			if (family == AF_INET || family == AF_INET6) {
+				s = getnameinfo(ifa->ifa_addr,
+						(family == AF_INET) ? sizeof(struct sockaddr_in) :
+												sizeof(struct sockaddr_in6),
+						host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+				if (s != 0) {
+					printf("getnameinfo() failed: %s\n", gai_strerror(s));
+					exit(EXIT_FAILURE);
+				}
+				printf("\taddress: <%s>\n", host);
+			}
+		}
+
+		freeifaddrs(ifaddr);
+		exit(EXIT_SUCCESS);
+		*/
+#endif
+		return result;
+	}
+
+	bool PlatformSocket::broadcast(unsigned short port, hstream* stream, int count)
+	{
+		const char* data = (const char*)&(*stream)[stream->position()];
+		int size = hmin((int)(stream->size() - stream->position()), count);
+		int result = 0;
+#ifndef _ANDROID
+		int ai_family = AF_INET;
+#else
+		int ai_family = PF_INET;
+#endif
+		SOCKET sock = ::socket(ai_family, SOCK_DGRAM, IPPROTO_IP);
+		if (sock == SOCKET_ERROR)
+		{
+			hlog::error(sakit::logTag, "sock() error!");
+			return false;
+		}
+		int broadcast = 1;
+		result = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast));
+		if (result == SOCKET_ERROR)
+		{
+			hlog::error(sakit::logTag, "setsockopt() error!");
+			_printLastError();
+			closesocket(sock);
+			return false;
+		}
+		int reuseaddr = 1;
+		result = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr));
+		if (result == SOCKET_ERROR)
+		{
+			hlog::error(sakit::logTag, "setsockopt() error!");
+			_printLastError();
+			closesocket(sock);
+			return false;
+		}
+		unsigned int ipAddress;
+		sockaddr_in address;
+		memset(&address, 0, sizeof(sockaddr_in));
+		address.sin_family = ai_family;
+		address.sin_port = htons(port);
+		harray<NetworkAdapter> adapters = PlatformSocket::getNetworkAdapters();
+		bool sent = false;
+		foreach (NetworkAdapter, it, adapters)
+		{
+			ipAddress = (*it).getBroadcastIp().getRawNumeric();
+			address.sin_addr.s_addr = htonl(ipAddress);
+			result = sendto(sock, data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
+			if (result == SOCKET_ERROR)
+			{
+				hlog::error(sakit::logTag, "sendto() error!");
+				_printLastError();
+			}
+			else if (result > 0)
+			{
+				if (!sent)
+				{
+					stream->seek(result);
+				}
+				sent = true;
+			}
+		}
+		closesocket(sock);
+		return sent;
 	}
 
 }

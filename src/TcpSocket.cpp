@@ -93,7 +93,7 @@ namespace sakit
 			this->thread->mutex.lock();
 			this->thread->state = IDLE;
 			this->thread->mutex.unlock();
-			this->host = Ip("");
+			this->host = Ip();
 			this->port = 0;
 		}
 		return result;
@@ -282,7 +282,7 @@ namespace sakit
 				this->thread->mutex.unlock();
 				host = this->host;
 				port = this->port;
-				this->host = Ip("");
+				this->host = Ip();
 				this->port = 0;
 				this->socketDelegate->onDisconnected(this, host, port);
 				break;

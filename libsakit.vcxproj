@@ -128,6 +128,7 @@
   <ItemGroup>
     <ClInclude Include="include\sakit\Base.h" />
     <ClInclude Include="include\sakit\Ip.h" />
+    <ClInclude Include="include\sakit\NetworkAdapter.h" />
     <ClInclude Include="include\sakit\sakit.h" />
     <ClInclude Include="include\sakit\sakitExport.h" />
     <ClInclude Include="include\sakit\Server.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="src\Base.cpp" />
     <ClCompile Include="src\ConnectorThread.cpp" />
     <ClCompile Include="src\Ip.cpp" />
+    <ClCompile Include="src\NetworkAdapter.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
     <ClCompile Include="src\PlatformSocket_WinRT.cpp" />

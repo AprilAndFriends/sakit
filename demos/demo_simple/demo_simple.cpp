@@ -426,12 +426,25 @@ void _testAsyncUdpClient()
 
 int main(int argc, char **argv)
 {
+	//hlog::setFilename("C:/log.txt");
 	hlog::setLevelDebug(true);
 	sakit::init();
+	/*
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
+	*/
+	sakit::getNetworkAdapters();
+	sakit::UdpSocket::broadcast(5005, "Hi.");
+	/*
+	sakit::UdpSocket* socket = new sakit::UdpSocket(&clientDelegate);
+	socket->setDestination(sakit::Ip("192.168.1.117"), 5005);
+	socket->send("Hi.");
+	socket->send("How are you?");
+	socket->send("Cool.");
+	delete socket;
+	//*/
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

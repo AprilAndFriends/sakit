@@ -10,6 +10,7 @@
 #include <hltypes/hlog.h>
 #include <hltypes/hstring.h>
 
+#include "Ip.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Socket.h"
@@ -58,6 +59,11 @@ namespace sakit
 	void setRetryTimeout(float value)
 	{
 		retryTimeout = value;
+	}
+
+	harray<NetworkAdapter> getNetworkAdapters()
+	{
+		return PlatformSocket::getNetworkAdapters();
 	}
 
 }

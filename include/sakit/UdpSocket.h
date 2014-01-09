@@ -42,6 +42,8 @@ namespace sakit
 		bool sendAsync(chstr data);
 		bool receiveAsync(int count);
 
+		static bool broadcast(unsigned short port, chstr data);
+
 	protected:
 		void _activateConnection(Ip host, unsigned short port);
 

@@ -94,7 +94,7 @@ namespace sakit
 			this->basicThread->mutex.lock();
 			this->basicThread->state = IDLE;
 			this->basicThread->mutex.unlock();
-			this->host = Ip("");
+			this->host = Ip();
 			this->port = 0;
 		}
 		return result;
@@ -193,7 +193,7 @@ namespace sakit
 				this->basicThread->mutex.unlock();
 				host = this->host;
 				port = this->port;
-				this->host = Ip("");
+				this->host = Ip();
 				this->port = 0;
 				this->basicDelegate->onUnbound(this, host, port);
 				break;

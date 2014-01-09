@@ -14,8 +14,10 @@
 #ifndef SAKIT_H
 #define SAKIT_H
 
+#include <hltypes/harray.h>
 #include <hltypes/hstring.h>
 
+#include "NetworkAdapter.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -28,6 +30,7 @@ namespace sakit
 	sakitFnExport void update(float timeSinceLastFrame);
 	sakitFnExport float getRetryTimeout();
 	sakitFnExport void setRetryTimeout(float value);
+	sakitFnExport harray<NetworkAdapter> getNetworkAdapters();
 
 }
 #endif

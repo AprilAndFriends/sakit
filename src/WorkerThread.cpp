@@ -16,7 +16,7 @@
 namespace sakit
 {
 	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) :
-		hthread(function), result(IDLE), host(""), port(0)
+		hthread(function), result(IDLE), port(0)
 	{
 		this->socket = socket;
 	}

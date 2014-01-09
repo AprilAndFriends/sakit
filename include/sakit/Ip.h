@@ -14,6 +14,7 @@
 #ifndef SAKIT_IP_H
 #define SAKIT_IP_H
 
+#include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hstring.h>
 
@@ -24,11 +25,15 @@ namespace sakit
 	class sakitExport Ip
 	{
 	public:
+		Ip();
 		Ip(chstr name);
 		Ip(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 		~Ip();
 
 		HL_DEFINE_GET(hstr, address, Address);
+		bool isNumeric();
+		harray<unsigned char> getNumerics();
+		unsigned int getRawNumeric();
 
 		bool operator==(const Ip& other) const;
 		bool operator!=(const Ip& other) const;

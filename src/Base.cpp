@@ -21,7 +21,7 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	Base::Base() : host(""), port(0)
+	Base::Base() : port(0)
 	{
 		connectionsMutex.lock();
 		connections += this;

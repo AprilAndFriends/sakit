@@ -23,6 +23,7 @@
 #include <hltypes/hthread.h>
 
 #include "Ip.h"
+#include "NetworkAdapter.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -47,6 +48,9 @@ namespace sakit
 		bool receiveFrom(hstream* stream, Socket* socket);
 		bool listen();
 		bool accept(Socket* socket);
+
+		static harray<NetworkAdapter> getNetworkAdapters();
+		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
 		
 		static void platformInit();
 		static void platformDestroy();
@@ -71,9 +75,10 @@ namespace sakit
 #endif
 
 		bool _finishSocket(int result, chstr functionName);
-		int _printLastError();
 
 		bool _setNonBlocking(bool value);
+
+		static int _printLastError();
 
 	};
 
