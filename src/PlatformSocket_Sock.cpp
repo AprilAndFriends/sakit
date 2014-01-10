@@ -213,7 +213,7 @@ namespace sakit
 		this->multicastGroupAddress.sin_family = ai_family;
 		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.getAddress().c_str());
 		this->multicastGroupAddress.sin_port = htons(port);
-		return this->setMulticastLoopback(false);
+		return this->setMulticastTtl(32);
 	}
 
 	bool PlatformSocket::setMulticastInterface(Ip address)
