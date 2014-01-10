@@ -22,7 +22,7 @@ namespace sakit
 		delete [] this->receiveBuffer;
 	}
 	
-	int PlatformSocket::_printLastError()
+	int PlatformSocket::_printLastError(chstr basicMessage)
 	{
 		int code = 0;
 		hstr message;
@@ -50,6 +50,10 @@ namespace sakit
 #endif
 		if (print)
 		{
+			if (basicMessage != "")
+			{
+				hlog::debug(sakit::logTag, basicMessage);
+			}
 			if (message != "")
 			{
 				message = hstr(code);

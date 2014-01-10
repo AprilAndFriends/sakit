@@ -32,9 +32,11 @@ namespace sakit
 		~UdpSocket();
 
 		bool hasDestination();
+		bool hasMulticastGroup() { return this->multicastGroup; }
 
 		bool setDestination(Ip host, unsigned short port);
 		bool clearDestination();
+
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
 		int receive(hstream* stream, int count);
@@ -43,12 +45,19 @@ namespace sakit
 		bool sendAsync(chstr data);
 		bool receiveAsync(int count);
 
+		bool joinMulticastGroup(Ip address, unsigned short port, Ip groupAddress);
+		bool setMulticastInterface(Ip address);
+		bool setMulticastTtl(int value);
+		bool setMulticastLoopback(bool value);
+
 		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
 		static bool broadcast(unsigned short port, chstr data);
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data);
 
 	protected:
+		bool multicastGroup;
+
 		void _activateConnection(Ip host, unsigned short port);
 
 	};

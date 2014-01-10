@@ -88,7 +88,7 @@ namespace sakit
 			}
 		}
 	}
-	
+
 	UdpSocket* UdpServer::receive(hstream* stream, float timeout)
 	{
 		UdpSocket* socket = NULL;

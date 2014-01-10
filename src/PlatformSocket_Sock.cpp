@@ -109,17 +109,10 @@ namespace sakit
 	{
 		// set to blocking or non-blocking
 		int setValue = (value ? 1 : 0);
-		if (ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue) == SOCKET_ERROR)
-		{
-			hlog::debug(sakit::logTag, "Blocking mode could not be changed!");
-			_printLastError();
-			this->disconnect();
-			return false;
-		}
-		return true;
+		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue), "ioctlsocket()");
 	}
 
-	bool PlatformSocket::createSocket(Ip host, unsigned int port)
+	bool PlatformSocket::createSocket(Ip host, unsigned short port)
 	{
 		this->connected = true;
 		int result = 0;
@@ -142,47 +135,107 @@ namespace sakit
 		}
 		// create socket
 		this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
-		if (this->sock == SOCKET_ERROR)
+		if (!this->_checkResult(this->sock, "socket()"))
 		{
-			hlog::debug(sakit::logTag, "socket() error!");
-			_printLastError();
-			this->disconnect();
 			return false;
 		}
-		return true;
+		int reuseaddr = 1;
+		return this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr)), "setsockopt()");
 	}
 
-	bool PlatformSocket::connect(Ip host, unsigned int port)
+	bool PlatformSocket::connect(Ip host, unsigned short port)
 	{
 		if (!this->createSocket(host, port))
 		{
 			return false;
 		}
 		// open connection
-		return this->_finishSocket(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
+		return this->_checkResult(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
 	}
 
-	bool PlatformSocket::bind(Ip host, unsigned int port)
+	bool PlatformSocket::bind(Ip host, unsigned short port)
 	{
 		if (!this->createSocket(host, port))
 		{
 			return false;
 		}
 		// bind to host:port
-		return this->_finishSocket(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
+		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
 	}
 
-	bool PlatformSocket::_finishSocket(int result, chstr functionName)
+	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
 	{
 		if (result == SOCKET_ERROR)
 		{
-			hlog::debug(sakit::logTag, functionName + " error!");
-			_printLastError();
-			this->disconnect();
+			PlatformSocket::_printLastError(functionName + " error!");
+			if (disconnectOnError)
+			{
+				this->disconnect();
+			}
 			return false;
 		}
 		return true;
 	}
+
+	bool PlatformSocket::joinMulticastGroup(Ip host, unsigned short port, Ip groupAddress)
+	{
+		this->connected = true;
+#ifndef _ANDROID
+		int ai_family = AF_INET;
+#else
+		int ai_family = PF_INET;
+#endif
+		this->sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
+		if (!this->_checkResult(this->sock, "socket()"))
+		{
+			return false;
+		}
+		int reuseaddr = 1;
+		if (!this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr)), "setsockopt()"))
+		{
+			return false;
+		}
+		sockaddr_in local;
+		local.sin_family = ai_family;
+		local.sin_port = htons(port);
+		local.sin_addr.s_addr = htonl(INADDR_ANY);
+		if (!this->_checkResult(::bind(this->sock, (sockaddr*)&local, sizeof(sockaddr_in)), "bind()"))
+		{
+			return false;
+		}
+		ip_mreq group;
+		group.imr_interface.s_addr = inet_addr(host.getAddress().c_str());
+		group.imr_multiaddr.s_addr = inet_addr(groupAddress.getAddress().c_str());
+		if (!this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()"))
+		{
+			return false;
+		}
+		this->multicastGroupAddress.sin_family = ai_family;
+		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.getAddress().c_str());
+		this->multicastGroupAddress.sin_port = htons(port);
+		return this->setMulticastLoopback(false);
+	}
+
+	bool PlatformSocket::setMulticastInterface(Ip address)
+	{
+		in_addr local;
+		local.s_addr = inet_addr(address.getAddress().c_str());
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
+	}
+
+	bool PlatformSocket::setMulticastTtl(int value)
+	{
+		int ttl = 20;
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(int)), "setsockopt()");
+	}
+
+	bool PlatformSocket::setMulticastLoopback(bool value)
+	{
+		int loopBack = (value ? 1 : 0);
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopBack, sizeof(int)), "setsockopt()");
+	}
+
+	bool setMulticastTtl(int ttl);
 
 	bool PlatformSocket::disconnect()
 	{
@@ -219,10 +272,16 @@ namespace sakit
 		{
 			result = ::sendto(this->sock, data, size, 0, this->info->ai_addr, this->info->ai_addrlen);
 		}
-		else
+		else// if (this->address != NULL)
 		{
 			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->address, sizeof(*this->address));
 		}
+		/*
+		else
+		{
+			result = ::sendto(this->sock, data, size, 0, (sockaddr*)&this->multicastGroupAddress, sizeof(this->multicastGroupAddress));
+		}
+		*/
 		if (result >= 0)
 		{
 			stream->seek(result);
@@ -240,21 +299,16 @@ namespace sakit
 		memset(&this->readSet, 0, sizeof(this->readSet));
 		unsigned long received = 0;
 		// control socket IO
-		if (ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received) == SOCKET_ERROR)
+		if (!this->_checkResult(ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received), "ioctlsocket()", false))
 		{
-			hlog::debug(sakit::logTag, "ioctlsocket() error!");
-			_printLastError();
 			return false;
 		}
 		if (received == 0)
 		{
 			return true;
 		}
-		received = recv(this->sock, this->receiveBuffer, hmin(count, bufferSize), 0);
-		if (received == SOCKET_ERROR)
+		if (!this->_checkResult(recv(this->sock, this->receiveBuffer, hmin(count, bufferSize), 0), "recv()", false))
 		{
-			hlog::debug(sakit::logTag, "recv() error!");
-			_printLastError();
 			return false;
 		}
 		mutex.lock();
@@ -266,12 +320,7 @@ namespace sakit
 
 	bool PlatformSocket::listen()
 	{
-		if (::listen(this->sock, SOMAXCONN) == SOCKET_ERROR)
-		{
-			_printLastError();
-			return false;
-		}
-		return true;
+		return this->_checkResult(::listen(this->sock, SOMAXCONN), "listen()", false);
 	}
 
 	bool PlatformSocket::accept(Socket* socket)
@@ -281,11 +330,9 @@ namespace sakit
 		other->address = (sockaddr_storage*)malloc(size);
 		this->_setNonBlocking(true);
 		other->sock = ::accept(this->sock, (sockaddr*)other->address, &size);
-		if (other->sock == SOCKET_ERROR)
+		if (!other->_checkResult(other->sock, "accept()"))
 		{
-			_printLastError();
 			this->_setNonBlocking(false);
-			other->disconnect();
 			return false;
 		}
 		this->_setNonBlocking(false);
@@ -305,11 +352,9 @@ namespace sakit
 		other->address = (sockaddr_storage*)malloc(size);
 		this->_setNonBlocking(true);
 		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)other->address, &size);
-		if (received == SOCKET_ERROR)
+		if (!other->_checkResult(received, "recvfrom()"))
 		{
-			_printLastError();
 			this->_setNonBlocking(false);
-			other->disconnect();
 			return false;
 		}
 		this->_setNonBlocking(false);
@@ -323,6 +368,66 @@ namespace sakit
 			((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
 		}
 		return true;
+	}
+
+	bool PlatformSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
+	{
+		const char* data = (const char*)&(*stream)[stream->position()];
+		int size = hmin((int)(stream->size() - stream->position()), count);
+		int result = 0;
+#ifndef _ANDROID
+		int ai_family = AF_INET;
+#else
+		int ai_family = PF_INET;
+#endif
+		SOCKET sock = socket(ai_family, SOCK_DGRAM, IPPROTO_IP);
+		if (sock == SOCKET_ERROR)
+		{
+			PlatformSocket::_printLastError("socket() error!");
+			closesocket(sock);
+			return false;
+		}
+		int broadcast = 1;
+		result = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast));
+		if (result == SOCKET_ERROR)
+		{
+			PlatformSocket::_printLastError("setsockopt() error!");
+			closesocket(sock);
+			return false;
+		}
+		int reuseaddress = 1;
+		result = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddress, sizeof(reuseaddress));
+		if (result == SOCKET_ERROR)
+		{
+			PlatformSocket::_printLastError("setsockopt() error!");
+			closesocket(sock);
+			return false;
+		}
+		sockaddr_in address;
+		memset(&address, 0, sizeof(sockaddr_in));
+		address.sin_family = ai_family;
+		address.sin_port = htons(port);
+		int maxResult = 0;
+		foreach (NetworkAdapter, it, adapters)
+		{
+			address.sin_addr.s_addr = inet_addr((*it).getBroadcastIp().getAddress().c_str());
+			result = sendto(sock, data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
+			if (result == SOCKET_ERROR)
+			{
+				PlatformSocket::_printLastError("sendto() error!");
+			}
+			else if (result > 0)
+			{
+				maxResult = hmax(result, maxResult);
+			}
+		}
+		closesocket(sock);
+		if (maxResult > 0)
+		{
+			stream->seek(maxResult);
+			return true;
+		}
+		return false;
 	}
 
 	harray<NetworkAdapter> PlatformSocket::getNetworkAdapters()
@@ -450,61 +555,6 @@ namespace sakit
 		*/
 #endif
 		return result;
-	}
-
-	bool PlatformSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
-	{
-		const char* data = (const char*)&(*stream)[stream->position()];
-		int size = hmin((int)(stream->size() - stream->position()), count);
-		int result = 0;
-#ifndef _ANDROID
-		int ai_family = AF_INET;
-#else
-		int ai_family = PF_INET;
-#endif
-		SOCKET sock = ::socket(ai_family, SOCK_DGRAM, IPPROTO_IP);
-		if (sock == SOCKET_ERROR)
-		{
-			hlog::error(sakit::logTag, "sock() error!");
-			return false;
-		}
-		int broadcast = 1;
-		result = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast));
-		if (result == SOCKET_ERROR)
-		{
-			hlog::error(sakit::logTag, "setsockopt() error!");
-			_printLastError();
-			closesocket(sock);
-			return false;
-		}
-		unsigned int ipAddress;
-		sockaddr_in address;
-		memset(&address, 0, sizeof(sockaddr_in));
-		address.sin_family = ai_family;
-		address.sin_port = htons(port);
-		int maxResult = 0;
-		foreach (NetworkAdapter, it, adapters)
-		{
-			ipAddress = (*it).getBroadcastIp().getRawNumeric();
-			address.sin_addr.s_addr = htonl(ipAddress);
-			result = sendto(sock, data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
-			if (result == SOCKET_ERROR)
-			{
-				hlog::error(sakit::logTag, "sendto() error!");
-				_printLastError();
-			}
-			else if (result > 0)
-			{
-				maxResult = hmax(result, maxResult);
-			}
-		}
-		closesocket(sock);
-		if (maxResult > 0)
-		{
-			stream->seek(maxResult);
-			return true;
-		}
-		return false;
 	}
 
 }

@@ -20,7 +20,7 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate)
+	UdpSocket::UdpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate), multicastGroup(false)
 	{
 		this->socket->setConnectionLess(true);
 	}
@@ -53,7 +53,39 @@ namespace sakit
 	{
 		this->host = Ip();
 		this->port = 0;
+		this->multicastGroup = false;
 		return this->socket->disconnect();
+	}
+
+	bool UdpSocket::joinMulticastGroup(Ip address, unsigned short port, Ip groupAddress)
+	{
+		if (this->hasDestination())
+		{
+			this->clearDestination();
+		}
+		bool result = this->socket->joinMulticastGroup(address, port, groupAddress);
+		if (result)
+		{
+			this->host = host;
+			this->port = port;
+			this->multicastGroup = true;
+		}
+		return result;
+	}
+
+	bool UdpSocket::setMulticastInterface(Ip address)
+	{
+		return this->socket->setMulticastInterface(address);
+	}
+
+	bool UdpSocket::setMulticastTtl(int value)
+	{
+		return this->socket->setMulticastTtl(value);
+	}
+
+	bool UdpSocket::setMulticastLoopback(bool value)
+	{
+		return this->socket->setMulticastTtl(value);
 	}
 
 	int UdpSocket::send(hstream* stream, int count)

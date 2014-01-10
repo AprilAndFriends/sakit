@@ -39,9 +39,9 @@ namespace sakit
 		HL_DEFINE_IS(connected, Connected);
 		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
 
-		bool createSocket(Ip host, unsigned int port);
-		bool connect(Ip host, unsigned int port);
-		bool bind(Ip host, unsigned int port);
+		bool createSocket(Ip host, unsigned short port);
+		bool connect(Ip host, unsigned short port);
+		bool bind(Ip host, unsigned short port);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& count);
@@ -49,8 +49,13 @@ namespace sakit
 		bool listen();
 		bool accept(Socket* socket);
 
-		static harray<NetworkAdapter> getNetworkAdapters();
+		bool joinMulticastGroup(Ip host, unsigned short port, Ip groupAddress);
+		bool setMulticastInterface(Ip address);
+		bool setMulticastTtl(int value);
+		bool setMulticastLoopback(bool value);
+
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
+		static harray<NetworkAdapter> getNetworkAdapters();
 		
 		static void platformInit();
 		static void platformDestroy();
@@ -65,6 +70,7 @@ namespace sakit
 		unsigned int sock;
 		struct addrinfo* info;
 		struct sockaddr_storage* address;
+		struct sockaddr_in multicastGroupAddress;
 #else
 		Windows::Networking::Sockets::StreamSocket^ sock;
 		Windows::Networking::HostName^ hostName;
@@ -74,11 +80,11 @@ namespace sakit
 		bool _awaitAsync();
 #endif
 
-		bool _finishSocket(int result, chstr functionName);
+		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
 
 		bool _setNonBlocking(bool value);
 
-		static int _printLastError();
+		static int _printLastError(chstr basicMessage);
 
 	};
 

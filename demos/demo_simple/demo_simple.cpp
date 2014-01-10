@@ -433,10 +433,39 @@ int main(int argc, char **argv)
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
-	*/
-	sakit::getNetworkAdapters();
-	sakit::UdpSocket::broadcast(5005, "Hi.");
-	sakit::UdpSocket::broadcast(5005, "How are you?");
+	//*/
+	//sakit::UdpSocket::broadcast(5005, "Hi.");
+	//sakit::UdpSocket::broadcast(5005, "How are you?");
+	sakit::Ip multicastGroup("226.2.3.4");
+	sakit::UdpSocket* socket = new sakit::UdpSocket(&clientDelegate);
+
+	if (socket->joinMulticastGroup(sakit::Ip("192.168.1.109"), 5015, multicastGroup))
+	{
+		hlog::write(LOG_TAG, "- added to multicast group: " + multicastGroup.getAddress());
+	}
+	hlog::write(LOG_TAG, "Listening now...");
+	hstream stream;
+	socket->receiveAsync(/*&stream,*/ 14);
+	hlog::write(LOG_TAG, "- received: " + hstr(stream.size()));
+	
+	{
+		sakit::UdpSocket* socket2 = new sakit::UdpSocket(&clientDelegate);
+		socket2->setDestination(multicastGroup, 5015);
+		socket2->send("12345678901234");
+		delete socket2;
+		for_iter (i, 0, 10)
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		}
+	}
+
+	socket->setDestination(multicastGroup, 5010); // remember that this drops the multicast group membership!
+	int sent = socket->send("Hi.");
+	hlog::write(LOG_TAG, "- sent: " + hstr(sent));
+
+	delete socket;
+	
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");
