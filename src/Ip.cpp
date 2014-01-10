@@ -73,7 +73,7 @@ namespace sakit
 		{
 			return 0;
 		}
-		return ((numerics[0] << 24) || (numerics[1] << 16) || (numerics[2] << 8) || numerics[3]);
+		return (((unsigned int)numerics[0] << 24) | ((unsigned int)numerics[1] << 16) | ((unsigned int)numerics[2] << 8) | (unsigned int)numerics[3]);
 	}
 
 	bool Ip::operator==(const Ip& other) const

@@ -146,12 +146,30 @@ namespace sakit
 		this->setDestination(host, port);
 	}
 
+	bool UdpSocket::broadcast(unsigned short port, hstream* stream, int count )
+	{
+		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, stream, count);
+	}
+
+	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
+	{
+		return PlatformSocket::broadcast(adapters, port, stream, count);
+	}
+
 	bool UdpSocket::broadcast(unsigned short port, chstr data)
 	{
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return PlatformSocket::broadcast(port, &stream);
+		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, &stream);
+	}
+
+	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data)
+	{
+		hstream stream;
+		stream.write(data);
+		stream.rewind();
+		return PlatformSocket::broadcast(adapters, port, &stream);
 	}
 
 }

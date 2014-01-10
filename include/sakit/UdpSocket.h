@@ -17,6 +17,7 @@
 #include <hltypes/hstream.h>
 
 #include "Ip.h"
+#include "NetworkAdapter.h"
 #include "sakitExport.h"
 #include "Socket.h"
 
@@ -42,7 +43,10 @@ namespace sakit
 		bool sendAsync(chstr data);
 		bool receiveAsync(int count);
 
+		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
 		static bool broadcast(unsigned short port, chstr data);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data);
 
 	protected:
 		void _activateConnection(Ip host, unsigned short port);

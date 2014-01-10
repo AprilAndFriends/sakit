@@ -50,7 +50,7 @@ namespace sakit
 		bool accept(Socket* socket);
 
 		static harray<NetworkAdapter> getNetworkAdapters();
-		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
 		
 		static void platformInit();
 		static void platformDestroy();

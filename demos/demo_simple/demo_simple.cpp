@@ -436,6 +436,7 @@ int main(int argc, char **argv)
 	*/
 	sakit::getNetworkAdapters();
 	sakit::UdpSocket::broadcast(5005, "Hi.");
+	sakit::UdpSocket::broadcast(5005, "How are you?");
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

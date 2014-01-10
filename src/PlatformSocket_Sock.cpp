@@ -452,7 +452,7 @@ namespace sakit
 		return result;
 	}
 
-	bool PlatformSocket::broadcast(unsigned short port, hstream* stream, int count)
+	bool PlatformSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
 	{
 		const char* data = (const char*)&(*stream)[stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
@@ -477,22 +477,12 @@ namespace sakit
 			closesocket(sock);
 			return false;
 		}
-		int reuseaddr = 1;
-		result = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr));
-		if (result == SOCKET_ERROR)
-		{
-			hlog::error(sakit::logTag, "setsockopt() error!");
-			_printLastError();
-			closesocket(sock);
-			return false;
-		}
 		unsigned int ipAddress;
 		sockaddr_in address;
 		memset(&address, 0, sizeof(sockaddr_in));
 		address.sin_family = ai_family;
 		address.sin_port = htons(port);
-		harray<NetworkAdapter> adapters = PlatformSocket::getNetworkAdapters();
-		bool sent = false;
+		int maxResult = 0;
 		foreach (NetworkAdapter, it, adapters)
 		{
 			ipAddress = (*it).getBroadcastIp().getRawNumeric();
@@ -505,15 +495,16 @@ namespace sakit
 			}
 			else if (result > 0)
 			{
-				if (!sent)
-				{
-					stream->seek(result);
-				}
-				sent = true;
+				maxResult = hmax(result, maxResult);
 			}
 		}
 		closesocket(sock);
-		return sent;
+		if (maxResult > 0)
+		{
+			stream->seek(maxResult);
+			return true;
+		}
+		return false;
 	}
 
 }
