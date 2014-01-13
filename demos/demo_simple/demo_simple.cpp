@@ -24,6 +24,7 @@
 #include <sakit/UdpServer.h>
 #include <sakit/UdpServerDelegate.h>
 #include <sakit/UdpSocket.h>
+#include <sakit/WebSocket.h>
 
 #define TEST_PORT 53334
 
@@ -434,16 +435,54 @@ void _testAsyncUdpClient()
 	delete server;
 }
 
-#define HTTP_LINE_ENDING "\r\n"
+void _testWebSocket()
+{
+	sakit::WebSocket* socket = new sakit::WebSocket(&clientDelegate);
+	if (socket->connect(sakit::Ip("www.google.com")))
+	{
+		int sent = socket->get("");
+		hlog::write(LOG_TAG, "Sent: " + hstr(sent));
+		/*
+		for_iter (i, 0, 30) // wait 3 seconds
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		}
+		hstream stream;
+		socket->receive(&stream);
+		if (stream.size() > 0)
+		{
+			stream.rewind();
+			hlog::write(LOG_TAG, stream.read());
+		}
+		else
+		{
+			hlog::write(LOG_TAG, "Server did not respond in time.");
+		}
+		socket->disconnect();
+		*/
+		socket->startReceiveAsync(30);
+		do
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		} while (socket->isReceiving());
+	}
+	delete socket;
+}
 
 int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
+	/*
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
+	//*/
+	_testWebSocket();
+
 	//sakit::UdpSocket::broadcast(5005, "Hi.");
 	//sakit::UdpSocket::broadcast(5005, "How are you?");
 	/*

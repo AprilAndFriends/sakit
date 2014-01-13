@@ -296,7 +296,7 @@ namespace sakit
 			return false;
 		}
 		mutex.lock();
-		stream->write_raw(this->receiveBuffer, received);
+		stream->write_raw(this->receiveBuffer, read);
 		mutex.unlock();
 		if (count > 0) // i.e. read everything
 		{
