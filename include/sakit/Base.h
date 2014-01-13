@@ -45,11 +45,10 @@ namespace sakit
 		unsigned short port;
 
 		int _send(hstream* stream, int count);
-		int _receive(hstream* stream, int count);
+		int _receive(hstream* stream, int maxBytes);
 
 		bool _canSend(hstream* stream, int count);
-		bool _canReceive(hstream* stream, int count);
-		bool _canReceive(int count);
+		bool _canReceive(hstream* stream);
 
 		virtual void _activateConnection(Ip host, unsigned short port);
 

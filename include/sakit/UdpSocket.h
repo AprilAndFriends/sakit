@@ -39,12 +39,12 @@ namespace sakit
 
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
-		int receive(hstream* stream, int count);
+		int receive(hstream* stream, int count = 0);
 
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
-		bool receiveAsync(int count);
-
+		bool startReceiveAsync(int count = 0);
+		
 		bool joinMulticastGroup(Ip address, unsigned short port, Ip groupAddress);
 		bool setMulticastInterface(Ip address);
 		bool setMulticastTtl(int value);

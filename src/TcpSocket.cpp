@@ -59,6 +59,66 @@ namespace sakit
 		return result;
 	}
 
+	void TcpSocket::update(float timeSinceLastFrame)
+	{
+		Socket::update(timeSinceLastFrame);
+		this->thread->mutex.lock();
+		State state = this->thread->state;
+		WorkerThread::Result result = this->thread->result;
+		Ip host = this->thread->host;
+		unsigned short port = this->thread->port;
+		this->thread->mutex.unlock();
+		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		{
+			return;
+		}
+		this->thread->mutex.lock();
+		this->thread->result = WorkerThread::IDLE;
+		this->thread->mutex.unlock();
+		if (result == WorkerThread::FINISHED)
+		{
+			switch (state)
+			{
+			case CONNECTING:
+				this->thread->mutex.lock();
+				this->thread->state = CONNECTED;
+				this->thread->mutex.unlock();
+				this->host = host;
+				this->port = port;
+				this->socketDelegate->onConnected(this);
+				break;
+			case DISCONNECTING:
+				this->thread->mutex.lock();
+				this->thread->state = IDLE;
+				this->thread->mutex.unlock();
+				host = this->host;
+				port = this->port;
+				this->host = Ip();
+				this->port = 0;
+				this->socketDelegate->onDisconnected(this, host, port);
+				break;
+			}
+		}
+		else if (state == WorkerThread::FAILED)
+		{
+			switch (state)
+			{
+			case CONNECTING:
+				this->thread->mutex.lock();
+				this->thread->state = IDLE;
+				this->thread->mutex.unlock();
+				this->socketDelegate->onConnectFailed(this, host, port);
+				break;
+			case DISCONNECTING:
+				this->thread->mutex.lock();
+				this->thread->state = CONNECTED;
+				this->thread->mutex.unlock();
+				this->socketDelegate->onDisconnectFailed(this);
+				break;
+			}
+		}
+	}
+
 	bool TcpSocket::connect(Ip host, unsigned short port)
 	{
 		this->thread->mutex.lock();
@@ -123,9 +183,9 @@ namespace sakit
 		return Socket::send(data);
 	}
 
-	int TcpSocket::receive(hstream* stream, int count)
+	int TcpSocket::receive(hstream* stream, int maxBytes)
 	{
-		if (!this->_canReceive(stream, count))
+		if (!this->_canReceive(stream))
 		{
 			return false;
 		}
@@ -135,22 +195,11 @@ namespace sakit
 		State receiverState = this->receiver->state;
 		this->receiver->mutex.unlock();
 		this->thread->mutex.unlock();
-		if (!this->_checkReceiveStatus(socketState, receiverState))
+		if (!this->_checkStartReceiveStatus(socketState, receiverState))
 		{
-			return NULL;
+			return 0;
 		}
-		hmutex mutex;
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int remaining = count;
-		while (remaining > 0)
-		{
-			if (!this->socket->receive(stream, mutex, remaining))
-			{
-				break;
-			}
-			hthread::sleep(retryTimeout);
-		}
-		return (count - remaining);
+		return this->_receive(stream, maxBytes);
 	}
 
 	bool TcpSocket::connectAsync(Ip host, unsigned short port)
@@ -224,23 +273,19 @@ namespace sakit
 		return Socket::sendAsync(data);
 	}
 
-	bool TcpSocket::receiveAsync(int count)
+	bool TcpSocket::startReceiveAsync(int maxBytes)
 	{
-		if (!this->_canReceive(count))
-		{
-			return false;
-		}
 		this->thread->mutex.lock();
 		this->receiver->mutex.lock();
 		State socketState = this->thread->state;
 		State receiverState = this->receiver->state;
-		if (!this->_checkReceiveStatus(socketState, receiverState))
+		if (!this->_checkStartReceiveStatus(socketState, receiverState))
 		{
 			this->receiver->mutex.unlock();
 			this->thread->mutex.unlock();
 			return false;
 		}
-		this->receiver->count = count;
+		this->receiver->maxBytes = maxBytes;
 		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->thread->mutex.unlock();
@@ -248,70 +293,21 @@ namespace sakit
 		return true;
 	}
 
-	void TcpSocket::update(float timeSinceLastFrame)
-	{
-		Socket::update(timeSinceLastFrame);
-		this->thread->mutex.lock();
-		State state = this->thread->state;
-		WorkerThread::Result result = this->thread->result;
-		Ip host = this->thread->host;
-		unsigned short port = this->thread->port;
-		this->thread->mutex.unlock();
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
-		{
-			return;
-		}
-		this->thread->mutex.lock();
-		this->thread->result = WorkerThread::IDLE;
-		this->thread->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
-		{
-			switch (state)
-			{
-			case CONNECTING:
-				this->thread->mutex.lock();
-				this->thread->state = CONNECTED;
-				this->thread->mutex.unlock();
-				this->host = host;
-				this->port = port;
-				this->socketDelegate->onConnected(this);
-				break;
-			case DISCONNECTING:
-				this->thread->mutex.lock();
-				this->thread->state = IDLE;
-				this->thread->mutex.unlock();
-				host = this->host;
-				port = this->port;
-				this->host = Ip();
-				this->port = 0;
-				this->socketDelegate->onDisconnected(this, host, port);
-				break;
-			}
-		}
-		else if (state == WorkerThread::FAILED)
-		{
-			switch (state)
-			{
-			case CONNECTING:
-				this->thread->mutex.lock();
-				this->thread->state = IDLE;
-				this->thread->mutex.unlock();
-				this->socketDelegate->onConnectFailed(this, host, port);
-				break;
-			case DISCONNECTING:
-				this->thread->mutex.lock();
-				this->thread->state = CONNECTED;
-				this->thread->mutex.unlock();
-				this->socketDelegate->onDisconnectFailed(this);
-				break;
-			}
-		}
-	}
-
 	void TcpSocket::_activateConnection(Ip host, unsigned short port)
 	{
 		Base::_activateConnection(host, port);
 		this->thread->state = CONNECTED;
+	}
+
+	bool TcpSocket::_checkConnectedStatus(State socketState, chstr action)
+	{
+		switch (socketState)
+		{
+		case IDLE:			hlog::warn(sakit::logTag, "Cannot " + action + ", not connected!");			return false;
+		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot " + action + ", still connecting!");		return false;
+		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot " + action + ", already disconnecting!");	return false;
+		}
+		return true;
 	}
 
 	bool TcpSocket::_checkConnectStatus(State socketState)
@@ -327,11 +323,9 @@ namespace sakit
 
 	bool TcpSocket::_checkDisconnectStatus(State socketState, State senderState, State receiverState)
 	{
-		switch (socketState)
+		if (!this->_checkConnectedStatus(socketState, "disconnect"))
 		{
-		case IDLE:			hlog::warn(sakit::logTag, "Cannot disconnect, not connected!");			return false;
-		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot disconnect, still connecting!");		return false;
-		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot disconnect, already disconnecting!");	return false;
+			return false;
 		}
 		bool result = true;
 		if (senderState == RUNNING)
@@ -349,24 +343,20 @@ namespace sakit
 
 	bool TcpSocket::_checkSendStatus(State socketState, State senderState)
 	{
-		switch (socketState)
+		if (!this->_checkConnectedStatus(socketState, "send"))
 		{
-		case IDLE:			hlog::warn(sakit::logTag, "Cannot send, not connected!");			return false;
-		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot send, still connecting!");		return false;
-		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot send, already disconnecting!");	return false;
+			return false;
 		}
 		return Socket::_checkSendStatus(senderState);
 	}
 
-	bool TcpSocket::_checkReceiveStatus(State socketState, State receiverState)
+	bool TcpSocket::_checkStartReceiveStatus(State socketState, State receiverState)
 	{
-		switch (socketState)
+		if (!this->_checkConnectedStatus(socketState, "start receiving"))
 		{
-		case IDLE:			hlog::warn(sakit::logTag, "Cannot receive, not connected!");			return false;
-		case CONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, still connecting!");			return false;
-		case DISCONNECTING:	hlog::warn(sakit::logTag, "Cannot receive, already disconnecting!");	return false;
+			return false;
 		}
-		return Socket::_checkSendStatus(receiverState);
+		return Socket::_checkStartReceiveStatus(receiverState);
 	}
 
 }

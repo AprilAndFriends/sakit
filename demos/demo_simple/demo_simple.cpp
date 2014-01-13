@@ -224,7 +224,7 @@ void _testAsyncTcpServer()
 						hthread::sleep(100.0f);
 					}
 					stream.clear();
-					client->receive(&stream, 6); // receive 6 bytes max
+					client->receive(&stream, 20); // receive 20 bytes max
 					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
 					server->getSockets()[0]->disconnect();
@@ -293,7 +293,13 @@ void _testAsyncTcpClient()
 				int sent = accepted->send("Hello.");
 				hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 				// back to client
-				client->receiveAsync(6); // receive 6 bytes max
+				client->startReceiveAsync(); // start receiving
+				for_iter (i, 0, 10)
+				{
+					sakit::update(0.0f);
+					hthread::sleep(100.0f);
+				}
+				client->stopReceiveAsync();
 				do
 				{
 					sakit::update(0.0f);
@@ -350,7 +356,7 @@ void _testAsyncUdpServer()
 						hthread::sleep(100.0f);
 					}
 					stream.clear();
-					client->receive(&stream, 6); // receive 6 bytes max
+					client->receive(&stream); // receive all there is
 					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
 				}
@@ -404,7 +410,13 @@ void _testAsyncUdpClient()
 			int sent = received->send("Hello.");
 			hlog::write(LOG_TAG, "RECEIVED sent: " + hstr(sent));
 			// back to client
-			client->receiveAsync(6); // receive 6 bytes max
+			client->startReceiveAsync(); // start receiving
+			for_iter (i, 0, 10)
+			{
+				sakit::update(0.0f);
+				hthread::sleep(100.0f);
+			}
+			client->stopReceiveAsync();
 			do
 			{
 				sakit::update(0.0f);
@@ -428,14 +440,13 @@ int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	/*
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
-	//*/
 	//sakit::UdpSocket::broadcast(5005, "Hi.");
 	//sakit::UdpSocket::broadcast(5005, "How are you?");
+	/*
 	sakit::Ip multicastGroup("226.2.3.4");
 	sakit::UdpSocket* socket = new sakit::UdpSocket(&clientDelegate);
 
@@ -445,7 +456,7 @@ int main(int argc, char **argv)
 	}
 	hlog::write(LOG_TAG, "Listening now...");
 	hstream stream;
-	socket->receiveAsync(/*&stream,*/ 14);
+	socket->receiveAsync(14);
 	hlog::write(LOG_TAG, "- received: " + hstr(stream.size()));
 	
 	{
@@ -463,9 +474,10 @@ int main(int argc, char **argv)
 	socket->setDestination(multicastGroup, 5010); // remember that this drops the multicast group membership!
 	int sent = socket->send("Hi.");
 	hlog::write(LOG_TAG, "- sent: " + hstr(sent));
-
-	delete socket;
 	
+	delete socket;
+	*/
+
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
 	system("pause");

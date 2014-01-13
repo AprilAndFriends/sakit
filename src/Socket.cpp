@@ -143,6 +143,20 @@ namespace sakit
 		return this->sendAsync(&stream);
 	}
 
+	bool Socket::stopReceiveAsync()
+	{
+		this->receiver->mutex.lock();
+		State receiverState = this->receiver->state;
+		if (!this->_checkStopReceiveStatus(receiverState))
+		{
+			this->receiver->mutex.unlock();
+			return false;
+		}
+		this->receiver->running = false;
+		this->receiver->mutex.unlock();
+		return true;
+	}
+
 	bool Socket::_checkSendStatus(State senderState)
 	{
 		if (senderState == RUNNING)
@@ -153,11 +167,21 @@ namespace sakit
 		return true;
 	}
 
-	bool Socket::_checkReceiveStatus(State receiverState)
+	bool Socket::_checkStartReceiveStatus(State receiverState)
 	{
 		if (receiverState == RUNNING)
 		{
-			hlog::warn(sakit::logTag, "Cannot receive, already receiving!");
+			hlog::warn(sakit::logTag, "Cannot start receiving, already receiving!");
+			return false;
+		}
+		return true;
+	}
+
+	bool Socket::_checkStopReceiveStatus(State receiverState)
+	{
+		if (receiverState == IDLE)
+		{
+			hlog::warn(sakit::logTag, "Cannot stop receiving, not receiving!");
 			return false;
 		}
 		return true;

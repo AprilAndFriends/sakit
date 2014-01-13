@@ -67,20 +67,24 @@ namespace sakit
 		return sent;
 	}
 	
-	int Base::_receive(hstream* stream, int count)
+	int Base::_receive(hstream* stream, int maxBytes)
 	{
 		hmutex mutex;
 		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int remaining = count;
-		while (remaining > 0)
+		int remaining = maxBytes;
+		while (remaining == maxBytes)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
 			{
 				break;
 			}
+			if (maxBytes == 0)
+			{
+				break;
+			}
 			hthread::sleep(retryTimeout);
 		}
-		return (count - remaining);
+		return (maxBytes - remaining);
 	}
 
 	bool Base::_canSend(hstream* stream, int count)
@@ -103,26 +107,11 @@ namespace sakit
 		return true;
 	}
 
-	bool Base::_canReceive(hstream* stream, int count)
+	bool Base::_canReceive(hstream* stream)
 	{
 		if (stream == NULL)
 		{
 			hlog::warn(sakit::logTag, "Cannot receive, stream is NULL!");
-			return false;
-		}
-		if (count == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot receive, count is 0!");
-			return false;
-		}
-		return true;
-	}
-
-	bool Base::_canReceive(int count)
-	{
-		if (count == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot receive, count is 0!");
 			return false;
 		}
 		return true;

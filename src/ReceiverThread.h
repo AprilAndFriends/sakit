@@ -42,7 +42,7 @@ namespace sakit
 	protected:
 		Socket::State state;
 		hstream* stream;
-		int count;
+		int maxBytes;
 
 		void _updateProcess();
 

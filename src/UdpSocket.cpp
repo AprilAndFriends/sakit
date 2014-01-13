@@ -109,20 +109,20 @@ namespace sakit
 		return Socket::send(data);
 	}
 
-	int UdpSocket::receive(hstream* stream, int count)
+	int UdpSocket::receive(hstream* stream, int maxBytes)
 	{
-		if (!this->_canReceive(stream, count))
+		if (!this->_canReceive(stream))
 		{
 			return false;
 		}
 		this->receiver->mutex.lock();
 		State receiverState = this->receiver->state;
 		this->receiver->mutex.unlock();
-		if (!this->_checkReceiveStatus(receiverState))
+		if (!this->_checkStartReceiveStatus(receiverState))
 		{
-			return NULL;
+			return 0;
 		}
-		return this->_receive(stream, count);
+		return this->_receive(stream, maxBytes);
 	}
 
 	bool UdpSocket::sendAsync(hstream* stream, int count)
@@ -152,20 +152,16 @@ namespace sakit
 		return Socket::sendAsync(data);
 	}
 
-	bool UdpSocket::receiveAsync(int count)
+	bool UdpSocket::startReceiveAsync(int maxBytes)
 	{
-		if (!this->_canReceive(count))
-		{
-			return false;
-		}
 		this->receiver->mutex.lock();
 		State receiverState = this->receiver->state;
-		if (!this->_checkReceiveStatus(receiverState))
+		if (!this->_checkStartReceiveStatus(receiverState))
 		{
 			this->receiver->mutex.unlock();
 			return false;
 		}
-		this->receiver->count = count;
+		this->receiver->maxBytes = maxBytes;
 		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->start();

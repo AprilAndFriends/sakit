@@ -54,6 +54,7 @@ namespace sakit
 		virtual int send(chstr data);
 		virtual bool sendAsync(hstream* stream, int count = INT_MAX) = 0;
 		virtual bool sendAsync(chstr data);
+		bool stopReceiveAsync();
 
 	protected:
 		SocketDelegate* socketDelegate;
@@ -66,7 +67,8 @@ namespace sakit
 		void _updateReceiving();
 
 		bool _checkSendStatus(State senderState);
-		bool _checkReceiveStatus(State receiverState);
+		bool _checkStartReceiveStatus(State receiverState);
+		bool _checkStopReceiveStatus(State receiverState);
 
 	};
 

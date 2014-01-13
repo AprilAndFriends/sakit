@@ -18,7 +18,7 @@
 namespace sakit
 {
 	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(&process, socket),
-		state(Socket::IDLE), count(INT_MAX)
+		state(Socket::IDLE), maxBytes(0)
 	{
 		this->stream = new hstream();
 	}
@@ -30,16 +30,17 @@ namespace sakit
 
 	void ReceiverThread::_updateProcess()
 	{
+		int remaining = this->maxBytes;
 		while (this->running)
 		{
-			if (!this->socket->receive(this->stream, this->mutex, this->count))
+			if (!this->socket->receive(this->stream, this->mutex, remaining))
 			{
 				this->mutex.lock();
 				this->result = FAILED;
 				this->mutex.unlock();
 				return;
 			}
-			if (this->count == 0)
+			if (this->maxBytes > 0 && remaining == 0)
 			{
 				break;
 			}

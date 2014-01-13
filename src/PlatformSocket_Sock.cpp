@@ -70,8 +70,6 @@ namespace sakit
 {
 	extern int bufferSize;
 
-	static timeval interval = {5, 0};
-
 	void PlatformSocket::platformInit()
 	{
 #if defined(_WIN32) && !defined(_WINRT)
@@ -135,12 +133,7 @@ namespace sakit
 		}
 		// create socket
 		this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
-		if (!this->_checkResult(this->sock, "socket()"))
-		{
-			return false;
-		}
-		int reuseaddr = 1;
-		return this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr)), "setsockopt()");
+		return this->_checkResult(this->sock, "socket()");
 	}
 
 	bool PlatformSocket::connect(Ip host, unsigned short port)
@@ -163,20 +156,6 @@ namespace sakit
 		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
 	}
 
-	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
-	{
-		if (result == SOCKET_ERROR)
-		{
-			PlatformSocket::_printLastError(functionName + " error!");
-			if (disconnectOnError)
-			{
-				this->disconnect();
-			}
-			return false;
-		}
-		return true;
-	}
-
 	bool PlatformSocket::joinMulticastGroup(Ip host, unsigned short port, Ip groupAddress)
 	{
 		this->connected = true;
@@ -187,11 +166,6 @@ namespace sakit
 #endif
 		this->sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
 		if (!this->_checkResult(this->sock, "socket()"))
-		{
-			return false;
-		}
-		int reuseaddr = 1;
-		if (!this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddr, sizeof(reuseaddr)), "setsockopt()"))
 		{
 			return false;
 		}
@@ -235,8 +209,6 @@ namespace sakit
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopBack, sizeof(int)), "setsockopt()");
 	}
 
-	bool setMulticastTtl(int ttl);
-
 	bool PlatformSocket::disconnect()
 	{
 		if (this->info != NULL)
@@ -272,16 +244,14 @@ namespace sakit
 		{
 			result = ::sendto(this->sock, data, size, 0, this->info->ai_addr, this->info->ai_addrlen);
 		}
-		else// if (this->address != NULL)
+		else if (this->address != NULL)
 		{
 			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->address, sizeof(*this->address));
 		}
-		/*
 		else
 		{
 			result = ::sendto(this->sock, data, size, 0, (sockaddr*)&this->multicastGroupAddress, sizeof(this->multicastGroupAddress));
 		}
-		*/
 		if (result >= 0)
 		{
 			stream->seek(result);
@@ -294,10 +264,18 @@ namespace sakit
 
 	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& count)
 	{
-		interval.tv_sec = 5;
-		interval.tv_usec = 0;
-		memset(&this->readSet, 0, sizeof(this->readSet));
 		unsigned long received = 0;
+#ifndef _WIN32 // Unix requires a select() call before using ioctl/ioctlsocket
+		timeval interval = {5, 0};
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(this->sock, &readSet);
+		int result = select(this->sock + 1, &readSet, NULL, NULL, &interval);
+		if (this->_checkResult(result, "select()") || result == 0)
+		{
+			return false;
+		}
+#endif
 		// control socket IO
 		if (!this->_checkResult(ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received), "ioctlsocket()", false))
 		{
@@ -307,14 +285,23 @@ namespace sakit
 		{
 			return true;
 		}
-		if (!this->_checkResult(recv(this->sock, this->receiveBuffer, hmin(count, bufferSize), 0), "recv()", false))
+		int read = received;
+		if (count > 0) // i.e. read everything
+		{
+			read = hmin(read, hmin(count, bufferSize));
+		}
+		read = recv(this->sock, this->receiveBuffer, read, 0);
+		if (!this->_checkResult(read, "recv()", false))
 		{
 			return false;
 		}
 		mutex.lock();
 		stream->write_raw(this->receiveBuffer, received);
 		mutex.unlock();
-		count -= received;
+		if (count > 0) // i.e. read everything
+		{
+			count -= read;
+		}
 		return true;
 	}
 
@@ -428,6 +415,20 @@ namespace sakit
 			return true;
 		}
 		return false;
+	}
+
+	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
+	{
+		if (result == SOCKET_ERROR)
+		{
+			PlatformSocket::_printLastError(functionName + " error!");
+			if (disconnectOnError)
+			{
+				this->disconnect();
+			}
+			return false;
+		}
+		return true;
 	}
 
 	harray<NetworkAdapter> PlatformSocket::getNetworkAdapters()

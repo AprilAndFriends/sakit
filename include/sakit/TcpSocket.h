@@ -40,14 +40,14 @@ namespace sakit
 		bool disconnect();
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
-		int receive(hstream* stream, int count);
+		int receive(hstream* stream, int maxBytes = 0);
 
 		// TODOsock - make it work with chstr port as well
 		bool connectAsync(Ip host, unsigned short port);
 		bool disconnectAsync();
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
-		bool receiveAsync(int count);
+		bool startReceiveAsync(int maxBytes = 0);
 
 	protected:
 		ConnectorThread* thread;
@@ -55,9 +55,10 @@ namespace sakit
 		void _activateConnection(Ip host, unsigned short port);
 
 		bool _checkConnectStatus(State socketState);
+		bool _checkConnectedStatus(State socketState, chstr action);
 		bool _checkDisconnectStatus(State socketState, State senderState, State receiverState);
 		bool _checkSendStatus(State socketState, State senderState);
-		bool _checkReceiveStatus(State socketState, State receiverState);
+		bool _checkStartReceiveStatus(State socketState, State receiverState);
 
 	};
 
