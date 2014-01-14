@@ -142,6 +142,7 @@
     <ClInclude Include="include\sakit\UdpServer.h" />
     <ClInclude Include="include\sakit\UdpServerDelegate.h" />
     <ClInclude Include="include\sakit\UdpSocket.h" />
+    <ClInclude Include="include\sakit\Uri.h" />
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="src\UdpServerDelegate.cpp" />
     <ClCompile Include="src\UdpServerThread.cpp" />
     <ClCompile Include="src\UdpSocket.cpp" />
+    <ClCompile Include="src\Uri.cpp" />
     <ClCompile Include="src\WorkerThread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

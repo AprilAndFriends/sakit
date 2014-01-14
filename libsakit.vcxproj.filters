@@ -30,6 +30,12 @@
     <Filter Include="Source Files\Platform">
       <UniqueIdentifier>{e345b3c9-72de-401c-964b-af38e73ea486}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Threads">
+      <UniqueIdentifier>{224f9c3f-16e8-4da9-b594-3f6974d2b05f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Threads">
+      <UniqueIdentifier>{08cce590-38c5-4746-9525-f88c842afcaa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="fileproperties.rc">
@@ -49,9 +55,6 @@
     <ClInclude Include="include\sakit\TcpSocket.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="src\PlatformSocket.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\Server.h">
       <Filter>Header Files\Servers</Filter>
     </ClInclude>
@@ -64,20 +67,8 @@
     <ClInclude Include="include\sakit\SocketDelegate.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="src\WorkerThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\Base.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ServerThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ConnectorThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TcpServerThread.h">
-      <Filter>Header Files\Platform</Filter>
     </ClInclude>
     <ClInclude Include="include\sakit\TcpServerDelegate.h">
       <Filter>Header Files\Servers</Filter>
@@ -91,15 +82,6 @@
     <ClInclude Include="include\sakit\UdpServerDelegate.h">
       <Filter>Header Files\Servers</Filter>
     </ClInclude>
-    <ClInclude Include="src\UdpServerThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SenderThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ReceiverThread.h">
-      <Filter>Header Files\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\NetworkAdapter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -109,28 +91,43 @@
     <ClInclude Include="include\sakit\Host.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\sakit\Uri.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WorkerThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ConnectorThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ReceiverThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SenderThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ServerThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TcpServerThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UdpServerThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlatformSocket.h">
+      <Filter>Header Files\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PlatformSocket.cpp">
-      <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PlatformSocket_Sock.cpp">
-      <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PlatformSocket_WinRT.cpp">
-      <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\Socket.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\TcpSocket.cpp">
       <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WorkerThread.cpp">
-      <Filter>Source Files\Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\Server.cpp">
       <Filter>Source Files\Servers</Filter>
@@ -147,15 +144,6 @@
     <ClCompile Include="src\Base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ServerThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ConnectorThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TcpServerThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="src\TcpServerDelegate.cpp">
       <Filter>Source Files\Servers</Filter>
     </ClCompile>
@@ -168,15 +156,6 @@
     <ClCompile Include="src\UdpServerDelegate.cpp">
       <Filter>Source Files\Servers</Filter>
     </ClCompile>
-    <ClCompile Include="src\UdpServerThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SenderThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ReceiverThread.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="src\NetworkAdapter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -185,6 +164,39 @@
     </ClCompile>
     <ClCompile Include="src\Host.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Uri.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConnectorThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReceiverThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SenderThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ServerThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TcpServerThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpServerThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformSocket.cpp">
+      <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformSocket_Sock.cpp">
+      <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformSocket_WinRT.cpp">
+      <Filter>Source Files\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
