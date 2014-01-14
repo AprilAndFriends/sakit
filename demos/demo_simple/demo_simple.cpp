@@ -25,6 +25,7 @@
 #include <sakit/UdpServerDelegate.h>
 #include <sakit/UdpSocket.h>
 #include <sakit/HttpSocket.h>
+#include <sakit/HttpSocketDelegate.h>
 
 #define TEST_PORT 53334
 
@@ -191,6 +192,15 @@ protected:
 SocketDelegate clientDelegate("CLIENT");
 SocketDelegate acceptedDelegate("ACCEPTED");
 SocketDelegate receivedDelegate("RECEIVED");
+
+class HttpSocketDelegate : public sakit::HttpSocketDelegate
+{
+public:
+	HttpSocketDelegate() : sakit::HttpSocketDelegate()
+	{
+	}
+
+} httpSocketDelegate;
 
 void _testAsyncTcpServer()
 {
@@ -437,12 +447,12 @@ void _testAsyncUdpClient()
 
 void _testHttpSocket()
 {
-	sakit::HttpSocket* socket = new sakit::HttpSocket(&clientDelegate);
+	sakit::HttpSocket* socket = new sakit::HttpSocket(&httpSocketDelegate);
+		/*
 	if (socket->connect(sakit::Host("www.google.com")))
 	{
 		int sent = socket->get("");
 		hlog::write(LOG_TAG, "Sent: " + hstr(sent));
-		/*
 		for_iter (i, 0, 30) // wait 3 seconds
 		{
 			sakit::update(0.0f);
@@ -460,7 +470,6 @@ void _testHttpSocket()
 			hlog::write(LOG_TAG, "Server did not respond in time.");
 		}
 		socket->disconnect();
-		*/
 		socket->startReceiveAsync(30);
 		do
 		{
@@ -468,6 +477,7 @@ void _testHttpSocket()
 			hthread::sleep(100.0f);
 		} while (socket->isReceiving());
 	}
+		*/
 	delete socket;
 }
 

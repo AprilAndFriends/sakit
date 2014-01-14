@@ -121,6 +121,9 @@
     <ClInclude Include="include\sakit\HttpSocketDelegate.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
+    <ClInclude Include="src\HttpTcpSocketDelegate.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -202,6 +205,9 @@
       <Filter>Source Files\Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\HttpSocketDelegate.cpp">
+      <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpTcpSocketDelegate.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
   </ItemGroup>

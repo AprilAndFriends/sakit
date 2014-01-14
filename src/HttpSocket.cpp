@@ -13,39 +13,41 @@
 
 #include "sakit.h"
 #include "HttpSocket.h"
+#include "HttpSocketDelegate.h"
+#include "HttpTcpSocketDelegate.h"
 
 #define HTTP_LINE_ENDING "\r\n"
 
 namespace sakit
 {
-	HttpSocket::HttpSocket(SocketDelegate* socketDelegate) : TcpSocket(socketDelegate), port(80), protocol(HTTP11)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol)
 	{
+		this->socketDelegate = socketDelegate;
+		this->protocol = protocol;
+		this->tcpSocketDelegate = new HttpTcpSocketDelegate();
+		this->socket = new TcpSocket(this->tcpSocketDelegate);
 	}
 
 	HttpSocket::~HttpSocket()
 	{
-	}
-	
-	bool HttpSocket::connect(Host host)
-	{
-		return TcpSocket::connect(host, this->port);
-	}
-	
-	bool HttpSocket::connectAsync(Host host)
-	{
-		return TcpSocket::connectAsync(host, this->port);
+		delete this->socket;
+		delete this->tcpSocketDelegate;
 	}
 	
 	int HttpSocket::get(chstr url)
 	{
+		/*
 		hstr data;
 		data += "GET " + this->_makeUrl(url) + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
 		data += "Host: " + this->host.getAddress() + HTTP_LINE_ENDING;
-		return this->send(data);
+		return this->socket->send(data);
+		*/
+		return 0;
 	}
 
 	int HttpSocket::post(chstr url, hmap<hstr, hstr> parameters)
 	{
+		/*
 		harray<hstr> params;
 		foreach_m (hstr, it, parameters)
 		{
@@ -61,10 +63,13 @@ namespace sakit
 		data += postData;
 		data += HTTP_LINE_ENDING;
 		return this->send(data);
+		*/
+		return 0;
 	}
 
 	hstr HttpSocket::_makeUrl(chstr url)
 	{
+		/*
 		hstr address = this->host.getAddress();
 		if (url.contains(address))
 		{
@@ -79,6 +84,8 @@ namespace sakit
 			address = "http://" + address;
 		}
 		return address;
+		*/
+		return "";
 	}
 
 	hstr HttpSocket::_makeProtocol()
