@@ -129,6 +129,7 @@
     <ClInclude Include="include\sakit\Base.h" />
     <ClInclude Include="include\sakit\Host.h" />
     <ClInclude Include="include\sakit\HttpSocket.h" />
+    <ClInclude Include="include\sakit\HttpSocketDelegate.h" />
     <ClInclude Include="include\sakit\NetworkAdapter.h" />
     <ClInclude Include="include\sakit\sakit.h" />
     <ClInclude Include="include\sakit\sakitExport.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="src\ConnectorThread.cpp" />
     <ClCompile Include="src\Host.cpp" />
     <ClCompile Include="src\HttpSocket.cpp" />
+    <ClCompile Include="src\HttpSocketDelegate.cpp" />
     <ClCompile Include="src\NetworkAdapter.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
