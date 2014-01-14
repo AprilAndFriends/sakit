@@ -7,7 +7,7 @@
 /// This program is free software; you can redistribute it and/or modify it under
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
-#if defined(_WIN32) && !defined(_WINRT)
+#if !defined(_WIN32) || !defined(_WINRT)
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
@@ -16,6 +16,9 @@
 
 #ifdef _WIN32
 #define _WIN32_WINNT 0x602
+
+typedef int socklen_t;
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <Iphlpapi.h>
@@ -61,6 +64,12 @@ extern int h_errno;
 #include "Socket.h"
 
 #define CHAR_BUFFER 256
+
+#ifdef _WIN32
+	#define __gai_strerror(x) hstr::from_unicode(gai_strerrorW(x))
+#else
+	#define __gai_strerror(x) hstr(gai_strerror(x))
+#endif
 
 #if defined(_WIN32) && !defined(uint32_t)
 typedef u_long uint32_t;
@@ -127,7 +136,7 @@ namespace sakit
 		result = getaddrinfo(host.getAddress().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
+			hlog::error(sakit::logTag, __gai_strerror(result));
 			this->disconnect();
 			return false;
 		}
@@ -313,7 +322,7 @@ namespace sakit
 	bool PlatformSocket::accept(Socket* socket)
 	{
 		PlatformSocket* other = socket->socket;
-		int size = (int)sizeof(sockaddr_storage);
+		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
 		other->address = (sockaddr_storage*)malloc(size);
 		this->_setNonBlocking(true);
 		other->sock = ::accept(this->sock, (sockaddr*)other->address, &size);
@@ -335,7 +344,7 @@ namespace sakit
 	bool PlatformSocket::receiveFrom(hstream* stream, Socket* socket)
 	{
 		PlatformSocket* other = socket->socket;
-		int size = (int)sizeof(sockaddr_storage);
+		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
 		other->address = (sockaddr_storage*)malloc(size);
 		this->_setNonBlocking(true);
 		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)other->address, &size);
@@ -440,7 +449,7 @@ namespace sakit
 		int result = getaddrinfo(domain.c_str(), NULL, &hints, &info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
+			hlog::error(sakit::logTag, __gai_strerror(result));
 			return "";
 		}
 		in_addr address;
@@ -458,7 +467,7 @@ namespace sakit
 		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, 0);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
+			hlog::error(sakit::logTag, __gai_strerror(result));
 			return "";
 		}
 		return hstr(hostName);

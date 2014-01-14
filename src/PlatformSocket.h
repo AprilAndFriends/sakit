@@ -26,6 +26,10 @@
 #include "NetworkAdapter.h"
 #include "sakitExport.h"
 
+#ifdef __APPLE__
+#include <netinet/in.h>
+#endif
+
 namespace sakit
 {
 	class Socket;

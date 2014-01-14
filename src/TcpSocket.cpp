@@ -99,7 +99,7 @@ namespace sakit
 				break;
 			}
 		}
-		else if (state == WorkerThread::FAILED)
+		else if (result == WorkerThread::FAILED)
 		{
 			switch (state)
 			{

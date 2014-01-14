@@ -14,6 +14,10 @@
 #include "sakit.h"
 #include "PlatformSocket.h"
 
+#ifdef __APPLE__
+#include <errno.h>
+#endif
+
 namespace sakit
 {
 	PlatformSocket::~PlatformSocket()
@@ -45,16 +49,18 @@ namespace sakit
 			print = false;
 		}
 #else
-		// TODOsock - Unix
+		code = errno;
+		message = strerror(code);
 		print = (code != EAGAIN && code != EWOULDBLOCK);
 #endif
 		if (print)
 		{
+			// TODOsock - merge logs into one (there can be only one! ;)
 			if (basicMessage != "")
 			{
 				hlog::debug(sakit::logTag, basicMessage);
 			}
-			if (message != "")
+			if (message == "")
 			{
 				message = hstr(code);
 			}

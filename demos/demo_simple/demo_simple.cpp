@@ -66,7 +66,7 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'", server->getFullHost().c_str(), socket->getFullHost().c_str());
 		hstream stream;
 		socket->receive(&stream, 12); // receive 12 bytes max
-		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream.size()));
+		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr((int) stream.size()));
 		int sent = socket->send("Hello.");
 		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 	}
@@ -108,7 +108,7 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 	void onReceived(sakit::UdpServer* server, sakit::UdpSocket* socket, hstream* stream)
 	{
 		hlog::writef(LOG_TAG, "- SERVER '%s' accepted connection '%s'", server->getFullHost().c_str(), socket->getFullHost().c_str());
-		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream->size()));
+		hlog::write(LOG_TAG, "ACCEPTED received: " + hstr((int) stream->size()));
 		int sent = socket->send("Hello.");
 		hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 	}
@@ -236,7 +236,7 @@ void _testAsyncTcpServer()
 					}
 					stream.clear();
 					client->receive(&stream, 20); // receive 20 bytes max
-					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
+					hlog::write(LOG_TAG, "Client received: " + hstr((int) stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
 					server->getSockets()[0]->disconnect();
 				}
@@ -300,7 +300,7 @@ void _testAsyncTcpClient()
 				// accepted handling
 				stream.clear();
 				accepted->receive(&stream, 12); // receive 12 bytes max
-				hlog::write(LOG_TAG, "ACCEPTED received: " + hstr(stream.size()));
+				hlog::write(LOG_TAG, "ACCEPTED received: " + hstr((int) stream.size()));
 				int sent = accepted->send("Hello.");
 				hlog::write(LOG_TAG, "ACCEPTED sent: " + hstr(sent));
 				// back to client
@@ -368,7 +368,7 @@ void _testAsyncUdpServer()
 					}
 					stream.clear();
 					client->receive(&stream); // receive all there is
-					hlog::write(LOG_TAG, "Client received: " + hstr(stream.size()));
+					hlog::write(LOG_TAG, "Client received: " + hstr((int) stream.size()));
 					hlog::write(LOG_TAG, "Disconnected.");
 				}
 				server->stopAsync();
@@ -417,7 +417,7 @@ void _testAsyncUdpClient()
 			// received handling
 			stream.clear();
 			sakit::UdpSocket* received = server->receive(&stream);
-			hlog::write(LOG_TAG, "RECEIVED received: " + hstr(stream.size()));
+			hlog::write(LOG_TAG, "RECEIVED received: " + hstr((int) stream.size()));
 			int sent = received->send("Hello.");
 			hlog::write(LOG_TAG, "RECEIVED sent: " + hstr(sent));
 			// back to client
@@ -529,6 +529,8 @@ int main(int argc, char **argv)
 
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	sakit::destroy();
+#ifdef _WIN32
 	system("pause");
+#endif
 	return 0;
 }
