@@ -127,7 +127,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sakit\Base.h" />
-    <ClInclude Include="include\sakit\Ip.h" />
+    <ClInclude Include="include\sakit\Host.h" />
+    <ClInclude Include="include\sakit\HttpSocket.h" />
     <ClInclude Include="include\sakit\NetworkAdapter.h" />
     <ClInclude Include="include\sakit\sakit.h" />
     <ClInclude Include="include\sakit\sakitExport.h" />
@@ -141,7 +142,6 @@
     <ClInclude Include="include\sakit\UdpServer.h" />
     <ClInclude Include="include\sakit\UdpServerDelegate.h" />
     <ClInclude Include="include\sakit\UdpSocket.h" />
-    <ClInclude Include="include\sakit\WebSocket.h" />
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
@@ -154,7 +154,8 @@
   <ItemGroup>
     <ClCompile Include="src\Base.cpp" />
     <ClCompile Include="src\ConnectorThread.cpp" />
-    <ClCompile Include="src\Ip.cpp" />
+    <ClCompile Include="src\Host.cpp" />
+    <ClCompile Include="src\HttpSocket.cpp" />
     <ClCompile Include="src\NetworkAdapter.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
@@ -175,7 +176,6 @@
     <ClCompile Include="src\UdpServerDelegate.cpp" />
     <ClCompile Include="src\UdpServerThread.cpp" />
     <ClCompile Include="src\UdpSocket.cpp" />
-    <ClCompile Include="src\WebSocket.cpp" />
     <ClCompile Include="src\WorkerThread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

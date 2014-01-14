@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a special web based socket for HTTP operations.
+/// Defines a special socket for HTTP communication.
 
-#ifndef SAKIT_WEB_SOCKET_H
-#define SAKIT_WEB_SOCKET_H
+#ifndef SAKIT_HTTP_SOCKET_H
+#define SAKIT_HTTP_SOCKET_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmap.h>
@@ -23,32 +23,32 @@
 
 namespace sakit
 {
-	class sakitExport WebSocket : public TcpSocket
+	class sakitExport HttpSocket : public TcpSocket
 	{
 	public:
-		enum HttpProtocol
+		enum Protocol
 		{
 			HTTP10,
 			HTTP11,
 			HTTP20
 		};
 
-		WebSocket(SocketDelegate* socketDelegate);
-		~WebSocket();
+		HttpSocket(SocketDelegate* socketDelegate);
+		~HttpSocket();
 
 		HL_DEFINE_GETSET(unsigned short, port, Port);
-		HL_DEFINE_GETSET(HttpProtocol, protocol, Protocol);
+		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
 		HL_DEFINE_GETSET2(hmap, hstr, hstr, headers, Headers);
 
-		bool connect(Ip host);
-		bool connectAsync(Ip host);
+		bool connect(Host host);
+		bool connectAsync(Host host);
 
 		int get(chstr url);
 		int post(chstr url, hmap<hstr, hstr> parameters);
 
 	protected:
 		unsigned short port;
-		HttpProtocol protocol;
+		Protocol protocol;
 		hmap<hstr, hstr> headers;
 
 		hstr _makeUrl(chstr url);

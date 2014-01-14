@@ -16,6 +16,7 @@
 
 #include <hltypes/hstream.h>
 
+#include "Host.h"
 #include "sakitExport.h"
 #include "Socket.h"
 
@@ -36,14 +37,14 @@ namespace sakit
 		void update(float timeSinceLastFrame);
 
 		// TODOsock - make it work with chstr port as well
-		bool connect(Ip host, unsigned short port);
+		bool connect(Host host, unsigned short port);
 		bool disconnect();
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
 		int receive(hstream* stream, int maxBytes = 0);
 
 		// TODOsock - make it work with chstr port as well
-		bool connectAsync(Ip host, unsigned short port);
+		bool connectAsync(Host host, unsigned short port);
 		bool disconnectAsync();
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
@@ -52,7 +53,7 @@ namespace sakit
 	protected:
 		ConnectorThread* thread;
 
-		void _activateConnection(Ip host, unsigned short port);
+		void _activateConnection(Host host, unsigned short port);
 
 		bool _checkConnectStatus(State socketState);
 		bool _checkConnectedStatus(State socketState, chstr action);

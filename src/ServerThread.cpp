@@ -10,7 +10,6 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
-#include "Ip.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Socket.h"

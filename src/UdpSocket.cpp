@@ -34,7 +34,7 @@ namespace sakit
 		return this->socket->isConnected();
 	}
 
-	bool UdpSocket::setDestination(Ip host, unsigned short port)
+	bool UdpSocket::setDestination(Host host, unsigned short port)
 	{
 		if (this->hasDestination())
 		{
@@ -51,13 +51,13 @@ namespace sakit
 
 	bool UdpSocket::clearDestination()
 	{
-		this->host = Ip();
+		this->host = Host();
 		this->port = 0;
 		this->multicastGroup = false;
 		return this->socket->disconnect();
 	}
 
-	bool UdpSocket::joinMulticastGroup(Ip address, unsigned short port, Ip groupAddress)
+	bool UdpSocket::joinMulticastGroup(Host address, unsigned short port, Host groupAddress)
 	{
 		if (this->hasDestination())
 		{
@@ -73,7 +73,7 @@ namespace sakit
 		return result;
 	}
 
-	bool UdpSocket::setMulticastInterface(Ip address)
+	bool UdpSocket::setMulticastInterface(Host address)
 	{
 		return this->socket->setMulticastInterface(address);
 	}
@@ -168,7 +168,7 @@ namespace sakit
 		return true;
 	}
 
-	void UdpSocket::_activateConnection(Ip host, unsigned short port)
+	void UdpSocket::_activateConnection(Host host, unsigned short port)
 	{
 		Base::_activateConnection(host, port);
 		this->setDestination(host, port);

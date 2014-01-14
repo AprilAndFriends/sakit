@@ -21,7 +21,6 @@
 #include <hltypes/hthread.h>
 
 #include "Base.h"
-#include "Ip.h"
 #include "sakitExport.h"
 
 namespace sakit

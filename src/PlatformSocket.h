@@ -22,7 +22,7 @@
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "NetworkAdapter.h"
 #include "sakitExport.h"
 
@@ -39,9 +39,9 @@ namespace sakit
 		HL_DEFINE_IS(connected, Connected);
 		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
 
-		bool createSocket(Ip host, unsigned short port);
-		bool connect(Ip host, unsigned short port);
-		bool bind(Ip host, unsigned short port);
+		bool createSocket(Host host, unsigned short port);
+		bool connect(Host host, unsigned short port);
+		bool bind(Host host, unsigned short port);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& count);
@@ -49,12 +49,14 @@ namespace sakit
 		bool listen();
 		bool accept(Socket* socket);
 
-		bool joinMulticastGroup(Ip host, unsigned short port, Ip groupAddress);
-		bool setMulticastInterface(Ip address);
+		bool joinMulticastGroup(Host host, unsigned short port, Host groupAddress);
+		bool setMulticastInterface(Host address);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
 
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
+		static hstr resolveHost(chstr domain);
+		static hstr resolveIp(chstr ip);
 		static harray<NetworkAdapter> getNetworkAdapters();
 		
 		static void platformInit();

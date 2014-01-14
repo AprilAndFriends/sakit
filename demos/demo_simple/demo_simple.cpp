@@ -24,7 +24,7 @@
 #include <sakit/UdpServer.h>
 #include <sakit/UdpServerDelegate.h>
 #include <sakit/UdpSocket.h>
-#include <sakit/WebSocket.h>
+#include <sakit/HttpSocket.h>
 
 #define TEST_PORT 53334
 
@@ -35,12 +35,12 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 		hlog::writef(LOG_TAG, "- SERVER bound to '%s'", server->getFullHost().c_str());
 	}
 
-	void onBindFailed(sakit::Server* server, sakit::Ip host, unsigned short port)
+	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.getAddress().c_str(), port);
 	}
 
-	void onUnbound(sakit::Server* server, sakit::Ip host, unsigned short port)
+	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.getAddress().c_str(), port);
 	}
@@ -79,12 +79,12 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::writef(LOG_TAG, "- SERVER bound to '%s'", server->getFullHost().c_str());
 	}
 
-	void onBindFailed(sakit::Server* server, sakit::Ip host, unsigned short port)
+	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.getAddress().c_str(), port);
 	}
 
-	void onUnbound(sakit::Server* server, sakit::Ip host, unsigned short port)
+	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.getAddress().c_str(), port);
 	}
@@ -127,12 +127,12 @@ public:
 		hlog::writef(LOG_TAG, "- %s connected to '%s'", this->name.c_str(), socket->getFullHost().c_str());
 	}
 
-	void onDisconnected(sakit::Socket* socket, sakit::Ip host, unsigned short port)
+	void onDisconnected(sakit::Socket* socket, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.c_str(), host.getAddress().c_str(), port);
 	}
 
-	void onConnectFailed(sakit::Socket* socket, sakit::Ip host, unsigned short port)
+	void onConnectFailed(sakit::Socket* socket, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- %s connect filed to '%s:%d'", this->name.c_str(), host.getAddress().c_str(), port);
 	}
@@ -198,7 +198,7 @@ void _testAsyncTcpServer()
 	hlog::debug(LOG_TAG, "starting test: async TCP server, blocking TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
-	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
+	if (server->bindAsync(sakit::Host::Localhost, TEST_PORT))
 	{
 		while (server->isBinding())
 		{
@@ -210,7 +210,7 @@ void _testAsyncTcpServer()
 			if (server->startAsync())
 			{
 				sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
-				if (client->connect(sakit::Ip::Localhost, TEST_PORT))
+				if (client->connect(sakit::Host::Localhost, TEST_PORT))
 				{
 					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 					hstream stream;
@@ -257,11 +257,11 @@ void _testAsyncTcpClient()
 	hlog::debug(LOG_TAG, "starting test: blocking TCP server, async TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &acceptedDelegate);
-	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
+	if (server->bind(sakit::Host::Localhost, TEST_PORT))
 	{
 		hlog::writef(LOG_TAG, "Server bound to '%s'", server->getFullHost().c_str());
 		sakit::TcpSocket* client = new sakit::TcpSocket(&clientDelegate);
-		if (client->connectAsync(sakit::Ip::Localhost, TEST_PORT))
+		if (client->connectAsync(sakit::Host::Localhost, TEST_PORT))
 		{
 			sakit::TcpSocket* accepted = NULL;
 			while (accepted == NULL)
@@ -330,7 +330,7 @@ void _testAsyncUdpServer()
 	hlog::debug(LOG_TAG, "starting test: async UDP server, blocking UDP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &receivedDelegate);
-	if (server->bindAsync(sakit::Ip::Localhost, TEST_PORT))
+	if (server->bindAsync(sakit::Host::Localhost, TEST_PORT))
 	{
 		while (server->isBinding())
 		{
@@ -342,7 +342,7 @@ void _testAsyncUdpServer()
 			if (server->startAsync())
 			{
 				sakit::UdpSocket* client = new sakit::UdpSocket(&clientDelegate);
-				if (client->setDestination(sakit::Ip::Localhost, TEST_PORT))
+				if (client->setDestination(sakit::Host::Localhost, TEST_PORT))
 				{
 					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 					hstream stream;
@@ -388,11 +388,11 @@ void _testAsyncUdpClient()
 	hlog::debug(LOG_TAG, "starting test: blocking TCP server, async TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate, &receivedDelegate);
-	if (server->bind(sakit::Ip::Localhost, TEST_PORT))
+	if (server->bind(sakit::Host::Localhost, TEST_PORT))
 	{
 		hlog::writef(LOG_TAG, "Server bound to '%s'", server->getFullHost().c_str());
 		sakit::UdpSocket* client = new sakit::UdpSocket(&clientDelegate);
-		if (client->setDestination(sakit::Ip::Localhost, TEST_PORT)) // there is no async destination setting, it's not needed
+		if (client->setDestination(sakit::Host::Localhost, TEST_PORT)) // there is no async destination setting, it's not needed
 		{
 			hstream stream;
 			char data[12] = "Hi there.\0g";
@@ -435,10 +435,10 @@ void _testAsyncUdpClient()
 	delete server;
 }
 
-void _testWebSocket()
+void _testHttpSocket()
 {
-	sakit::WebSocket* socket = new sakit::WebSocket(&clientDelegate);
-	if (socket->connect(sakit::Ip("www.google.com")))
+	sakit::HttpSocket* socket = new sakit::HttpSocket(&clientDelegate);
+	if (socket->connect(sakit::Host("www.google.com")))
 	{
 		int sent = socket->get("");
 		hlog::write(LOG_TAG, "Sent: " + hstr(sent));
@@ -481,15 +481,15 @@ int main(int argc, char **argv)
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
 	//*/
-	_testWebSocket();
+	_testHttpSocket();
 
 	//sakit::UdpSocket::broadcast(5005, "Hi.");
 	//sakit::UdpSocket::broadcast(5005, "How are you?");
 	/*
-	sakit::Ip multicastGroup("226.2.3.4");
+	sakit::Host multicastGroup("226.2.3.4");
 	sakit::UdpSocket* socket = new sakit::UdpSocket(&clientDelegate);
 
-	if (socket->joinMulticastGroup(sakit::Ip("192.168.1.109"), 5015, multicastGroup))
+	if (socket->joinMulticastGroup(sakit::Host("192.168.1.109"), 5015, multicastGroup))
 	{
 		hlog::write(LOG_TAG, "- added to multicast group: " + multicastGroup.getAddress());
 	}

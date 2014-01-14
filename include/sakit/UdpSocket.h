@@ -16,7 +16,7 @@
 
 #include <hltypes/hstream.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "NetworkAdapter.h"
 #include "sakitExport.h"
 #include "Socket.h"
@@ -34,7 +34,7 @@ namespace sakit
 		bool hasDestination();
 		bool hasMulticastGroup() { return this->multicastGroup; }
 
-		bool setDestination(Ip host, unsigned short port);
+		bool setDestination(Host host, unsigned short port);
 		bool clearDestination();
 
 		int send(hstream* stream, int count = INT_MAX);
@@ -45,8 +45,8 @@ namespace sakit
 		bool sendAsync(chstr data);
 		bool startReceiveAsync(int count = 0);
 		
-		bool joinMulticastGroup(Ip address, unsigned short port, Ip groupAddress);
-		bool setMulticastInterface(Ip address);
+		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
+		bool setMulticastInterface(Host address);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
 
@@ -58,7 +58,7 @@ namespace sakit
 	protected:
 		bool multicastGroup;
 
-		void _activateConnection(Ip host, unsigned short port);
+		void _activateConnection(Host host, unsigned short port);
 
 	};
 

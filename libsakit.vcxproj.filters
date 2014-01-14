@@ -43,16 +43,10 @@
     <ClInclude Include="include\sakit\sakitExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\Ip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\Socket.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
     <ClInclude Include="include\sakit\TcpSocket.h">
-      <Filter>Header Files\Sockets</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sakit\WebSocket.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
     <ClInclude Include="src\PlatformSocket.h">
@@ -109,12 +103,15 @@
     <ClInclude Include="include\sakit\NetworkAdapter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\sakit\HttpSocket.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\Host.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Ip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PlatformSocket.cpp">
@@ -130,9 +127,6 @@
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\TcpSocket.cpp">
-      <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WebSocket.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\WorkerThread.cpp">
@@ -184,6 +178,12 @@
       <Filter>Source Files\Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\NetworkAdapter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpSocket.cpp">
+      <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

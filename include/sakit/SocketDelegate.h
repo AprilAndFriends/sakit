@@ -17,7 +17,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -31,8 +31,8 @@ namespace sakit
 		virtual ~SocketDelegate();
 
 		virtual void onConnected(Socket* socket) = 0;
-		virtual void onDisconnected(Socket* socket, Ip host, unsigned short port) = 0;
-		virtual void onConnectFailed(Socket* socket, Ip host, unsigned short port) = 0;
+		virtual void onDisconnected(Socket* socket, Host host, unsigned short port) = 0;
+		virtual void onConnectFailed(Socket* socket, Host host, unsigned short port) = 0;
 		virtual void onDisconnectFailed(Socket* socket) = 0;
 
 		virtual void onSent(Socket* socket, int byteCount) = 0;

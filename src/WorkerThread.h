@@ -19,6 +19,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
+#include "Host.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -42,7 +43,7 @@ namespace sakit
 	protected:
 		Result result;
 		PlatformSocket* socket;
-		Ip host;
+		Host host;
 		unsigned short port;
 		hmutex mutex;
 

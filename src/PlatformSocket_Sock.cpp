@@ -54,7 +54,7 @@ extern int h_errno;
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Server.h"
@@ -110,12 +110,12 @@ namespace sakit
 		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue), "ioctlsocket()");
 	}
 
-	bool PlatformSocket::createSocket(Ip host, unsigned short port)
+	bool PlatformSocket::createSocket(Host host, unsigned short port)
 	{
 		this->connected = true;
 		int result = 0;
 		// create host info
-		struct addrinfo hints;
+		addrinfo hints;
 		memset(&hints, 0, sizeof(hints));
 #ifndef _ANDROID
 		hints.ai_family = AF_INET;
@@ -136,7 +136,7 @@ namespace sakit
 		return this->_checkResult(this->sock, "socket()");
 	}
 
-	bool PlatformSocket::connect(Ip host, unsigned short port)
+	bool PlatformSocket::connect(Host host, unsigned short port)
 	{
 		if (!this->createSocket(host, port))
 		{
@@ -146,7 +146,7 @@ namespace sakit
 		return this->_checkResult(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
 	}
 
-	bool PlatformSocket::bind(Ip host, unsigned short port)
+	bool PlatformSocket::bind(Host host, unsigned short port)
 	{
 		if (!this->createSocket(host, port))
 		{
@@ -156,7 +156,7 @@ namespace sakit
 		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
 	}
 
-	bool PlatformSocket::joinMulticastGroup(Ip host, unsigned short port, Ip groupAddress)
+	bool PlatformSocket::joinMulticastGroup(Host host, unsigned short port, Host groupAddress)
 	{
 		this->connected = true;
 #ifndef _ANDROID
@@ -190,7 +190,7 @@ namespace sakit
 		return this->setMulticastTtl(32);
 	}
 
-	bool PlatformSocket::setMulticastInterface(Ip address)
+	bool PlatformSocket::setMulticastInterface(Host address)
 	{
 		in_addr local;
 		local.s_addr = inet_addr(address.getAddress().c_str());
@@ -327,7 +327,7 @@ namespace sakit
 		char hostString[CHAR_BUFFER] = {'\0'};
 		char portString[CHAR_BUFFER] = {'\0'};
 		getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-		((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
+		((Base*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString));
 		other->connected = true;
 		return true;
 	}
@@ -352,7 +352,21 @@ namespace sakit
 			char hostString[CHAR_BUFFER] = {'\0'};
 			char portString[CHAR_BUFFER] = {'\0'};
 			getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-			((Base*)socket)->_activateConnection(Ip(hostString), (unsigned short)(int)hstr(portString));
+			((Base*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString));
+		}
+		return true;
+	}
+
+	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
+	{
+		if (result == SOCKET_ERROR)
+		{
+			PlatformSocket::_printLastError(functionName + " error!");
+			if (disconnectOnError)
+			{
+				this->disconnect();
+			}
+			return false;
 		}
 		return true;
 	}
@@ -417,18 +431,37 @@ namespace sakit
 		return false;
 	}
 
-	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
+	hstr PlatformSocket::resolveHost(chstr domain)
 	{
-		if (result == SOCKET_ERROR)
+		addrinfo hints;
+		addrinfo* info;
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = AF_INET;
+		int result = getaddrinfo(domain.c_str(), NULL, &hints, &info);
+		if (result != 0)
 		{
-			PlatformSocket::_printLastError(functionName + " error!");
-			if (disconnectOnError)
-			{
-				this->disconnect();
-			}
-			return false;
+			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
+			return "";
 		}
-		return true;
+		in_addr address;
+		address.s_addr = ((sockaddr_in*)(info->ai_addr))->sin_addr.s_addr;
+		freeaddrinfo(info);
+		return inet_ntoa(address);
+	}
+
+	hstr PlatformSocket::resolveIp(chstr ip)
+	{
+		sockaddr_in address;
+		address.sin_family = AF_INET;
+		inet_pton(AF_INET, ip.c_str(), &address.sin_addr);
+		char hostName[NI_MAXHOST] = {'\0'};
+		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, 0);
+		if (result != 0)
+		{
+			hlog::error(sakit::logTag, hstr::from_unicode(gai_strerrorW(result)));
+			return "";
+		}
+		return hstr(hostName);
 	}
 
 	harray<NetworkAdapter> PlatformSocket::getNetworkAdapters()
@@ -463,9 +496,9 @@ namespace sakit
 		hstr name;
 		hstr description;
 		hstr type;
-		Ip address;
-		Ip mask;
-		Ip gateway;
+		Host address;
+		Host mask;
+		Host gateway;
 		PIP_ADAPTER_INFO pAdapter = info;
         while (pAdapter != NULL)
 		{
@@ -500,9 +533,9 @@ namespace sakit
                 type = "Unknown type " + hstr(pAdapter->Type);
                 break;
             }
-			address = Ip(pAdapter->IpAddressList.IpAddress.String);
-			mask = Ip(pAdapter->IpAddressList.IpMask.String);
-			gateway = Ip(pAdapter->GatewayList.IpAddress.String);
+			address = Host(pAdapter->IpAddressList.IpAddress.String);
+			mask = Host(pAdapter->IpAddressList.IpMask.String);
+			gateway = Host(pAdapter->GatewayList.IpAddress.String);
 			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
             pAdapter = pAdapter->Next;
 		}

@@ -17,7 +17,7 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Base.h"
-#include "Ip.h"
+#include "Host.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -48,10 +48,10 @@ namespace sakit
 
 		void update(float timeSinceLastFrame);
 
-		bool bind(Ip host, unsigned short port);
+		bool bind(Host host, unsigned short port);
 		bool unbind();
 
-		bool bindAsync(Ip host, unsigned short port);
+		bool bindAsync(Host host, unsigned short port);
 		bool unbindAsync();
 		bool startAsync();
 		bool stopAsync();

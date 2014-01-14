@@ -12,31 +12,31 @@
 #include <hltypes/hstring.h>
 
 #include "sakit.h"
-#include "WebSocket.h"
+#include "HttpSocket.h"
 
 #define HTTP_LINE_ENDING "\r\n"
 
 namespace sakit
 {
-	WebSocket::WebSocket(SocketDelegate* socketDelegate) : TcpSocket(socketDelegate), port(80), protocol(HTTP11)
+	HttpSocket::HttpSocket(SocketDelegate* socketDelegate) : TcpSocket(socketDelegate), port(80), protocol(HTTP11)
 	{
 	}
 
-	WebSocket::~WebSocket()
+	HttpSocket::~HttpSocket()
 	{
 	}
 	
-	bool WebSocket::connect(Ip host)
+	bool HttpSocket::connect(Host host)
 	{
 		return TcpSocket::connect(host, this->port);
 	}
 	
-	bool WebSocket::connectAsync(Ip host)
+	bool HttpSocket::connectAsync(Host host)
 	{
 		return TcpSocket::connectAsync(host, this->port);
 	}
 	
-	int WebSocket::get(chstr url)
+	int HttpSocket::get(chstr url)
 	{
 		hstr data;
 		data += "GET " + this->_makeUrl(url) + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
@@ -44,7 +44,7 @@ namespace sakit
 		return this->send(data);
 	}
 
-	int WebSocket::post(chstr url, hmap<hstr, hstr> parameters)
+	int HttpSocket::post(chstr url, hmap<hstr, hstr> parameters)
 	{
 		harray<hstr> params;
 		foreach_m (hstr, it, parameters)
@@ -63,7 +63,7 @@ namespace sakit
 		return this->send(data);
 	}
 
-	hstr WebSocket::_makeUrl(chstr url)
+	hstr HttpSocket::_makeUrl(chstr url)
 	{
 		hstr address = this->host.getAddress();
 		if (url.contains(address))
@@ -81,7 +81,7 @@ namespace sakit
 		return address;
 	}
 
-	hstr WebSocket::_makeProtocol()
+	hstr HttpSocket::_makeProtocol()
 	{
 		switch (this->protocol)
 		{
@@ -93,7 +93,7 @@ namespace sakit
 		return ""; // invalid
 	}
 
-	hstr WebSocket::_makeHeaders()
+	hstr HttpSocket::_makeHeaders()
 	{
 		harray<hstr> results;
 		foreach_m (hstr, it, this->headers)

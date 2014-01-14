@@ -18,7 +18,6 @@
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "Ip.h"
 #include "sakitExport.h"
 #include "Server.h"
 #include "WorkerThread.h"

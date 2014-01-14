@@ -11,7 +11,6 @@
 #include <hltypes/hthread.h>
 
 #include "ConnectorThread.h"
-#include "Ip.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Socket.h"

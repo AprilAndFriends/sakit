@@ -18,7 +18,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -33,7 +33,7 @@ namespace sakit
 		Base();
 		virtual ~Base();
 
-		HL_DEFINE_GET(Ip, host, Host);
+		HL_DEFINE_GET(Host, host, Host);
 		HL_DEFINE_GET(unsigned short, port, Port);
 		hstr getFullHost();
 
@@ -41,7 +41,7 @@ namespace sakit
 
 	protected:
 		PlatformSocket* socket;
-		Ip host;
+		Host host;
 		unsigned short port;
 
 		int _send(hstream* stream, int count);
@@ -50,7 +50,7 @@ namespace sakit
 		bool _canSend(hstream* stream, int count);
 		bool _canReceive(hstream* stream);
 
-		virtual void _activateConnection(Ip host, unsigned short port);
+		virtual void _activateConnection(Host host, unsigned short port);
 
 	};
 

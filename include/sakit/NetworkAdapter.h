@@ -17,7 +17,7 @@
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hstring.h>
 
-#include "Ip.h"
+#include "Host.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -25,7 +25,7 @@ namespace sakit
 	class sakitExport NetworkAdapter
 	{
 	public:
-		NetworkAdapter(int comboIndex, int index, chstr name, chstr description, chstr type, Ip address, Ip mask, Ip gateway);
+		NetworkAdapter(int comboIndex, int index, chstr name, chstr description, chstr type, Host address, Host mask, Host gateway);
 		~NetworkAdapter();
 
 		HL_DEFINE_GET(int, comboIndex, ComboIndex);
@@ -33,10 +33,10 @@ namespace sakit
 		HL_DEFINE_GET(hstr, name, Name);
 		HL_DEFINE_GET(hstr, description, Description);
 		HL_DEFINE_GET(hstr, type, Type);
-		HL_DEFINE_GET(Ip, address, Address);
-		HL_DEFINE_GET(Ip, mask, Mask);
-		HL_DEFINE_GET(Ip, gateway, Gateway);
-		Ip getBroadcastIp();
+		HL_DEFINE_GET(Host, address, Address);
+		HL_DEFINE_GET(Host, mask, Mask);
+		HL_DEFINE_GET(Host, gateway, Gateway);
+		Host getBroadcastIp();
 
 	protected:
 		int comboIndex;
@@ -44,9 +44,9 @@ namespace sakit
 		hstr name;
 		hstr type;
 		hstr description;
-		Ip address;
-		Ip mask;
-		Ip gateway;
+		Host address;
+		Host mask;
+		Host gateway;
 
 	};
 

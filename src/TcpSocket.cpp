@@ -65,7 +65,7 @@ namespace sakit
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		WorkerThread::Result result = this->thread->result;
-		Ip host = this->thread->host;
+		Host host = this->thread->host;
 		unsigned short port = this->thread->port;
 		this->thread->mutex.unlock();
 		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
@@ -93,7 +93,7 @@ namespace sakit
 				this->thread->mutex.unlock();
 				host = this->host;
 				port = this->port;
-				this->host = Ip();
+				this->host = Host();
 				this->port = 0;
 				this->socketDelegate->onDisconnected(this, host, port);
 				break;
@@ -119,7 +119,7 @@ namespace sakit
 		}
 	}
 
-	bool TcpSocket::connect(Ip host, unsigned short port)
+	bool TcpSocket::connect(Host host, unsigned short port)
 	{
 		this->thread->mutex.lock();
 		State state = this->thread->state;
@@ -153,7 +153,7 @@ namespace sakit
 			this->thread->mutex.lock();
 			this->thread->state = IDLE;
 			this->thread->mutex.unlock();
-			this->host = Ip();
+			this->host = Host();
 			this->port = 0;
 		}
 		return result;
@@ -202,7 +202,7 @@ namespace sakit
 		return this->_receive(stream, maxBytes);
 	}
 
-	bool TcpSocket::connectAsync(Ip host, unsigned short port)
+	bool TcpSocket::connectAsync(Host host, unsigned short port)
 	{
 		this->thread->mutex.lock();
 		State state = this->thread->state;
@@ -293,7 +293,7 @@ namespace sakit
 		return true;
 	}
 
-	void TcpSocket::_activateConnection(Ip host, unsigned short port)
+	void TcpSocket::_activateConnection(Host host, unsigned short port)
 	{
 		Base::_activateConnection(host, port);
 		this->thread->state = CONNECTED;

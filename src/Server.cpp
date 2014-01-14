@@ -66,7 +66,7 @@ namespace sakit
 		return result;
 	}
 
-	bool Server::bind(Ip host, unsigned short port)
+	bool Server::bind(Host host, unsigned short port)
 	{
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
@@ -94,13 +94,13 @@ namespace sakit
 			this->basicThread->mutex.lock();
 			this->basicThread->state = IDLE;
 			this->basicThread->mutex.unlock();
-			this->host = Ip();
+			this->host = Host();
 			this->port = 0;
 		}
 		return result;
 	}
 
-	bool Server::bindAsync(Ip host, unsigned short port)
+	bool Server::bindAsync(Host host, unsigned short port)
 	{
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
@@ -165,7 +165,7 @@ namespace sakit
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
 		WorkerThread::Result result = this->basicThread->result;
-		Ip host = this->basicThread->host;
+		Host host = this->basicThread->host;
 		unsigned short port = this->basicThread->port;
 		this->basicThread->mutex.unlock();
 		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
@@ -193,7 +193,7 @@ namespace sakit
 				this->basicThread->mutex.unlock();
 				host = this->host;
 				port = this->port;
-				this->host = Ip();
+				this->host = Host();
 				this->port = 0;
 				this->basicDelegate->onUnbound(this, host, port);
 				break;

@@ -117,7 +117,7 @@ namespace sakit
 		return true;
 	}
 
-	void Base::_activateConnection(Ip host, unsigned short port)
+	void Base::_activateConnection(Host host, unsigned short port)
 	{
 		this->host = host;
 		this->port = port;
