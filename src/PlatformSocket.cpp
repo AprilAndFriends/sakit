@@ -50,21 +50,21 @@ namespace sakit
 		}
 #else
 		code = errno;
-		message = strerror(code);
 		print = (code != EAGAIN && code != EWOULDBLOCK);
+		message = strerror(code);
 #endif
 		if (print)
 		{
-			// TODOsock - merge logs into one (there can be only one! ;)
-			if (basicMessage != "")
+			hstr printMessage = basicMessage;
+			if (printMessage != "")
 			{
-				hlog::debug(sakit::logTag, basicMessage);
+				printMessage += ": ";
 			}
 			if (message == "")
 			{
 				message = hstr(code);
 			}
-			hlog::error(sakit::logTag, message);
+			hlog::error(sakit::logTag, printMessage + message);
 		}
 		return code;
 	}

@@ -53,6 +53,11 @@ namespace sakit
 		return true;
 	}
 
+	hstr Host::toString()
+	{
+		return this->address;
+	}
+
 	bool Host::operator==(const Host& other) const
 	{
 		return (this->address == other.address);

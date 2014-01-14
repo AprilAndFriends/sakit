@@ -133,7 +133,7 @@ namespace sakit
 #endif
 		hints.ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		hints.ai_protocol = IPPROTO_IP;
-		result = getaddrinfo(host.getAddress().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
+		result = getaddrinfo(host.toString().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
@@ -187,14 +187,14 @@ namespace sakit
 			return false;
 		}
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(host.getAddress().c_str());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.getAddress().c_str());
+		group.imr_interface.s_addr = inet_addr(host.toString().c_str());
+		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
 		if (!this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()"))
 		{
 			return false;
 		}
 		this->multicastGroupAddress.sin_family = ai_family;
-		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.getAddress().c_str());
+		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.toString().c_str());
 		this->multicastGroupAddress.sin_port = htons(port);
 		return this->setMulticastTtl(32);
 	}
@@ -202,7 +202,7 @@ namespace sakit
 	bool PlatformSocket::setMulticastInterface(Host address)
 	{
 		in_addr local;
-		local.s_addr = inet_addr(address.getAddress().c_str());
+		local.s_addr = inet_addr(address.toString().c_str());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
 	}
 
@@ -370,7 +370,7 @@ namespace sakit
 	{
 		if (result == SOCKET_ERROR)
 		{
-			PlatformSocket::_printLastError(functionName + " error!");
+			PlatformSocket::_printLastError(functionName);
 			if (disconnectOnError)
 			{
 				this->disconnect();
@@ -393,7 +393,7 @@ namespace sakit
 		SOCKET sock = socket(ai_family, SOCK_DGRAM, IPPROTO_IP);
 		if (sock == SOCKET_ERROR)
 		{
-			PlatformSocket::_printLastError("socket() error!");
+			PlatformSocket::_printLastError("socket()");
 			closesocket(sock);
 			return false;
 		}
@@ -401,7 +401,7 @@ namespace sakit
 		result = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast));
 		if (result == SOCKET_ERROR)
 		{
-			PlatformSocket::_printLastError("setsockopt() error!");
+			PlatformSocket::_printLastError("setsockopt()");
 			closesocket(sock);
 			return false;
 		}
@@ -409,7 +409,7 @@ namespace sakit
 		result = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddress, sizeof(reuseaddress));
 		if (result == SOCKET_ERROR)
 		{
-			PlatformSocket::_printLastError("setsockopt() error!");
+			PlatformSocket::_printLastError("setsockopt()");
 			closesocket(sock);
 			return false;
 		}
@@ -420,11 +420,11 @@ namespace sakit
 		int maxResult = 0;
 		foreach (NetworkAdapter, it, adapters)
 		{
-			address.sin_addr.s_addr = inet_addr((*it).getBroadcastIp().getAddress().c_str());
+			address.sin_addr.s_addr = inet_addr((*it).getBroadcastIp().toString().c_str());
 			result = sendto(sock, data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
 			if (result == SOCKET_ERROR)
 			{
-				PlatformSocket::_printLastError("sendto() error!");
+				PlatformSocket::_printLastError("sendto()");
 			}
 			else if (result > 0)
 			{

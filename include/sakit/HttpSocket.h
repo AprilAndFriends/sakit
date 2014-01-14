@@ -20,6 +20,7 @@
 
 #include "sakitExport.h"
 #include "TcpSocket.h"
+#include "Uri.h"
 
 namespace sakit
 {
@@ -32,26 +33,29 @@ namespace sakit
 	public:
 		enum Protocol
 		{
-			HTTP10,
-			HTTP11,
-			HTTP20
+			HTTP11
 		};
 
 		HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol = HTTP11);
 		~HttpSocket();
 
+		HL_DEFINE_ISSET(keepAlive, KeepAlive);
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
-		HL_DEFINE_GETSET2(hmap, hstr, hstr, headers, Headers);
+		HL_DEFINE_GETSET2(hmap, hstr, hstr, customHeaders, CustomHeaders);
 
-		int get(chstr url);
-		int post(chstr url, hmap<hstr, hstr> parameters);
+		bool get(Uri uri);
+		bool get(Host host, chstr path);
+		bool post(chstr url, hmap<hstr, hstr> parameters);
 
 	protected:
 		TcpSocket* socket;
 		HttpSocketDelegate* socketDelegate;
 		SocketDelegate* tcpSocketDelegate;
 		Protocol protocol;
-		hmap<hstr, hstr> headers;
+		bool keepAlive;
+
+
+		hmap<hstr, hstr> customHeaders;
 
 		hstr _makeUrl(chstr url);
 		hstr _makeProtocol();

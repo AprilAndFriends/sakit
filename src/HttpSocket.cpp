@@ -20,7 +20,7 @@
 
 namespace sakit
 {
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : keepAlive(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
@@ -33,8 +33,13 @@ namespace sakit
 		delete this->socket;
 		delete this->tcpSocketDelegate;
 	}
-	
-	int HttpSocket::get(chstr url)
+
+	bool HttpSocket::get(Uri uri)
+	{
+		return false;
+	}
+
+	bool HttpSocket::get(Host host, chstr path)
 	{
 		/*
 		hstr data;
@@ -42,10 +47,10 @@ namespace sakit
 		data += "Host: " + this->host.getAddress() + HTTP_LINE_ENDING;
 		return this->socket->send(data);
 		*/
-		return 0;
+		return false;
 	}
 
-	int HttpSocket::post(chstr url, hmap<hstr, hstr> parameters)
+	bool HttpSocket::post(chstr url, hmap<hstr, hstr> parameters)
 	{
 		/*
 		harray<hstr> params;
@@ -64,7 +69,7 @@ namespace sakit
 		data += HTTP_LINE_ENDING;
 		return this->send(data);
 		*/
-		return 0;
+		return false;
 	}
 
 	hstr HttpSocket::_makeUrl(chstr url)
@@ -92,9 +97,9 @@ namespace sakit
 	{
 		switch (this->protocol)
 		{
-		case HTTP10:	return "HTTP/1.0";
+		//case HTTP10:	return "HTTP/1.0";
 		case HTTP11:	return "HTTP/1.1";
-		case HTTP20:	return "HTTP/2.0";
+		//case HTTP20:	return "HTTP/2.0";
 		}
 		hlog::error(sakit::logTag, "Invalid HTTP protocol version!");
 		return ""; // invalid
@@ -103,7 +108,10 @@ namespace sakit
 	hstr HttpSocket::_makeHeaders()
 	{
 		harray<hstr> results;
-		foreach_m (hstr, it, this->headers)
+		results += "Connection: " + hstr(this->keepAlive ? "keep-alive" : "close") + HTTP_LINE_ENDING;
+		// custom headers
+		// TODOsock - make safer
+		foreach_m (hstr, it, this->customHeaders)
 		{
 			if (it->first != "Host" && it->first != "Content-Length")
 			{

@@ -38,8 +38,8 @@ namespace sakit
 		{
 			return Host("255.255.255.255");
 		}
-		harray<int> numerics = this->address.getAddress().split('.').cast<int>();
-		harray<int> maskNumerics = this->mask.getAddress().split('.').cast<int>();
+		harray<int> numerics = this->address.toString().split('.').cast<int>();
+		harray<int> maskNumerics = this->mask.toString().split('.').cast<int>();
 		for_iter (i, 0, 4)
 		{
 			numerics[i] = ((numerics[i] & maskNumerics[i]) | (~maskNumerics[i])) & 0xFF;

@@ -30,8 +30,9 @@ namespace sakit
 		Host(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 		~Host();
 
-		HL_DEFINE_GET(hstr, address, Address);
 		bool isIp();
+
+		hstr toString();
 
 		bool operator==(const Host& other) const;
 		bool operator!=(const Host& other) const;

@@ -43,7 +43,7 @@ namespace sakit
 
 	hstr Base::getFullHost()
 	{
-		return (this->socket->isConnected() ? hsprintf("%s:%d", this->host.getAddress().c_str(), this->port) : "");
+		return (this->socket->isConnected() ? hsprintf("%s:%d", this->host.toString().c_str(), this->port) : "");
 	}
 
 	int Base::_send(hstream* stream, int count)

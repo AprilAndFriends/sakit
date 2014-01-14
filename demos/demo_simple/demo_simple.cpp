@@ -38,12 +38,12 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 
 	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.getAddress().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.getAddress().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onUnbindFailed(sakit::Server* server)
@@ -82,12 +82,12 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 
 	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.getAddress().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.getAddress().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onUnbindFailed(sakit::Server* server)
@@ -130,12 +130,12 @@ public:
 
 	void onDisconnected(sakit::Socket* socket, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.c_str(), host.getAddress().c_str(), port);
+		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
 	void onConnectFailed(sakit::Socket* socket, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- %s connect filed to '%s:%d'", this->name.c_str(), host.getAddress().c_str(), port);
+		hlog::errorf(LOG_TAG, "- %s connect filed to '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
 	void onDisconnectFailed(sakit::Socket* socket)
@@ -485,7 +485,7 @@ int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	//*
+	///*
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
@@ -501,7 +501,7 @@ int main(int argc, char **argv)
 
 	if (socket->joinMulticastGroup(sakit::Host("192.168.1.109"), 5015, multicastGroup))
 	{
-		hlog::write(LOG_TAG, "- added to multicast group: " + multicastGroup.getAddress());
+		hlog::write(LOG_TAG, "- added to multicast group: " + multicastGroup.toString());
 	}
 	hlog::write(LOG_TAG, "Listening now...");
 	hstream stream;
