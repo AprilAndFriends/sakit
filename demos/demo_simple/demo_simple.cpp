@@ -460,7 +460,7 @@ void _testHttpSocket()
 	if (socket->executeGet(&response, url, headers))
 	{
 		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
-		hlog::write(LOG_TAG, response.Raw);
+		hlog::write(LOG_TAG, response.Raw.read());
 	}
 	else
 	{

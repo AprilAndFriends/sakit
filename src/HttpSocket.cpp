@@ -64,81 +64,17 @@ namespace sakit
 		{
 			return false;
 		}
-		hstream stream;
-		if (this->_receiveDirect(&stream, INT_MAX) == 0)
+		response->Raw.clear();
+		if (this->_receiveDirect(&response->Raw, INT_MAX) == 0)
 		{
 			return false;
 		}
-		stream.rewind();
+		response->Raw.rewind();
 		if (!this->keepAlive)
 		{
 			this->socket->disconnect();
 		}
-		return this->_parseResponse(response, &stream);
-	}
-
-	bool HttpSocket::_parseResponse(HttpResponse* response, hstream* stream)
-	{
-		if (response == NULL)
-		{
-			hlog::warn(sakit::logTag, "Cannot parse response, response is NULL!");
-			return false;
-		}
-		if (stream == NULL)
-		{
-			hlog::warn(sakit::logTag, "Cannot parse response, stream is NULL!");
-			return false;
-		}
-		response->Raw = stream->read();
-		response->Raw.replace("\r", "");
-		harray<hstr> data = response->Raw.split("\n\n", 1, true);
-		if (data.size() == 0)
-		{
-			return false;
-		}
-		if (data.size() == 2)
-		{
-			response->Body = data[1];
-		}
-		data = data[0].split('\n', 1, true);
-		if (data.size() == 0)
-		{
-			return false;
-		}
-		int index = data[0].find(' ');
-		if (index >= 0)
-		{
-			response->Protocol = data[0](0, index);
-			data[0] = data[0](index + 1, -1);
-			index = data[0].find(' ');
-			if (index >= 0)
-			{
-				response->StatusCode = (HttpResponse::Code)(int)data[0](0, index);
-				response->StatusMessage = data[0](index + 1, -1);
-			}
-			else
-			{
-				response->StatusMessage = data[0];
-			}
-		}
-		response->Headers.clear();
-		if (data.size() > 1)
-		{
-			harray<hstr> lines = data[1].split('\n');
-			foreach (hstr, it, lines)
-			{
-				data = (*it).split(':', 1, true);
-				if (data.size() > 1)
-				{
-					response->Headers[data[0]] = data[1](1, -1); // because there's that space character
-				}
-				else
-				{
-					response->Headers[data[0]] = "";
-				}
-			}
-		}
-		return true;
+		return response->parseFromRaw();
 	}
 
 	int HttpSocket::_send(hstream* stream, int count)

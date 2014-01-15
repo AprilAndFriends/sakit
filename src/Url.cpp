@@ -51,6 +51,7 @@ namespace sakit
 		{
 			newUrl = newUrl(strlen(HTTP_SCHEME), -1);
 		}
+		// TODOsock - improve this implementation using startIndex and endIndex
 		this->host = newUrl;
 		int index = 0;
 		hstr query;
@@ -167,6 +168,7 @@ namespace sakit
 		std::basic_string<unsigned int> chars = string.u_str();
 		for_itert (unsigned int, i, 0, chars.size())
 		{
+			// TODOsock - check and fix this condition
 			if (chars[i] > 32 && chars[i] < 128 && !reserved.contains(chars[i]))
 			{
 				result += (char)chars[i];
@@ -177,6 +179,7 @@ namespace sakit
 			}
 			else
 			{
+				// TODOsock - this is incorrect and chars should be encoded in UTF8 only
 				result += hsprintf("&#%d;", chars[i]);
 			}
 		}

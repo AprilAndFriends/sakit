@@ -16,6 +16,7 @@
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmap.h>
+#include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
 #include "sakitExport.h"
@@ -42,10 +43,12 @@ namespace sakit
 		hstr StatusMessage;
 		hmap<hstr, hstr> Headers;
 		hstr Body;
-		hstr Raw;
+		hstream Raw;
 
 		HttpResponse();
 		~HttpResponse();
+
+		bool parseFromRaw();
 
 	};
 

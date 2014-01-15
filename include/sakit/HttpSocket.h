@@ -56,7 +56,6 @@ namespace sakit
 		bool keepAlive;
 
 		bool _executeMethod(HttpResponse* response, chstr method, Url url, hmap<hstr, hstr>& customHeaders);
-		bool _parseResponse(HttpResponse* response, hstream* stream);
 
 		int _send(hstream* stream, int count);
 		bool _sendAsync(hstream* stream, int count);
