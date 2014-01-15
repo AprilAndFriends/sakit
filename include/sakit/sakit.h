@@ -30,6 +30,8 @@ namespace sakit
 	sakitFnExport void update(float timeSinceLastFrame);
 	sakitFnExport float getRetryTimeout();
 	sakitFnExport void setRetryTimeout(float value);
+	sakitFnExport int getRetryAttempts();
+	sakitFnExport void setRetryAttempts(int value);
 	sakitFnExport harray<NetworkAdapter> getNetworkAdapters();
 
 }

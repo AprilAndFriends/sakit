@@ -20,7 +20,7 @@
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
-#include "Base.h"
+#include "SocketBase.h"
 #include "sakitExport.h"
 
 namespace sakit
@@ -30,7 +30,7 @@ namespace sakit
 	class SocketDelegate;
 	class SocketThread;
 
-	class sakitExport Socket : public Base
+	class sakitExport Socket : public SocketBase
 	{
 	public:
 		enum State
@@ -47,18 +47,14 @@ namespace sakit
 		bool isSending();
 		bool isReceiving();
 
-		void update(float timeSinceLastFrame);
-
-		virtual int send(hstream* stream, int count = INT_MAX) = 0;
-		virtual int send(chstr data);
-		virtual bool sendAsync(hstream* stream, int count = INT_MAX) = 0;
-		virtual bool sendAsync(chstr data);
+		int send(hstream* stream, int count = INT_MAX);
+		int send(chstr data);
+		bool sendAsync(hstream* stream, int count = INT_MAX);
+		bool sendAsync(chstr data);
 		bool stopReceiveAsync();
 
 	protected:
 		SocketDelegate* socketDelegate;
-		SenderThread* sender;
-		ReceiverThread* receiver;
 
 		Socket(SocketDelegate* socketDelegate);
 

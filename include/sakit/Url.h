@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a URI. This implementation does not support the entire RFC3986 standard but only a basic HTTP scheme.
+/// Defines a URL. This implementation does not support the entire RFC3986 standard but only a basic HTTP scheme.
 
-#ifndef SAKIT_URI_H
-#define SAKIT_URI_H
+#ifndef SAKIT_URL_H
+#define SAKIT_URL_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmap.h>
@@ -23,14 +23,13 @@
 
 namespace sakit
 {
-	class sakitExport Uri
+	class sakitExport Url
 	{
 	public:
-		Uri(chstr uri);
-		Uri(chstr scheme, chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
-		~Uri();
+		Url(chstr uri);
+		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
+		~Url();
 
-		HL_DEFINE_GET(hstr, scheme, Scheme);
 		HL_DEFINE_GET(hstr, host, Host);
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
@@ -38,12 +37,12 @@ namespace sakit
 		bool isAbsolute();
 
 		hstr toString();
+		hstr toRequest();
 
 		static hstr encodeWwwForm(hmap<hstr, hstr> query);
 		static hmap<hstr, hstr> decodeWwwForm(chstr string);
 
 	protected:
-		hstr scheme;
 		hstr host;
 		hstr path;
 		hmap<hstr, hstr> query;

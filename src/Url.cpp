@@ -13,7 +13,9 @@
 #include <hltypes/hstring.h>
 
 #include "sakit.h"
-#include "Uri.h"
+#include "Url.h"
+
+#define HTTP_SCHEME "http://"
 
 namespace sakit
 {
@@ -36,33 +38,20 @@ namespace sakit
 		return true;
 	}
 
-	Uri::Uri(chstr uri)
+	Url::Url(chstr url)
 	{
-		hstr newUri = uri;
-		int index = newUri.find(':');
-		if (index < 0)
+		if (url == "")
 		{
-			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
+			hlog::warn(sakit::logTag, "URL cannot be empty!");
 			return;
 		}
-		this->scheme = newUri(0, index);
-		if (!_checkReserved(this->scheme))
+		hstr newUrl = url;
+		if (url.starts_with(HTTP_SCHEME))
 		{
-			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
-			return;
+			newUrl = newUrl(strlen(HTTP_SCHEME), -1);
 		}
-		if (this->scheme != "http")
-		{
-			hlog::warn(sakit::logTag, "No support for URI schemes other than HTTP!");
-			return;
-		}
-		newUri = newUri(index + 1, -1);
-		if (newUri[0] != '/' || newUri[1] != '/')
-		{
-			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
-			return;
-		}
-		newUri = newUri(2, -1);
+		this->host = newUrl;
+		int index = 0;
 		hstr query;
 		hstr* current = &this->host;
 		hstr* next = NULL;
@@ -76,76 +65,78 @@ namespace sakit
 		chars += '#';
 		while (parts.size() > 0)
 		{
-			index = newUri.find(chars.remove_first());
+			index = newUrl.find(chars.remove_first());
 			next = parts.remove_first();
 			if (index >= 0)
 			{
-				*current = newUri(0, index);
-				*next = newUri = newUri(index + 1, -1);
+				*current = newUrl(0, index);
+				*next = newUrl = newUrl(index + 1, -1);
 				if (!_checkReserved(*current))
 				{
-					hlog::warn(sakit::logTag, "Malformed URI: " + uri);
+					hlog::warn(sakit::logTag, "Malformed URL: " + url);
 					return;
 				}
 				current = next;
 			}
 		}
+		if (!_checkReserved(this->host))
+		{
+			hlog::warn(sakit::logTag, "Malformed URL: " + url);
+			return;
+		}
 		if (query != "")
 		{
-			this->query = Uri::decodeWwwForm(query);
+			this->query = Url::decodeWwwForm(query);
 		}
 		if (this->path != "")
 		{
-			this->path = "/" + Uri::_decodeWwwFormComponent(this->path);
+			this->path = "/" + Url::_decodeWwwFormComponent(this->path);
 		}
 		if (this->fragment != "")
 		{
-			this->fragment = Uri::_decodeWwwFormComponent(this->fragment);
+			this->fragment = Url::_decodeWwwFormComponent(this->fragment);
 		}
 	}
 
-	Uri::Uri(chstr scheme, chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
 	{
-		this->scheme = scheme;
-		if (this->scheme != "http")
-		{
-			hlog::warn(sakit::logTag, "No support for URI schemes other than HTTP!");
-			return;
-		}
 		this->host = host;
 		this->path = path;
 		this->query = query;
 		this->fragment = fragment;
 	}
 
-	Uri::~Uri()
+	Url::~Url()
 	{
 	}
 
-	bool Uri::isAbsolute()
+	bool Url::isAbsolute()
 	{
 		return (this->host != "");
 	}
 
-	hstr Uri::toString()
+	hstr Url::toString()
 	{
 		hstr result;
-		result += this->scheme + ":";
-		result += "//" + this->host;
-		result += Uri::_encodeWwwFormComponent(this->path);
-		hstr query = Uri::encodeWwwForm(this->query);
+		result += this->toRequest();
+		hstr query = Url::encodeWwwForm(this->query);
 		if (query != "")
 		{
 			result += "?" + query;
 		}
 		if (this->fragment != "")
 		{
-			result += "#" + this->fragment;
+			result += "#" + Url::_encodeWwwFormComponent(this->fragment);
 		}
 		return result;
 	}
 
-	hstr Uri::_encodeWwwFormComponent(chstr string)
+	hstr Url::toRequest()
+	{
+		return (HTTP_SCHEME + this->host + (this->path == "" ? hstr("") : "/" + Url::_encodeWwwFormComponent(this->path)));
+	}
+
+	hstr Url::_encodeWwwFormComponent(chstr string)
 	{
 		hstr result;
 		std::basic_string<unsigned int> chars = string.u_str();
@@ -167,7 +158,7 @@ namespace sakit
 		return result;
 	}
 
-	hstr Uri::_decodeWwwFormComponent(chstr string)
+	hstr Url::_decodeWwwFormComponent(chstr string)
 	{
 		hstr current = string;
 		hstr result;
@@ -187,17 +178,17 @@ namespace sakit
 		return result.replace('+', ' ');
 	}
 
-	hstr Uri::encodeWwwForm(hmap<hstr, hstr> query)
+	hstr Url::encodeWwwForm(hmap<hstr, hstr> query)
 	{
 		harray<hstr> parameters;
 		foreach_m (hstr, it, query)
 		{
-			parameters += Uri::_encodeWwwFormComponent(it->first) + "=" + Uri::_encodeWwwFormComponent(it->second);
+			parameters += Url::_encodeWwwFormComponent(it->first) + "=" + Url::_encodeWwwFormComponent(it->second);
 		}
 		return parameters.join('&');
 	}
 
-	hmap<hstr, hstr> Uri::decodeWwwForm(chstr string)
+	hmap<hstr, hstr> Url::decodeWwwForm(chstr string)
 	{
 		hmap<hstr, hstr> result;
 		harray<hstr> parameters = (string.contains('&') ? string.split('&') : string.split(';'));
@@ -207,11 +198,11 @@ namespace sakit
 			data = (*it).split('=', 1);
 			if (data.size() == 2)
 			{
-				result[Uri::_decodeWwwFormComponent(data[0])] = Uri::_decodeWwwFormComponent(data[1]);
+				result[Url::_decodeWwwFormComponent(data[0])] = Url::_decodeWwwFormComponent(data[1]);
 			}
 			else
 			{
-				result[Uri::_decodeWwwFormComponent(*it)] = "";
+				result[Url::_decodeWwwFormComponent(*it)] = "";
 			}
 		}
 		return result;

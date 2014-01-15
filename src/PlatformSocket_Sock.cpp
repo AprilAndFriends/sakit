@@ -240,7 +240,7 @@ namespace sakit
 		return previouslyConnected;
 	}
 
-	bool PlatformSocket::send(hstream* stream, int& sent, int& count)
+	bool PlatformSocket::send(hstream* stream, int& count, int& sent)
 	{
 		const char* data = (const char*)&(*stream)[stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);

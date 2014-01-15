@@ -91,9 +91,6 @@
     <ClInclude Include="include\sakit\Host.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\Uri.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\WorkerThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
@@ -122,6 +119,12 @@
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
     <ClInclude Include="src\HttpTcpSocketDelegate.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\Url.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\SocketBase.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
   </ItemGroup>
@@ -171,9 +174,6 @@
     <ClCompile Include="src\Host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Uri.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ConnectorThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
@@ -208,6 +208,12 @@
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
     <ClCompile Include="src\HttpTcpSocketDelegate.cpp">
+      <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Url.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SocketBase.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
   </ItemGroup>

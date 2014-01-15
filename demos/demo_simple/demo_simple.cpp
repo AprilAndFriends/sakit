@@ -447,37 +447,24 @@ void _testAsyncUdpClient()
 
 void _testHttpSocket()
 {
+	float retryTimeout = sakit::getRetryTimeout();
+	int retryAttempts = sakit::getRetryAttempts();
+	sakit::setRetryTimeout(1.0f);
+	sakit::setRetryAttempts(3);
 	sakit::HttpSocket* socket = new sakit::HttpSocket(&httpSocketDelegate);
-		/*
-	if (socket->connect(sakit::Host("www.google.com")))
+	hstream stream;
+	sakit::Url url("www.google.hr");
+	if (socket->executeGet(&stream, url))
 	{
-		int sent = socket->get("");
-		hlog::write(LOG_TAG, "Sent: " + hstr(sent));
-		for_iter (i, 0, 30) // wait 3 seconds
-		{
-			sakit::update(0.0f);
-			hthread::sleep(100.0f);
-		}
-		hstream stream;
-		socket->receive(&stream);
-		if (stream.size() > 0)
-		{
-			stream.rewind();
-			hlog::write(LOG_TAG, stream.read());
-		}
-		else
-		{
-			hlog::write(LOG_TAG, "Server did not respond in time.");
-		}
-		socket->disconnect();
-		socket->startReceiveAsync(30);
-		do
-		{
-			sakit::update(0.0f);
-			hthread::sleep(100.0f);
-		} while (socket->isReceiving());
+		hlog::errorf(LOG_TAG, " got %d bytes:", url.getHost().c_str(), stream.size());
+		hlog::error(LOG_TAG, stream.read());
 	}
-		*/
+	else
+	{
+		hlog::error(LOG_TAG, "Failed to call GET: " + url.getHost());
+	}
+	sakit::setRetryTimeout(retryTimeout);
+	sakit::setRetryAttempts(retryAttempts);
 	delete socket;
 }
 

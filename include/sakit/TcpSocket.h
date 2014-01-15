@@ -39,19 +39,18 @@ namespace sakit
 		// TODOsock - make it work with chstr port as well
 		bool connect(Host host, unsigned short port);
 		bool disconnect();
-		int send(hstream* stream, int count = INT_MAX);
-		int send(chstr data);
 		int receive(hstream* stream, int maxBytes = 0);
 
 		// TODOsock - make it work with chstr port as well
 		bool connectAsync(Host host, unsigned short port);
 		bool disconnectAsync();
-		bool sendAsync(hstream* stream, int count = INT_MAX);
-		bool sendAsync(chstr data);
 		bool startReceiveAsync(int maxBytes = 0);
 
 	protected:
 		ConnectorThread* thread;
+
+		int _send(hstream* stream, int count);
+		bool _sendAsync(hstream* stream, int count);
 
 		void _activateConnection(Host host, unsigned short port);
 

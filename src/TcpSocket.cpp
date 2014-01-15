@@ -159,7 +159,7 @@ namespace sakit
 		return result;
 	}
 
-	int TcpSocket::send(hstream* stream, int count)
+	int TcpSocket::_send(hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
 		{
@@ -175,12 +175,7 @@ namespace sakit
 		{
 			return false;
 		}
-		return this->_send(stream, count);
-	}
-
-	int TcpSocket::send(chstr data)
-	{
-		return Socket::send(data);
+		return this->_sendDirect(stream, count);
 	}
 
 	int TcpSocket::receive(hstream* stream, int maxBytes)
@@ -199,7 +194,7 @@ namespace sakit
 		{
 			return 0;
 		}
-		return this->_receive(stream, maxBytes);
+		return this->_receiveDirect(stream, maxBytes);
 	}
 
 	bool TcpSocket::connectAsync(Host host, unsigned short port)
@@ -242,7 +237,7 @@ namespace sakit
 		return true;
 	}
 
-	bool TcpSocket::sendAsync(hstream* stream, int count)
+	bool TcpSocket::_sendAsync(hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
 		{
@@ -266,11 +261,6 @@ namespace sakit
 		this->thread->mutex.unlock();
 		this->sender->start();
 		return true;
-	}
-
-	bool TcpSocket::sendAsync(chstr data)
-	{
-		return Socket::sendAsync(data);
 	}
 
 	bool TcpSocket::startReceiveAsync(int maxBytes)

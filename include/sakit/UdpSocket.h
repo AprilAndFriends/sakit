@@ -37,12 +37,8 @@ namespace sakit
 		bool setDestination(Host host, unsigned short port);
 		bool clearDestination();
 
-		int send(hstream* stream, int count = INT_MAX);
-		int send(chstr data);
 		int receive(hstream* stream, int count = 0);
 
-		bool sendAsync(hstream* stream, int count = INT_MAX);
-		bool sendAsync(chstr data);
 		bool startReceiveAsync(int count = 0);
 		
 		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
@@ -57,6 +53,9 @@ namespace sakit
 
 	protected:
 		bool multicastGroup;
+
+		int _send(hstream* stream, int count);
+		bool _sendAsync(hstream* stream, int count);
 
 		void _activateConnection(Host host, unsigned short port);
 

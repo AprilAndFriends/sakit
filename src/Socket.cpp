@@ -20,21 +20,13 @@
 
 namespace sakit
 {
-	Socket::Socket(SocketDelegate* socketDelegate) : Base()
+	Socket::Socket(SocketDelegate* socketDelegate) : SocketBase()
 	{
 		this->socketDelegate = socketDelegate;
-		this->sender = new SenderThread(this->socket);
-		this->receiver = new ReceiverThread(this->socket);
 	}
 
 	Socket::~Socket()
 	{
-		this->sender->running = false;
-		this->sender->join();
-		delete this->sender;
-		this->receiver->running = false;
-		this->receiver->join();
-		delete this->receiver;
 	}
 
 	bool Socket::isSending()
@@ -53,10 +45,38 @@ namespace sakit
 		return result;
 	}
 
-	void Socket::update(float timeSinceLastFrame)
+	int Socket::send(hstream* stream, int count)
 	{
-		this->_updateSending();
-		this->_updateReceiving();
+		return this->_send(stream, count);
+	}
+
+	int Socket::send(chstr data)
+	{
+		return this->_send(data);
+	}
+
+	bool Socket::sendAsync(hstream* stream, int count)
+	{
+		return this->_sendAsync(stream, count);
+	}
+
+	bool Socket::sendAsync(chstr data)
+	{
+		return this->_sendAsync(data);
+	}
+
+	bool Socket::stopReceiveAsync()
+	{
+		this->receiver->mutex.lock();
+		State receiverState = this->receiver->state;
+		if (!this->_checkStopReceiveStatus(receiverState))
+		{
+			this->receiver->mutex.unlock();
+			return false;
+		}
+		this->receiver->running = false;
+		this->receiver->mutex.unlock();
+		return true;
 	}
 
 	void Socket::_updateSending()
@@ -125,36 +145,6 @@ namespace sakit
 		{
 			this->socketDelegate->onReceiveFailed(this);
 		}
-	}
-
-	int Socket::send(chstr data)
-	{
-		hstream stream;
-		stream.write(data);
-		stream.rewind();
-		return this->send(&stream);
-	}
-
-	bool Socket::sendAsync(chstr data)
-	{
-		hstream stream;
-		stream.write(data);
-		stream.rewind();
-		return this->sendAsync(&stream);
-	}
-
-	bool Socket::stopReceiveAsync()
-	{
-		this->receiver->mutex.lock();
-		State receiverState = this->receiver->state;
-		if (!this->_checkStopReceiveStatus(receiverState))
-		{
-			this->receiver->mutex.unlock();
-			return false;
-		}
-		this->receiver->running = false;
-		this->receiver->mutex.unlock();
-		return true;
 	}
 
 	bool Socket::_checkSendStatus(State senderState)

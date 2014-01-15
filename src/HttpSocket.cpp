@@ -11,86 +11,130 @@
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
 
-#include "sakit.h"
 #include "HttpSocket.h"
 #include "HttpSocketDelegate.h"
 #include "HttpTcpSocketDelegate.h"
+#include "PlatformSocket.h"
+#include "sakit.h"
 
 #define HTTP_LINE_ENDING "\r\n"
 
 namespace sakit
 {
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : keepAlive(false)
+	unsigned short HttpSocket::DefaultPort = 80;
+
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
-		this->tcpSocketDelegate = new HttpTcpSocketDelegate();
-		this->socket = new TcpSocket(this->tcpSocketDelegate);
+		this->port = HttpSocket::DefaultPort;
+		this->socket->setConnectionLess(false);
 	}
 
 	HttpSocket::~HttpSocket()
 	{
-		delete this->socket;
-		delete this->tcpSocketDelegate;
 	}
 
-	bool HttpSocket::get(Uri uri)
+	bool HttpSocket::executeGet(hstream* stream, Url url, hmap<hstr, hstr> customHeaders)
+	{
+		return this->_executeMethod(stream, "GET", url, customHeaders);
+	}
+
+	bool HttpSocket::executePost(hstream* stream, Url url, hmap<hstr, hstr> customHeaders)
+	{
+		return this->_executeMethod(stream, "POST", url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethod(hstream* stream, chstr method, Url url, hmap<hstr, hstr>& customHeaders)
+	{
+		if (!this->_canReceive(stream))
+		{
+			return false;
+		}
+		hstr request = this->_makeRequest(method, url, customHeaders);
+		if (!this->socket->connect(this->host, this->port))
+		{
+			return false;
+		}
+		if (SocketBase::_send(request) == 0)
+		{
+			return false;
+		}
+		if (this->_receiveDirect(stream, INT_MAX) == 0)
+		{
+			return false;
+		}
+		stream->rewind();
+		if (!this->keepAlive)
+		{
+			this->socket->disconnect();
+		}
+		return true;
+	}
+
+	int HttpSocket::_send(hstream* stream, int count)
+	{
+		return this->_sendDirect(stream, count);
+	}
+
+	bool HttpSocket::_sendAsync(hstream* stream, int count)
 	{
 		return false;
 	}
 
-	bool HttpSocket::get(Host host, chstr path)
+	void HttpSocket::_updateSending()
 	{
-		/*
-		hstr data;
-		data += "GET " + this->_makeUrl(url) + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
-		data += "Host: " + this->host.getAddress() + HTTP_LINE_ENDING;
-		return this->socket->send(data);
-		*/
-		return false;
+		// TODOsock - implement
 	}
 
-	bool HttpSocket::post(chstr url, hmap<hstr, hstr> parameters)
+	void HttpSocket::_updateReceiving()
 	{
-		/*
-		harray<hstr> params;
-		foreach_m (hstr, it, parameters)
-		{
-			params += it->first + "=" + it->second;
-		}
-		hstr postData = params.join('&');
-		hstr data;
-		data += "POST " + this->_makeUrl(url) + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
-		data += "Host: " + this->host.getAddress() + HTTP_LINE_ENDING;
-		data += "Content-Length: " + hstr(postData.size()) + HTTP_LINE_ENDING;
-		data += this->_makeHeaders();
-		data += HTTP_LINE_ENDING;
-		data += postData;
-		data += HTTP_LINE_ENDING;
-		return this->send(data);
-		*/
-		return false;
+		// TODOsock - implement
 	}
 
-	hstr HttpSocket::_makeUrl(chstr url)
+	hstr HttpSocket::_makeRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
 	{
-		/*
-		hstr address = this->host.getAddress();
-		if (url.contains(address))
+		this->host = Host(url.getHost());
+		hstr body;
+		hmap<hstr, hstr> query = url.getQuery();
+		if (query.size() > 0)
 		{
-			address = url;
+			body += Url::encodeWwwForm(query);
 		}
-		else
+		hstr fragment = url.getFragment();
+		if (fragment != "")
 		{
-			address = address.rtrim('/') + "/" + url.ltrim('/');
+			body += fragment;
 		}
-		if (!address.starts_with("http://"))
+		customHeaders["Host"] = this->host.toString();
+		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
+		if (!customHeaders.has_key("Accept-Encoding"))
 		{
-			address = "http://" + address;
+			customHeaders["Accept-Encoding"] = "identity";
 		}
-		return address;
-		*/
-		return "";
+		if (!customHeaders.has_key("Content-Type"))
+		{
+			customHeaders["Content-Type"] = "application/x-www-form-urlencoded";
+		}
+		if (!customHeaders.has_key("Accept"))
+		{
+			customHeaders["Accept"] = "*/*";
+		}
+		if (body.size() > 0)
+		{
+			customHeaders["Content-Length"] = hstr(body.size());
+		}
+		hstr request;
+		request += method + " " + url.toRequest() + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
+		foreach_m (hstr, it, customHeaders)
+		{
+			request += it->first + ": " + it->second + HTTP_LINE_ENDING;
+		}
+		if (body.size() > 0)
+		{
+			request += HTTP_LINE_ENDING + body + HTTP_LINE_ENDING;
+		}
+		return request;
 	}
 
 	hstr HttpSocket::_makeProtocol()
@@ -103,22 +147,6 @@ namespace sakit
 		}
 		hlog::error(sakit::logTag, "Invalid HTTP protocol version!");
 		return ""; // invalid
-	}
-
-	hstr HttpSocket::_makeHeaders()
-	{
-		harray<hstr> results;
-		results += "Connection: " + hstr(this->keepAlive ? "keep-alive" : "close") + HTTP_LINE_ENDING;
-		// custom headers
-		// TODOsock - make safer
-		foreach_m (hstr, it, this->customHeaders)
-		{
-			if (it->first != "Host" && it->first != "Content-Length")
-			{
-				results += hsprintf("%s: %s%s", it->first.c_str(), it->second.c_str(), HTTP_LINE_ENDING);
-			}
-		}
-		return results.join("");
 	}
 
 }

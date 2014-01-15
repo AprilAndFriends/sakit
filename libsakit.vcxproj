@@ -136,6 +136,7 @@
     <ClInclude Include="include\sakit\Server.h" />
     <ClInclude Include="include\sakit\ServerDelegate.h" />
     <ClInclude Include="include\sakit\Socket.h" />
+    <ClInclude Include="include\sakit\SocketBase.h" />
     <ClInclude Include="include\sakit\SocketDelegate.h" />
     <ClInclude Include="include\sakit\TcpServer.h" />
     <ClInclude Include="include\sakit\TcpServerDelegate.h" />
@@ -143,7 +144,7 @@
     <ClInclude Include="include\sakit\UdpServer.h" />
     <ClInclude Include="include\sakit\UdpServerDelegate.h" />
     <ClInclude Include="include\sakit\UdpSocket.h" />
-    <ClInclude Include="include\sakit\Uri.h" />
+    <ClInclude Include="include\sakit\Url.h" />
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\HttpTcpSocketDelegate.h" />
     <ClInclude Include="src\PlatformSocket.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\ServerDelegate.cpp" />
     <ClCompile Include="src\ServerThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
+    <ClCompile Include="src\SocketBase.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="src\TcpServerDelegate.cpp" />
@@ -181,7 +183,7 @@
     <ClCompile Include="src\UdpServerDelegate.cpp" />
     <ClCompile Include="src\UdpServerThread.cpp" />
     <ClCompile Include="src\UdpSocket.cpp" />
-    <ClCompile Include="src\Uri.cpp" />
+    <ClCompile Include="src\Url.cpp" />
     <ClCompile Include="src\WorkerThread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

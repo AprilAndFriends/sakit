@@ -46,14 +46,14 @@ namespace sakit
 		return (this->socket->isConnected() ? hsprintf("%s:%d", this->host.toString().c_str(), this->port) : "");
 	}
 
-	int Base::_send(hstream* stream, int count)
+	int Base::_sendDirect(hstream* stream, int count)
 	{
 		int sent = 0;
 		long position = stream->position();
 		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 		while (count > 0)
 		{
-			if (!this->socket->send(stream, sent, count))
+			if (!this->socket->send(stream, count, sent))
 			{
 				break;
 			}
@@ -67,12 +67,13 @@ namespace sakit
 		return sent;
 	}
 	
-	int Base::_receive(hstream* stream, int maxBytes)
+	int Base::_receiveDirect(hstream* stream, int maxBytes)
 	{
 		hmutex mutex;
 		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+		int retryAttempts = sakit::getRetryAttempts();
 		int remaining = maxBytes;
-		while (remaining == maxBytes)
+		while (remaining == maxBytes && retryAttempts > 0)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
 			{
@@ -82,6 +83,7 @@ namespace sakit
 			{
 				break;
 			}
+			retryAttempts--;
 			hthread::sleep(retryTimeout);
 		}
 		return (maxBytes - remaining);

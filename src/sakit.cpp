@@ -18,6 +18,7 @@ namespace sakit
 {
 	hstr logTag = "sakit";
 	float retryTimeout = 0.1f;
+	int retryAttempts = 100;
 	int bufferSize = 65536;
 	harray<Base*> connections;
 	hmutex connectionsMutex;
@@ -58,6 +59,16 @@ namespace sakit
 	void setRetryTimeout(float value)
 	{
 		retryTimeout = value;
+	}
+
+	int getRetryAttempts()
+	{
+		return retryAttempts;
+	}
+
+	void setRetryAttempts(int value)
+	{
+		retryAttempts = value;
 	}
 
 	harray<NetworkAdapter> getNetworkAdapters()

@@ -18,17 +18,18 @@
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
 
+#include "SocketBase.h"
 #include "sakitExport.h"
 #include "TcpSocket.h"
-#include "Uri.h"
+#include "Url.h"
 
 namespace sakit
 {
 	class HttpSocketDelegate;
-	class HttpTcpSocketDelegate;
+	class PlatformSocket;
 	class TcpSocket;
 
-	class sakitExport HttpSocket
+	class sakitExport HttpSocket : public SocketBase
 	{
 	public:
 		enum Protocol
@@ -41,25 +42,28 @@ namespace sakit
 
 		HL_DEFINE_ISSET(keepAlive, KeepAlive);
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
-		HL_DEFINE_GETSET2(hmap, hstr, hstr, customHeaders, CustomHeaders);
+		HL_DEFINE_SET(unsigned short, port, Port);
 
-		bool get(Uri uri);
-		bool get(Host host, chstr path);
-		bool post(chstr url, hmap<hstr, hstr> parameters);
+		bool executeGet(hstream* stream, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+		bool executePost(hstream* stream, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+
+		static unsigned short DefaultPort;
 
 	protected:
-		TcpSocket* socket;
 		HttpSocketDelegate* socketDelegate;
-		SocketDelegate* tcpSocketDelegate;
 		Protocol protocol;
 		bool keepAlive;
 
+		bool _executeMethod(hstream* stream, chstr method, Url url, hmap<hstr, hstr>& customHeaders);
 
-		hmap<hstr, hstr> customHeaders;
+		int _send(hstream* stream, int count);
+		bool _sendAsync(hstream* stream, int count);
 
-		hstr _makeUrl(chstr url);
+		void _updateSending();
+		void _updateReceiving();
+
+		hstr _makeRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders);
 		hstr _makeProtocol();
-		hstr _makeHeaders();
 
 	};
 

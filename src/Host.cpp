@@ -8,10 +8,12 @@
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
 #include <hltypes/harray.h>
+#include <hltypes/hlog.h>
 #include <hltypes/hstring.h>
 
 #include "Host.h"
 #include "PlatformSocket.h"
+#include "sakit.h"
 
 namespace sakit
 {

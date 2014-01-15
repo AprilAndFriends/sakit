@@ -35,7 +35,7 @@ namespace sakit
 		int count = this->stream->size();
 		while (this->running)
 		{
-			if (!this->socket->send(this->stream, this->lastSent, count))
+			if (!this->socket->send(this->stream, count, this->lastSent))
 			{
 				this->mutex.lock();
 				this->result = FAILED;

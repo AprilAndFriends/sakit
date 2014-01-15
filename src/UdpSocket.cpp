@@ -88,7 +88,7 @@ namespace sakit
 		return this->socket->setMulticastTtl(value);
 	}
 
-	int UdpSocket::send(hstream* stream, int count)
+	int UdpSocket::_send(hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
 		{
@@ -101,12 +101,7 @@ namespace sakit
 		{
 			return false;
 		}
-		return this->_send(stream, count);
-	}
-
-	int UdpSocket::send(chstr data)
-	{
-		return Socket::send(data);
+		return this->_sendDirect(stream, count);
 	}
 
 	int UdpSocket::receive(hstream* stream, int maxBytes)
@@ -122,10 +117,10 @@ namespace sakit
 		{
 			return 0;
 		}
-		return this->_receive(stream, maxBytes);
+		return this->_receiveDirect(stream, maxBytes);
 	}
 
-	bool UdpSocket::sendAsync(hstream* stream, int count)
+	bool UdpSocket::_sendAsync(hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
 		{
@@ -145,11 +140,6 @@ namespace sakit
 		this->sender->mutex.unlock();
 		this->sender->start();
 		return true;
-	}
-
-	bool UdpSocket::sendAsync(chstr data)
-	{
-		return Socket::sendAsync(data);
 	}
 
 	bool UdpSocket::startReceiveAsync(int maxBytes)

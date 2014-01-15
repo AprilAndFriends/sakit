@@ -25,6 +25,7 @@ namespace sakit
 {
 	class PlatformSocket;
 	class Socket;
+	class SocketBase;
 	class TcpSocket;
 	class UdpServer;
 	class UdpSocket;
@@ -33,6 +34,7 @@ namespace sakit
 	{
 	public:
 		friend class Socket;
+		friend class SocketBase;
 		friend class TcpSocket;
 		friend class UdpServer;
 		friend class UdpSocket;

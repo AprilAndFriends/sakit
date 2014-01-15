@@ -30,7 +30,6 @@ namespace sakit
 	public:
 		friend class PlatformSocket;
 
-		Base();
 		virtual ~Base();
 
 		HL_DEFINE_GET(Host, host, Host);
@@ -44,8 +43,10 @@ namespace sakit
 		Host host;
 		unsigned short port;
 
-		int _send(hstream* stream, int count);
-		int _receive(hstream* stream, int maxBytes);
+		Base();
+
+		int _sendDirect(hstream* stream, int count = INT_MAX);
+		int _receiveDirect(hstream* stream, int maxBytes);
 
 		bool _canSend(hstream* stream, int count);
 		bool _canReceive(hstream* stream);
