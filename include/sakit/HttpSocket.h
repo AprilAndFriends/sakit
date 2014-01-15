@@ -25,6 +25,7 @@
 
 namespace sakit
 {
+	class HttpResponse;
 	class HttpSocketDelegate;
 	class PlatformSocket;
 	class TcpSocket;
@@ -44,8 +45,8 @@ namespace sakit
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
 		HL_DEFINE_SET(unsigned short, port, Port);
 
-		bool executeGet(hstream* stream, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
-		bool executePost(hstream* stream, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+		bool executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+		bool executePost(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
 
 		static unsigned short DefaultPort;
 
@@ -54,7 +55,8 @@ namespace sakit
 		Protocol protocol;
 		bool keepAlive;
 
-		bool _executeMethod(hstream* stream, chstr method, Url url, hmap<hstr, hstr>& customHeaders);
+		bool _executeMethod(HttpResponse* response, chstr method, Url url, hmap<hstr, hstr>& customHeaders);
+		bool _parseResponse(HttpResponse* response, hstream* stream);
 
 		int _send(hstream* stream, int count);
 		bool _sendAsync(hstream* stream, int count);

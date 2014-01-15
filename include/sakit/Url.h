@@ -36,8 +36,10 @@ namespace sakit
 		HL_DEFINE_GET(hstr, fragment, Fragment);
 		bool isAbsolute();
 
+		hstr getAbsolutePath();
+		hstr getBody();
+
 		hstr toString();
-		hstr toRequest();
 
 		static hstr encodeWwwForm(hmap<hstr, hstr> query);
 		static hmap<hstr, hstr> decodeWwwForm(chstr string);

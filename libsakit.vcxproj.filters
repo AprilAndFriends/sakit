@@ -85,9 +85,6 @@
     <ClInclude Include="include\sakit\NetworkAdapter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\HttpSocket.h">
-      <Filter>Header Files\Sockets</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\Host.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -115,16 +112,19 @@
     <ClInclude Include="src\PlatformSocket.h">
       <Filter>Header Files\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="include\sakit\HttpSocketDelegate.h">
-      <Filter>Header Files\Sockets</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HttpTcpSocketDelegate.h">
-      <Filter>Header Files\Sockets</Filter>
-    </ClInclude>
     <ClInclude Include="include\sakit\Url.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\sakit\SocketBase.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\HttpResponse.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\HttpSocket.h">
+      <Filter>Header Files\Sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\HttpSocketDelegate.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,13 +207,13 @@
     <ClCompile Include="src\HttpSocketDelegate.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
-    <ClCompile Include="src\HttpTcpSocketDelegate.cpp">
-      <Filter>Source Files\Sockets</Filter>
-    </ClCompile>
     <ClCompile Include="src\Url.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SocketBase.cpp">
+      <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpResponse.cpp">
       <Filter>Source Files\Sockets</Filter>
     </ClCompile>
   </ItemGroup>

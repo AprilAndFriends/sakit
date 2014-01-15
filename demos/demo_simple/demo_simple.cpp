@@ -24,6 +24,7 @@
 #include <sakit/UdpServer.h>
 #include <sakit/UdpServerDelegate.h>
 #include <sakit/UdpSocket.h>
+#include <sakit/HttpResponse.h>
 #include <sakit/HttpSocket.h>
 #include <sakit/HttpSocketDelegate.h>
 
@@ -449,19 +450,21 @@ void _testHttpSocket()
 {
 	float retryTimeout = sakit::getRetryTimeout();
 	int retryAttempts = sakit::getRetryAttempts();
-	sakit::setRetryTimeout(1.0f);
-	sakit::setRetryAttempts(3);
+	sakit::setRetryTimeout(0.1f);
+	sakit::setRetryAttempts(50);
 	sakit::HttpSocket* socket = new sakit::HttpSocket(&httpSocketDelegate);
-	hstream stream;
-	sakit::Url url("www.google.hr");
-	if (socket->executeGet(&stream, url))
+	sakit::HttpResponse response;
+	sakit::Url url("http://www.google.com?gws_rd=cr&ei=JYfWUsWaAeSQ4gTF3ICQDA#q=sourceforge sakit");
+	hmap<hstr, hstr> headers;
+	headers["User-Agent"] = "SAKit Demo Simple";
+	if (socket->executeGet(&response, url, headers))
 	{
-		hlog::errorf(LOG_TAG, " got %d bytes:", url.getHost().c_str(), stream.size());
-		hlog::error(LOG_TAG, stream.read());
+		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
+		hlog::write(LOG_TAG, response.Raw);
 	}
 	else
 	{
-		hlog::error(LOG_TAG, "Failed to call GET: " + url.getHost());
+		hlog::error(LOG_TAG, "Failed to call GET on: " + url.getHost());
 	}
 	sakit::setRetryTimeout(retryTimeout);
 	sakit::setRetryAttempts(retryAttempts);

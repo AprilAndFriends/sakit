@@ -11,6 +11,7 @@
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
 
+#include "HttpResponse.h"
 #include "HttpSocket.h"
 #include "HttpSocketDelegate.h"
 #include "HttpTcpSocketDelegate.h"
@@ -18,6 +19,8 @@
 #include "sakit.h"
 
 #define HTTP_LINE_ENDING "\r\n"
+#define HTTP_REQUEST_GET "GET"
+#define HTTP_REQUEST_POST "POST"
 
 namespace sakit
 {
@@ -35,20 +38,21 @@ namespace sakit
 	{
 	}
 
-	bool HttpSocket::executeGet(hstream* stream, Url url, hmap<hstr, hstr> customHeaders)
+	bool HttpSocket::executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
 	{
-		return this->_executeMethod(stream, "GET", url, customHeaders);
+		return this->_executeMethod(response, HTTP_REQUEST_GET, url, customHeaders);
 	}
 
-	bool HttpSocket::executePost(hstream* stream, Url url, hmap<hstr, hstr> customHeaders)
+	bool HttpSocket::executePost(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
 	{
-		return this->_executeMethod(stream, "POST", url, customHeaders);
+		return this->_executeMethod(response, HTTP_REQUEST_POST, url, customHeaders);
 	}
 
-	bool HttpSocket::_executeMethod(hstream* stream, chstr method, Url url, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url url, hmap<hstr, hstr>& customHeaders)
 	{
-		if (!this->_canReceive(stream))
+		if (response == NULL)
 		{
+			hlog::warn(sakit::logTag, "Cannot execute, response is NULL!");
 			return false;
 		}
 		hstr request = this->_makeRequest(method, url, customHeaders);
@@ -60,14 +64,79 @@ namespace sakit
 		{
 			return false;
 		}
-		if (this->_receiveDirect(stream, INT_MAX) == 0)
+		hstream stream;
+		if (this->_receiveDirect(&stream, INT_MAX) == 0)
 		{
 			return false;
 		}
-		stream->rewind();
+		stream.rewind();
 		if (!this->keepAlive)
 		{
 			this->socket->disconnect();
+		}
+		return this->_parseResponse(response, &stream);
+	}
+
+	bool HttpSocket::_parseResponse(HttpResponse* response, hstream* stream)
+	{
+		if (response == NULL)
+		{
+			hlog::warn(sakit::logTag, "Cannot parse response, response is NULL!");
+			return false;
+		}
+		if (stream == NULL)
+		{
+			hlog::warn(sakit::logTag, "Cannot parse response, stream is NULL!");
+			return false;
+		}
+		response->Raw = stream->read();
+		response->Raw.replace("\r", "");
+		harray<hstr> data = response->Raw.split("\n\n", 1, true);
+		if (data.size() == 0)
+		{
+			return false;
+		}
+		if (data.size() == 2)
+		{
+			response->Body = data[1];
+		}
+		data = data[0].split('\n', 1, true);
+		if (data.size() == 0)
+		{
+			return false;
+		}
+		int index = data[0].find(' ');
+		if (index >= 0)
+		{
+			response->Protocol = data[0](0, index);
+			data[0] = data[0](index + 1, -1);
+			index = data[0].find(' ');
+			if (index >= 0)
+			{
+				response->StatusCode = (HttpResponse::Code)(int)data[0](0, index);
+				response->StatusMessage = data[0](index + 1, -1);
+			}
+			else
+			{
+				response->StatusMessage = data[0];
+			}
+		}
+		response->Headers.clear();
+		if (data.size() > 1)
+		{
+			harray<hstr> lines = data[1].split('\n');
+			foreach (hstr, it, lines)
+			{
+				data = (*it).split(':', 1, true);
+				if (data.size() > 1)
+				{
+					response->Headers[data[0]] = data[1](1, -1); // because there's that space character
+				}
+				else
+				{
+					response->Headers[data[0]] = "";
+				}
+			}
 		}
 		return true;
 	}
@@ -95,17 +164,7 @@ namespace sakit
 	hstr HttpSocket::_makeRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
 	{
 		this->host = Host(url.getHost());
-		hstr body;
-		hmap<hstr, hstr> query = url.getQuery();
-		if (query.size() > 0)
-		{
-			body += Url::encodeWwwForm(query);
-		}
-		hstr fragment = url.getFragment();
-		if (fragment != "")
-		{
-			body += fragment;
-		}
+		hstr body = url.getBody();
 		customHeaders["Host"] = this->host.toString();
 		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
 		if (!customHeaders.has_key("Accept-Encoding"))
@@ -125,7 +184,7 @@ namespace sakit
 			customHeaders["Content-Length"] = hstr(body.size());
 		}
 		hstr request;
-		request += method + " " + url.toRequest() + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
+		request += method + " " + url.getAbsolutePath() + " " + this->_makeProtocol() + HTTP_LINE_ENDING;
 		foreach_m (hstr, it, customHeaders)
 		{
 			request += it->first + ": " + it->second + HTTP_LINE_ENDING;

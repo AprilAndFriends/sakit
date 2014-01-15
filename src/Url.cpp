@@ -26,9 +26,10 @@ namespace sakit
 
 	static harray<char> reserved = hstr(":/?#[]@").split();
 
-	static bool _checkReserved(chstr string)
+	static bool _checkReserved(chstr string, harray<char> ignore = harray<char>())
 	{
-		foreach (char, it, reserved)
+		harray<char> current = reserved / ignore;
+		foreach (char, it, current)
 		{
 			if (string.contains(*it))
 			{
@@ -71,11 +72,6 @@ namespace sakit
 			{
 				*current = newUrl(0, index);
 				*next = newUrl = newUrl(index + 1, -1);
-				if (!_checkReserved(*current))
-				{
-					hlog::warn(sakit::logTag, "Malformed URL: " + url);
-					return;
-				}
 				current = next;
 			}
 		}
@@ -86,14 +82,29 @@ namespace sakit
 		}
 		if (query != "")
 		{
+			if (!_checkReserved(query))
+			{
+				hlog::warn(sakit::logTag, "Malformed URL: " + url);
+				return;
+			}
 			this->query = Url::decodeWwwForm(query);
 		}
 		if (this->path != "")
 		{
+			if (!_checkReserved(this->path, hstr("/").split()))
+			{
+				hlog::warn(sakit::logTag, "Malformed URL: " + url);
+				return;
+			}
 			this->path = "/" + Url::_decodeWwwFormComponent(this->path);
 		}
 		if (this->fragment != "")
 		{
+			if (!_checkReserved(this->fragment))
+			{
+				hlog::warn(sakit::logTag, "Malformed URL: " + url);
+				return;
+			}
 			this->fragment = Url::_decodeWwwFormComponent(this->fragment);
 		}
 	}
@@ -115,14 +126,18 @@ namespace sakit
 		return (this->host != "");
 	}
 
-	hstr Url::toString()
+	hstr Url::getAbsolutePath()
+	{
+		return (HTTP_SCHEME + this->host + (this->path == "" ? hstr("") : "/" + Url::_encodeWwwFormComponent(this->path)));
+	}
+
+	hstr Url::getBody()
 	{
 		hstr result;
-		result += this->toRequest();
 		hstr query = Url::encodeWwwForm(this->query);
 		if (query != "")
 		{
-			result += "?" + query;
+			result += query;
 		}
 		if (this->fragment != "")
 		{
@@ -131,9 +146,19 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::toRequest()
+	hstr Url::toString()
 	{
-		return (HTTP_SCHEME + this->host + (this->path == "" ? hstr("") : "/" + Url::_encodeWwwFormComponent(this->path)));
+		hstr result = this->getAbsolutePath();
+		hstr body = this->getBody();
+		if (body != "")
+		{
+			if (!body.starts_with('#'))
+			{
+				result += "?";
+			}
+			result += body;
+		}
+		return result;
 	}
 
 	hstr Url::_encodeWwwFormComponent(chstr string)
@@ -142,7 +167,7 @@ namespace sakit
 		std::basic_string<unsigned int> chars = string.u_str();
 		for_itert (unsigned int, i, 0, chars.size())
 		{
-			if (chars[i] < 128 && !reserved.contains(chars[i]))
+			if (chars[i] > 32 && chars[i] < 128 && !reserved.contains(chars[i]))
 			{
 				result += (char)chars[i];
 			}
