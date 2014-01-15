@@ -485,13 +485,13 @@ int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true);
 	sakit::init();
-	///*
+	/*
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
 	//*/
-	//_testHttpSocket();
+	_testHttpSocket();
 
 	//sakit::UdpSocket::broadcast(5005, "Hi.");
 	//sakit::UdpSocket::broadcast(5005, "How are you?");

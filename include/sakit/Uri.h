@@ -9,7 +9,7 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a URI.
+/// Defines a URI. This implementation does not support the entire RFC3986 standard but only a basic HTTP scheme.
 
 #ifndef SAKIT_URI_H
 #define SAKIT_URI_H
@@ -39,6 +39,9 @@ namespace sakit
 
 		hstr toString();
 
+		static hstr encodeWwwForm(hmap<hstr, hstr> query);
+		static hmap<hstr, hstr> decodeWwwForm(chstr string);
+
 	protected:
 		hstr scheme;
 		hstr host;
@@ -46,26 +49,8 @@ namespace sakit
 		hmap<hstr, hstr> query;
 		hstr fragment;
 
-		hstr _encodeWwwFormComponent(chstr string);
-
-	/*
-uri = URI("http://foo.com/posts?id=30&limit=5#time=1305298413")
-#=> #<URI::HTTP:0x00000000b14880
-      URL:http://foo.com/posts?id=30&limit=5#time=1305298413>
-uri.scheme
-#=> "http"
-uri.host
-#=> "foo.com"
-uri.path
-#=> "/posts"
-uri.query
-#=> "id=30&limit=5"
-uri.fragment
-#=> "time=1305298413"
-
-uri.to_s
-#=> "http://foo.com/posts?id=30&limit=5#time=1305298413"	*/
-
+		static hstr _encodeWwwFormComponent(chstr string);
+		static hstr _decodeWwwFormComponent(chstr string);
 
 	};
 

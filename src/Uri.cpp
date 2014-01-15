@@ -22,11 +22,11 @@ namespace sakit
 	sub-delims  = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
 	*/
 
-	static harray<hstr> reserved = hstr(":,/,?,#,[,],@").split(',');
+	static harray<char> reserved = hstr(":/?#[]@").split();
 
 	static bool _checkReserved(chstr string)
 	{
-		foreach (hstr, it, reserved)
+		foreach (char, it, reserved)
 		{
 			if (string.contains(*it))
 			{
@@ -38,86 +38,80 @@ namespace sakit
 
 	Uri::Uri(chstr uri)
 	{
-		// TODOsock - decode www form components somewhere
-		hstr newUri = uri.replace(' ', '+');
+		hstr newUri = uri;
 		int index = newUri.find(':');
 		if (index < 0)
 		{
 			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
 			return;
 		}
-		this->scheme = newUri(0, index - 1);
+		this->scheme = newUri(0, index);
 		if (!_checkReserved(this->scheme))
 		{
 			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
 			return;
 		}
-		newUri = newUri(index, -1);
+		if (this->scheme != "http")
+		{
+			hlog::warn(sakit::logTag, "No support for URI schemes other than HTTP!");
+			return;
+		}
+		newUri = newUri(index + 1, -1);
 		if (newUri[0] != '/' || newUri[1] != '/')
 		{
 			hlog::warn(sakit::logTag, "Malformed URI: " + uri);
 			return;
 		}
-		// TODOsock - finish implementation
-		/*
-		int pathIndex = index = newUri.find('/');
-		if (index >= 0)
-		{
-			this->path = newUri()
-		}
-
-
 		newUri = newUri(2, -1);
-
-
-		int pathIndex = newUri.find('/');
-		int queryIndex = newUri.find('?');
-		int fragmentIndex = newUri.find('#');
-
-
-
-		bool hasPath = (pathIndex >= 0 && (queryIndex < 0 || pathIndex < queryIndex) && (fragmentIndex < 0 || pathIndex < fragmentIndex));
-		bool hasQuery = (queryIndex >= 0 && (fragmentIndex < 0 || queryIndex < fragmentIndex));
-		bool hasFragment = (fragmentIndex >= 0);
-		if (hasPath)
+		hstr query;
+		hstr* current = &this->host;
+		hstr* next = NULL;
+		harray<hstr*> parts;
+		parts += &this->path;
+		parts += &query;
+		parts += &this->fragment;
+		harray<char> chars;
+		chars += '/';
+		chars += '?';
+		chars += '#';
+		while (parts.size() > 0)
 		{
-
-		}
-
-		bool hasPath = (index >= 0);
-		if (hasPath)
-		{
-			//this->path = newUri()
-			//this->host = newUri;
-			return;
-		}
-		this->host = newUri(0, index - 1);
-		this->path = newUri = newUri(index, -1);
-		index = newUri.find('?');
-		hstr fragment;
-		if (index >= 0)
-		{
-			this->path = newUri(0, index - 1);
-			newUri = newUri(index, -1);
-
-			//this->fragment = newUri(index)
-			//fragments
-			//this->path = this->path(index
-		}
-		else
-		{
-			index = newUri.find('#');
+			index = newUri.find(chars.remove_first());
+			next = parts.remove_first();
 			if (index >= 0)
 			{
-				this->fragment = newUri(index)
+				*current = newUri(0, index);
+				*next = newUri = newUri(index + 1, -1);
+				if (!_checkReserved(*current))
+				{
+					hlog::warn(sakit::logTag, "Malformed URI: " + uri);
+					return;
+				}
+				current = next;
 			}
 		}
-		*/
+		if (query != "")
+		{
+			this->query = Uri::decodeWwwForm(query);
+		}
+		if (this->path != "")
+		{
+			this->path = "/" + Uri::_decodeWwwFormComponent(this->path);
+		}
+		if (this->fragment != "")
+		{
+			this->fragment = Uri::_decodeWwwFormComponent(this->fragment);
+		}
 	}
 
 	Uri::Uri(chstr scheme, chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
 	{
 		this->scheme = scheme;
+		if (this->scheme != "http")
+		{
+			hlog::warn(sakit::logTag, "No support for URI schemes other than HTTP!");
+			return;
+		}
 		this->host = host;
 		this->path = path;
 		this->query = query;
@@ -138,15 +132,11 @@ namespace sakit
 		hstr result;
 		result += this->scheme + ":";
 		result += "//" + this->host;
-		result += this->_encodeWwwFormComponent(this->path);
-		harray<hstr> parameters;
-		foreach_m (hstr, it, this->query)
+		result += Uri::_encodeWwwFormComponent(this->path);
+		hstr query = Uri::encodeWwwForm(this->query);
+		if (query != "")
 		{
-			parameters += this->_encodeWwwFormComponent(it->first) + "=" + this->_encodeWwwFormComponent(it->second);
-		}
-		if (parameters.size() > 0)
-		{
-			result += "?" + parameters.join('&');
+			result += "?" + query;
 		}
 		if (this->fragment != "")
 		{
@@ -161,10 +151,9 @@ namespace sakit
 		std::basic_string<unsigned int> chars = string.u_str();
 		for_itert (unsigned int, i, 0, chars.size())
 		{
-			if (chars[i] < 128)
+			if (chars[i] < 128 && !reserved.contains(chars[i]))
 			{
 				result += (char)chars[i];
-				// TODOsock - encode more stuff
 			}
 			else if (chars[i] < 256)
 			{
@@ -173,6 +162,56 @@ namespace sakit
 			else
 			{
 				result += hsprintf("&#%d;", chars[i]);
+			}
+		}
+		return result;
+	}
+
+	hstr Uri::_decodeWwwFormComponent(chstr string)
+	{
+		hstr current = string;
+		hstr result;
+		int index = 0;
+		while (true)
+		{
+			index = current.find('%');
+			if (index < 0)
+			{
+				result += current;
+				break;
+			}
+			result += current(0, index);
+			result += (char)current(index + 1, 2).unhex();
+			current = current(index + 3, -1);
+		}
+		return result.replace('+', ' ');
+	}
+
+	hstr Uri::encodeWwwForm(hmap<hstr, hstr> query)
+	{
+		harray<hstr> parameters;
+		foreach_m (hstr, it, query)
+		{
+			parameters += Uri::_encodeWwwFormComponent(it->first) + "=" + Uri::_encodeWwwFormComponent(it->second);
+		}
+		return parameters.join('&');
+	}
+
+	hmap<hstr, hstr> Uri::decodeWwwForm(chstr string)
+	{
+		hmap<hstr, hstr> result;
+		harray<hstr> parameters = (string.contains('&') ? string.split('&') : string.split(';'));
+		harray<hstr> data;
+		foreach (hstr, it, parameters)
+		{
+			data = (*it).split('=', 1);
+			if (data.size() == 2)
+			{
+				result[Uri::_decodeWwwFormComponent(data[0])] = Uri::_decodeWwwFormComponent(data[1]);
+			}
+			else
+			{
+				result[Uri::_decodeWwwFormComponent(*it)] = "";
 			}
 		}
 		return result;
