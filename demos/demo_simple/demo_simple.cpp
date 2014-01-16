@@ -454,13 +454,15 @@ void _testHttpSocket()
 	sakit::setRetryAttempts(50);
 	sakit::HttpSocket* socket = new sakit::HttpSocket(&httpSocketDelegate);
 	sakit::HttpResponse response;
-	sakit::Url url("http://www.google.com?gws_rd=cr&ei=JYfWUsWaAeSQ4gTF3ICQDA#q=sourceforge sakit");
+	//sakit::Url url("http://www.google.com?gws_rd=cr&ei=JYfWUsWaAeSQ4gTF3ICQDA#q=sourceforge sakit");
+	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
+	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
 	if (socket->executeGet(&response, url, headers))
 	{
-		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
 		hlog::write(LOG_TAG, response.Raw.read());
+		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
 	}
 	else
 	{

@@ -73,18 +73,29 @@ namespace sakit
 		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 		int retryAttempts = sakit::getRetryAttempts();
 		int remaining = maxBytes;
-		while (remaining == maxBytes && retryAttempts > 0)
+		int lastRemaining = 0;
+		while (retryAttempts > 0)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
 			{
 				break;
 			}
-			if (maxBytes == 0)
+			if (remaining == 0)
+			{
+				break;
+			}
+			if (lastRemaining != remaining)
+			{
+				lastRemaining = remaining;
+				continue;
+			}
+			if (remaining != maxBytes)
 			{
 				break;
 			}
 			retryAttempts--;
 			hthread::sleep(retryTimeout);
+			lastRemaining = 0;
 		}
 		return (maxBytes - remaining);
 	}

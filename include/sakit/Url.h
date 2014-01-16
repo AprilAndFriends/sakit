@@ -26,7 +26,8 @@ namespace sakit
 	class sakitExport Url
 	{
 	public:
-		Url(chstr uri);
+		Url();
+		Url(chstr url);
 		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
 		~Url();
 
@@ -34,23 +35,29 @@ namespace sakit
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
 		HL_DEFINE_GET(hstr, fragment, Fragment);
-		bool isAbsolute();
+		bool isValid();
 
+		/// @note The returned value is fully encoded.
 		hstr getAbsolutePath();
+		/// @note The returned value is fully encoded.
 		hstr getBody();
-
+		/// @note The returned value is fully encoded.
 		hstr toString();
 
-		static hstr encodeWwwForm(hmap<hstr, hstr> query);
-		static hmap<hstr, hstr> decodeWwwForm(chstr string);
+		static hstr encodeWwwForm(hmap<hstr, hstr> query, char delimiter = '&');
+		static hmap<hstr, hstr> decodeWwwForm(chstr string, char* usedDelimiter = NULL);
 
 	protected:
 		hstr host;
 		hstr path;
 		hmap<hstr, hstr> query;
 		hstr fragment;
+		char queryDelimiter;
 
-		static hstr _encodeWwwFormComponent(chstr string);
+		void _checkValues(chstr query);
+
+		static bool _checkCharset(chstr string, chstr allowed);
+		static hstr _encodeWwwFormComponent(chstr string, chstr allowed);
 		static hstr _decodeWwwFormComponent(chstr string);
 
 	};

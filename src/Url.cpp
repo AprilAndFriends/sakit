@@ -8,6 +8,7 @@
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
 #include <hltypes/harray.h>
+#include <hltypes/hdir.h>
 #include <hltypes/hlog.h>
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
@@ -17,29 +18,22 @@
 
 #define HTTP_SCHEME "http://"
 
+#define URL_UNRESERVED "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~"
+#define URL_RESERVED ":/?#[]@"
+#define URL_DELIMITERS "!$&'()*+,;="
+
+#define HOST_ALLOWED URL_UNRESERVED URL_DELIMITERS
+#define PATH_ALLOWED HOST_ALLOWED ":@"
+#define QUERY_ALLOWED PATH_ALLOWED "/?"
+#define FRAGMENT_ALLOWED QUERY_ALLOWED
+
 namespace sakit
 {
-	/*
-	gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
-	sub-delims  = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
-	*/
-
-	static harray<char> reserved = hstr(":/?#[]@").split();
-
-	static bool _checkReserved(chstr string, harray<char> ignore = harray<char>())
+	Url::Url() : queryDelimiter('&')
 	{
-		harray<char> current = reserved / ignore;
-		foreach (char, it, current)
-		{
-			if (string.contains(*it))
-			{
-				return false;
-			}
-		}
-		return true;
 	}
 
-	Url::Url(chstr url)
+	Url::Url(chstr url) : queryDelimiter('&')
 	{
 		if (url == "")
 		{
@@ -51,7 +45,6 @@ namespace sakit
 		{
 			newUrl = newUrl(strlen(HTTP_SCHEME), -1);
 		}
-		// TODOsock - improve this implementation using startIndex and endIndex
 		this->host = newUrl;
 		int index = 0;
 		hstr query;
@@ -76,73 +69,118 @@ namespace sakit
 				current = next;
 			}
 		}
-		if (!_checkReserved(this->host))
-		{
-			hlog::warn(sakit::logTag, "Malformed URL: " + url);
-			return;
-		}
-		if (query != "")
-		{
-			if (!_checkReserved(query))
-			{
-				hlog::warn(sakit::logTag, "Malformed URL: " + url);
-				return;
-			}
-			this->query = Url::decodeWwwForm(query);
-		}
-		if (this->path != "")
-		{
-			if (!_checkReserved(this->path, hstr("/").split()))
-			{
-				hlog::warn(sakit::logTag, "Malformed URL: " + url);
-				return;
-			}
-			this->path = "/" + Url::_decodeWwwFormComponent(this->path);
-		}
-		if (this->fragment != "")
-		{
-			if (!_checkReserved(this->fragment))
-			{
-				hlog::warn(sakit::logTag, "Malformed URL: " + url);
-				return;
-			}
-			this->fragment = Url::_decodeWwwFormComponent(this->fragment);
-		}
+		this->_checkValues(query);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : queryDelimiter('&')
 	{
 		this->host = host;
 		this->path = path;
 		this->query = query;
 		this->fragment = fragment;
+		this->_checkValues("");
+	}
+
+	void Url::_checkValues(chstr query)
+	{
+		int index = this->host.find(':');
+		if (index >= 0)
+		{
+			hstr port = this->host(index + 1, -1);
+			this->host = this->host(0, index);
+			if (!port.is_number())
+			{
+				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+				return;
+			}
+			unsigned int portValue = (unsigned int)port;
+			if (portValue > USHRT_MAX)
+			{
+				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+				return;
+			}
+		}
+		if (!Url::_checkCharset(this->host, HOST_ALLOWED))
+		{
+			hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+			return;
+		}
+		this->host = Url::_decodeWwwFormComponent(this->host);
+		harray<hstr> paths = this->path.split('/', -1, true);
+		this->path = "";
+		foreach (hstr, it, paths)
+		{
+			if (!Url::_checkCharset((*it), PATH_ALLOWED))
+			{
+				hlog::warn(sakit::logTag, "Malformed URL path segment: " + (*it));
+				return;
+			}
+			this->path += "/" + Url::_decodeWwwFormComponent(*it);
+		}
+		// resolving "." and ".." in path
+		this->path = hdir::normalize(this->path);
+		if (this->path == "." || this->path == "/.")
+		{
+			this->path = "";
+		}
+		while (true)
+		{
+			if (this->path.contains("/../"))
+			{
+				this->path = this->path.replace("/../", "/");
+				continue;
+			}
+			if (this->path.ends_with("/.."))
+			{
+				this->path = this->path(0, -4);
+				continue;
+			}
+			break;
+		}
+		if (query != "")
+		{
+			this->query = Url::decodeWwwForm(query);
+		}
+		if (!Url::_checkCharset(this->fragment, FRAGMENT_ALLOWED))
+		{
+			hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
+			return;
+		}
+		this->fragment = Url::_decodeWwwFormComponent(this->fragment);
 	}
 
 	Url::~Url()
 	{
 	}
 
-	bool Url::isAbsolute()
+	bool Url::isValid()
 	{
 		return (this->host != "");
 	}
 
 	hstr Url::getAbsolutePath()
 	{
-		return (HTTP_SCHEME + this->host + (this->path == "" ? hstr("") : "/" + Url::_encodeWwwFormComponent(this->path)));
+		hstr result;
+		result = HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		harray<hstr> paths = this->path.split('/', -1, true);
+		foreach (hstr, it, paths)
+		{
+			result += "/" + this->_encodeWwwFormComponent((*it), PATH_ALLOWED);
+		}
+		return result;
 	}
 
 	hstr Url::getBody()
 	{
 		hstr result;
-		hstr query = Url::encodeWwwForm(this->query);
+		hstr query = Url::encodeWwwForm(this->query, this->queryDelimiter);
 		if (query != "")
 		{
 			result += query;
 		}
 		if (this->fragment != "")
 		{
-			result += "#" + Url::_encodeWwwFormComponent(this->fragment);
+			result += "#" + Url::_encodeWwwFormComponent(this->fragment, FRAGMENT_ALLOWED);
 		}
 		return result;
 	}
@@ -162,25 +200,23 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::_encodeWwwFormComponent(chstr string)
+	bool Url::_checkCharset(chstr string, chstr allowed)
+	{
+		return (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() > 0;
+	}
+
+	hstr Url::_encodeWwwFormComponent(chstr string, chstr allowed)
 	{
 		hstr result;
-		std::basic_string<unsigned int> chars = string.u_str();
-		for_itert (unsigned int, i, 0, chars.size())
+		for_iter (i, 0, string.size())
 		{
-			// TODOsock - check and fix this condition
-			if (chars[i] > 32 && chars[i] < 128 && !reserved.contains(chars[i]))
+			if (allowed.contains(string[i]))
 			{
-				result += (char)chars[i];
-			}
-			else if (chars[i] < 256)
-			{
-				result += hsprintf("%%%02X", chars[i]);
+				result += string[i];
 			}
 			else
 			{
-				// TODOsock - this is incorrect and chars should be encoded in UTF8 only
-				result += hsprintf("&#%d;", chars[i]);
+				result += hsprintf("%%%02X", string[i]);
 			}
 		}
 		return result;
@@ -203,27 +239,37 @@ namespace sakit
 			result += (char)current(index + 1, 2).unhex();
 			current = current(index + 3, -1);
 		}
-		return result.replace('+', ' ');
+		return result;
 	}
 
-	hstr Url::encodeWwwForm(hmap<hstr, hstr> query)
+	hstr Url::encodeWwwForm(hmap<hstr, hstr> query, char delimiter)
 	{
 		harray<hstr> parameters;
 		foreach_m (hstr, it, query)
 		{
-			parameters += Url::_encodeWwwFormComponent(it->first) + "=" + Url::_encodeWwwFormComponent(it->second);
+			parameters += Url::_encodeWwwFormComponent(it->first, QUERY_ALLOWED) + "=" + Url::_encodeWwwFormComponent(it->second, QUERY_ALLOWED);
 		}
-		return parameters.join('&');
+		return parameters.join(delimiter);
 	}
 
-	hmap<hstr, hstr> Url::decodeWwwForm(chstr string)
+	hmap<hstr, hstr> Url::decodeWwwForm(chstr string, char* usedDelimiter)
 	{
+		char delimiter = '&';
+		harray<char> delimiters = hstr(URL_DELIMITERS).split();
+		foreach (char, it, delimiters)
+		{
+			if (string.contains(*it))
+			{
+				delimiter = (*it);
+				break;
+			}
+		}
 		hmap<hstr, hstr> result;
-		harray<hstr> parameters = (string.contains('&') ? string.split('&') : string.split(';'));
+		harray<hstr> parameters = string.split(delimiter);
 		harray<hstr> data;
 		foreach (hstr, it, parameters)
 		{
-			data = (*it).split('=', 1);
+			data = (*it).split('=', 1, true);
 			if (data.size() == 2)
 			{
 				result[Url::_decodeWwwFormComponent(data[0])] = Url::_decodeWwwFormComponent(data[1]);
@@ -232,6 +278,10 @@ namespace sakit
 			{
 				result[Url::_decodeWwwFormComponent(*it)] = "";
 			}
+		}
+		if (usedDelimiter != NULL)
+		{
+			*usedDelimiter = delimiter;
 		}
 		return result;
 	}

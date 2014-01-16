@@ -44,9 +44,13 @@ namespace sakit
 		HL_DEFINE_ISSET(keepAlive, KeepAlive);
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
 		HL_DEFINE_SET(unsigned short, port, Port);
+		/// @note This is due to keepAlive which has to be set beforehand
+		bool isConnected();
 
 		bool executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
 		bool executePost(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+		bool executeGet(HttpResponse* response, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
+		bool executePost(HttpResponse* response, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
 
 		static unsigned short DefaultPort;
 
@@ -54,11 +58,15 @@ namespace sakit
 		HttpSocketDelegate* socketDelegate;
 		Protocol protocol;
 		bool keepAlive;
+		Url url;
 
-		bool _executeMethod(HttpResponse* response, chstr method, Url url, hmap<hstr, hstr>& customHeaders);
+		bool _executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders);
+		bool _executeMethod(HttpResponse* response, chstr method, hmap<hstr, hstr>& customHeaders);
+		bool _executeMethodInternal(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders);
 
 		int _send(hstream* stream, int count);
 		bool _sendAsync(hstream* stream, int count);
+		void _terminateConnection();
 
 		void _updateSending();
 		void _updateReceiving();
