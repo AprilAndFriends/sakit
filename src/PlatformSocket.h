@@ -32,6 +32,7 @@
 
 namespace sakit
 {
+	class HttpResponse;
 	class Socket;
 
 	class sakitExport PlatformSocket
@@ -49,6 +50,7 @@ namespace sakit
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& count);
+		bool receive(HttpResponse* response, hmutex& mutex);
 		bool receiveFrom(hstream* stream, Socket* socket);
 		bool listen();
 		bool accept(Socket* socket);
@@ -70,6 +72,7 @@ namespace sakit
 		bool connected;
 		bool connectionLess;
 		char* receiveBuffer;
+		int bufferSize;
 		fd_set readSet;
 
 #if !defined(_WIN32) || !defined(_WINRT)
@@ -86,6 +89,7 @@ namespace sakit
 		bool _awaitAsync();
 #endif
 
+		bool _checkReceivedBytes(unsigned long* received);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
 
 		bool _setNonBlocking(bool value);

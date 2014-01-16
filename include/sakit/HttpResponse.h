@@ -24,7 +24,6 @@
 namespace sakit
 {
 	class HttpSocketDelegate;
-	class PlatformSocket;
 	class TcpSocket;
 
 	class sakitExport HttpResponse
@@ -48,7 +47,20 @@ namespace sakit
 		HttpResponse();
 		~HttpResponse();
 
+		bool isComplete();
+
+		// TODOsock - remove
 		bool parseFromRaw();
+
+	protected:
+		bool headersComplete;
+		bool bodyComplete;
+		int lastChunkSize;
+		int lastChunkRead;
+
+		hstr _getRawData();
+		void _readHeaders(hstr& data);
+		void _readBody(hstr& data);
 
 	};
 

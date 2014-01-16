@@ -108,8 +108,9 @@ namespace sakit
 		this->sock = -1;
 		this->info = NULL;
 		this->address = NULL;
-		this->receiveBuffer = new char[bufferSize];
-		memset(this->receiveBuffer, 0, bufferSize);
+		this->bufferSize = bufferSize;
+		this->receiveBuffer = new char[this->bufferSize];
+		memset(this->receiveBuffer, 0, this->bufferSize);
 	}
 
 	bool PlatformSocket::_setNonBlocking(bool value)
@@ -274,6 +275,36 @@ namespace sakit
 	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& count)
 	{
 		unsigned long received = 0;
+		if (!this->_checkReceivedBytes(&received))
+		{
+			return false;
+		}
+		if (received == 0)
+		{
+			return true;
+		}
+		int read = hmin((int)received, bufferSize);
+		if (count > 0) // if don't read everything
+		{
+			read = hmin(read, count);
+		}
+		read = recv(this->sock, this->receiveBuffer, read, 0);
+		if (!this->_checkResult(read, "recv()", false))
+		{
+			return false;
+		}
+		mutex.lock();
+		stream->write_raw(this->receiveBuffer, read);
+		mutex.unlock();
+		if (count > 0) // if don't read everything
+		{
+			count -= read;
+		}
+		return true;
+	}
+
+	bool PlatformSocket::_checkReceivedBytes(unsigned long* received)
+	{
 #ifndef _WIN32 // Unix requires a select() call before using ioctl/ioctlsocket
 		timeval interval = {5, 0};
 		fd_set readSet;
@@ -290,28 +321,6 @@ namespace sakit
 		{
 			return false;
 		}
-		if (received == 0)
-		{
-			return true;
-		}
-		int read = received;
-		if (count > 0) // i.e. read everything
-		{
-			read = hmin(read, hmin(count, bufferSize));
-		}
-		read = recv(this->sock, this->receiveBuffer, read, 0);
-		if (!this->_checkResult(read, "recv()", false))
-		{
-			return false;
-		}
-		mutex.lock();
-		stream->write_raw(this->receiveBuffer, read);
-		mutex.unlock();
-		if (count > 0) // i.e. read everything
-		{
-			count -= read;
-		}
-		return true;
 	}
 
 	bool PlatformSocket::listen()

@@ -11,10 +11,11 @@
 #include <hltypes/hplatform.h>
 #include <hltypes/hstring.h>
 
-#include "sakit.h"
+#include "HttpResponse.h"
 #include "PlatformSocket.h"
+#include "sakit.h"
 
-#ifdef __APPLE__
+#ifndef _WIN32
 #include <errno.h>
 #endif
 
@@ -26,6 +27,20 @@ namespace sakit
 		delete [] this->receiveBuffer;
 	}
 	
+	bool PlatformSocket::receive(HttpResponse* response, hmutex& mutex)
+	{
+		unsigned long position = response->Raw.position();
+		response->Raw.seek(0, hstream::END);
+		int count = 0;
+		bool result = this->receive(&response->Raw, mutex, count);
+		if (result)
+		{
+			response->Raw.seek(position, hstream::START);
+			response->parseFromRaw();
+		}
+		return result;
+	}
+
 	int PlatformSocket::_printLastError(chstr basicMessage)
 	{
 		int code = 0;

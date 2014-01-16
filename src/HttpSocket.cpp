@@ -126,7 +126,7 @@ namespace sakit
 				if (data.size() == 2)
 				{
 					// there is an exact value of how big the body is going to be
-					int remaining = data[0].replace("\r", "").unhex() - data[1].size();
+					int remaining = data[0].unhex() - data[1].size();
 					if (remaining > 0)
 					{
 						response->Raw.seek(0, hstream::END);
@@ -154,6 +154,23 @@ namespace sakit
 			this->_terminateConnection();
 		}
 		return result;
+	}
+
+	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
+	{
+		hmutex mutex;
+		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+		int retryAttempts = sakit::getRetryAttempts();
+		while (retryAttempts > 0)
+		{
+			if (!this->socket->receive(response, mutex))
+			{
+				break;
+			}
+			retryAttempts--;
+			hthread::sleep(retryTimeout);
+		}
+		return response->Raw.size();
 	}
 
 	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)

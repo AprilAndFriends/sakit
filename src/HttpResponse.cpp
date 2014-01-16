@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	HttpResponse::HttpResponse() : StatusCode(UNDEFINED)
+	HttpResponse::HttpResponse() : StatusCode(UNDEFINED), headersComplete(false), bodyComplete(false), lastChunkSize(0), lastChunkRead(0)
 	{
 	}
 
@@ -25,62 +25,102 @@ namespace sakit
 	{
 	}
 
+	bool HttpResponse::isComplete()
+	{
+		return (this->headersComplete && this->bodyComplete);
+	}
+
 	bool HttpResponse::parseFromRaw()
 	{
-		// TODOsock - this should probably be implemented using streams only
-		unsigned long position = this->Raw.position();
-		this->Raw.rewind();
-		hstr raw = this->Raw.read();
-		this->Raw.seek(position, hstream::START);
-		raw.replace("\r", "");
-		harray<hstr> data = raw.split("\n\n", 1, true);
-		if (data.size() == 0)
+		if (this->isComplete())
 		{
 			return false;
 		}
-		if (data.size() == 2)
+		hstr data = this->_getRawData();
+		if (!this->headersComplete)
 		{
-			this->Body = data[1];
+			this->_readHeaders(data);
 		}
-		data = data[0].split('\n', 1, true);
-		if (data.size() == 0)
+		if (this->headersComplete)
 		{
-			return false;
+			this->_readBody(data);
 		}
-		int index = data[0].find(' ');
-		if (index >= 0)
+	}
+
+	void HttpResponse::_readHeaders(hstr& data)
+	{
+		int index = 0;
+		hstr line;
+		harray<hstr> lineData;
+		while (true)
 		{
-			this->Protocol = data[0](0, index);
-			data[0] = data[0](index + 1, -1);
-			index = data[0].find(' ');
-			if (index >= 0)
+			index = data.find("\r\n");
+			if (index < 0)
 			{
-				this->StatusCode = (HttpResponse::Code)(int)data[0](0, index);
-				this->StatusMessage = data[0](index + 1, -1);
+				this->Raw.seek(-data.size(), hstream::END);
+				break;
+			}
+			line = data(0, index);
+			data = data(index + 2, -1);
+			if (line == "")
+			{
+				this->headersComplete = true;
+				break;
+			}
+			if (this->StatusCode == HttpResponse::UNDEFINED)
+			{
+				index = line.find(' ');
+				if (index >= 0)
+				{
+					this->Protocol = line(0, index);
+					line = line(index + 1, -1);
+					index = line.find(' ');
+					if (index >= 0)
+					{
+						this->StatusCode = (HttpResponse::Code)(int)line(0, index);
+						this->StatusMessage = line(index + 1, -1);
+					}
+					else
+					{
+						this->StatusMessage = line;
+					}
+				}
 			}
 			else
 			{
-				this->StatusMessage = data[0];
-			}
-		}
-		this->Headers.clear();
-		if (data.size() > 1)
-		{
-			harray<hstr> lines = data[1].split('\n');
-			foreach (hstr, it, lines)
-			{
-				data = (*it).split(':', 1, true);
-				if (data.size() > 1)
+				lineData = line.split(':', 1, true);
+				if (lineData.size() > 1)
 				{
-					this->Headers[data[0]] = data[1](1, -1); // because there's that space character
+					this->Headers[lineData[0]] = lineData[1](1, -1); // because there's that space character
 				}
 				else
 				{
-					this->Headers[data[0]] = "";
+					this->Headers[lineData[0]] = "";
 				}
 			}
 		}
-		return true;
+	}
+
+	void HttpResponse::_readBody(hstr& data)
+	{
+		// TODOsock - implement normal reading and chunked reading
+		if (this->Headers.try_get_by_key("Transfer-Encoding", "") != "chunked")
+		{
+		}
+		else
+		{
+		}
+	}
+
+	hstr HttpResponse::_getRawData()
+	{
+		int size = (this->Raw.size() - this->Raw.position());
+		char* buffer = new char[size + 1];
+		this->Raw.read_raw(buffer, size);
+		buffer[size + 1] = '\0';  // classic string terminating 0-character
+		hstr data = hstr(buffer);
+		delete [] buffer;
+		return data;
 	}
 
 }

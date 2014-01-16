@@ -68,6 +68,8 @@ namespace sakit
 		bool _sendAsync(hstream* stream, int count);
 		void _terminateConnection();
 
+		int _receiveHttpDirect(HttpResponse* response);
+
 		void _updateSending();
 		void _updateReceiving();
 
