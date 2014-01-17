@@ -202,4 +202,22 @@ namespace sakit
 		return data;
 	}
 
+	HttpResponse* HttpResponse::clone()
+	{
+		HttpResponse* result = new HttpResponse();
+		result->Protocol = this->Protocol;
+		result->StatusCode = this->StatusCode;
+		result->StatusMessage = this->StatusMessage;
+		result->Headers = this->Headers;
+		result->Body.write_raw((void*)&this->Body[0], this->Body.size());
+		result->Body.rewind();
+		result->Raw.write_raw((void*)&this->Raw[0], this->Raw.size());
+		result->Raw.rewind();
+		result->HeadersComplete = this->HeadersComplete;
+		result->BodyComplete = this->BodyComplete;
+		result->chunkSize = this->chunkSize;
+		result->chunkRead = this->chunkRead;
+		return result;
+	}
+
 }

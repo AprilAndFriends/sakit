@@ -452,25 +452,57 @@ void _testHttpSocket()
 	int retryAttempts = sakit::getRetryAttempts();
 	sakit::setRetryTimeout(0.1f);
 	sakit::setRetryAttempts(50);
-	sakit::HttpSocket* socket = new sakit::HttpSocket(&httpSocketDelegate);
+	///////////////////////////////////////////////////////////////////////
+	sakit::HttpSocket* client = new sakit::HttpSocket(&httpSocketDelegate);
 	sakit::HttpResponse response;
-	//sakit::Url url("http://www.google.com?gws_rd=cr&ei=JYfWUsWaAeSQ4gTF3ICQDA#q=sourceforge sakit");
 	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
-	if (socket->executeGet(&response, url, headers))
+	if (client->executeGet(&response, url, headers))
 	{
-		hlog::write(LOG_TAG, response.Raw.read());
 		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
+		hlog::write(LOG_TAG, response.Raw.read(1500) + "\n...");
 	}
 	else
 	{
-		hlog::error(LOG_TAG, "Failed to call GET on: " + url.getHost());
+		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
 	}
+	///////////////////////////////////////////////////////////////////////
 	sakit::setRetryTimeout(retryTimeout);
 	sakit::setRetryAttempts(retryAttempts);
-	delete socket;
+	delete client;
+}
+
+void _testHttpSocketAsync()
+{
+	float retryTimeout = sakit::getRetryTimeout();
+	int retryAttempts = sakit::getRetryAttempts();
+	sakit::setRetryTimeout(0.1f);
+	sakit::setRetryAttempts(50);
+	///////////////////////////////////////////////////////////////////////
+	sakit::HttpSocket* client = new sakit::HttpSocket(&httpSocketDelegate);
+	sakit::HttpResponse response;
+	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
+	hlog::debug(LOG_TAG, "URL: " + url.toString());
+	hmap<hstr, hstr> headers;
+	headers["User-Agent"] = "SAKit Demo Simple";
+	if (client->executeGetAsync(url, headers))
+	{
+		do
+		{
+			sakit::update(0.0f);
+			hthread::sleep(100.0f);
+		} while (client->isExecuting());
+	}
+	else
+	{
+		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
+	}
+	delete client;
+	///////////////////////////////////////////////////////////////////////
+	sakit::setRetryTimeout(retryTimeout);
+	sakit::setRetryAttempts(retryAttempts);
 }
 
 int main(int argc, char **argv)
@@ -482,44 +514,12 @@ int main(int argc, char **argv)
 	_testAsyncTcpClient();
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
-	//*/
-	_testHttpSocket();
-
-	//sakit::UdpSocket::broadcast(5005, "Hi.");
-	//sakit::UdpSocket::broadcast(5005, "How are you?");
-	/*
-	sakit::Host multicastGroup("226.2.3.4");
-	sakit::UdpSocket* socket = new sakit::UdpSocket(&clientDelegate);
-
-	if (socket->joinMulticastGroup(sakit::Host("192.168.1.109"), 5015, multicastGroup))
-	{
-		hlog::write(LOG_TAG, "- added to multicast group: " + multicastGroup.toString());
-	}
-	hlog::write(LOG_TAG, "Listening now...");
-	hstream stream;
-	socket->receiveAsync(14);
-	hlog::write(LOG_TAG, "- received: " + hstr(stream.size()));
-	
-	{
-		sakit::UdpSocket* socket2 = new sakit::UdpSocket(&clientDelegate);
-		socket2->setDestination(multicastGroup, 5015);
-		socket2->send("12345678901234");
-		delete socket2;
-		for_iter (i, 0, 10)
-		{
-			sakit::update(0.0f);
-			hthread::sleep(100.0f);
-		}
-	}
-
-	socket->setDestination(multicastGroup, 5010); // remember that this drops the multicast group membership!
-	int sent = socket->send("Hi.");
-	hlog::write(LOG_TAG, "- sent: " + hstr(sent));
-	
-	delete socket;
-	*/
-
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
+	//*/
+	//_testHttpSocket();
+	_testHttpSocketAsync();
+
+	hlog::debug(LOG_TAG, "Done.");
 	sakit::destroy();
 #ifdef _WIN32
 	system("pause");

@@ -18,6 +18,27 @@
 #include "PlatformSocket.h"
 #include "sakit.h"
 
+#define NORMAL_EXECUTE(name, constant) \
+	bool HttpSocket::execute ## name(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders) \
+	{ \
+		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, url, customHeaders); \
+	}
+#define NORMAL_EXECUTE_ASYNC(name, constant) \
+	bool HttpSocket::execute ## name ## Async(Url url, hmap<hstr, hstr> customHeaders) \
+	{ \
+		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, url, customHeaders); \
+	}
+#define CONNECTED_EXECUTE(name, constant) \
+	bool HttpSocket::execute ## name(HttpResponse* response, hmap<hstr, hstr> customHeaders) \
+	{ \
+		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, customHeaders); \
+	}
+#define CONNECTED_EXECUTE_ASYNC(name, constant) \
+	bool HttpSocket::execute ## name ## Async(hmap<hstr, hstr> customHeaders) \
+	{ \
+		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, customHeaders); \
+	}
+
 namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
@@ -39,85 +60,47 @@ namespace sakit
 		return this->url.isValid();
 	}
 
-	bool HttpSocket::executeOptions(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
+	bool HttpSocket::isExecuting()
 	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_OPTIONS, url, customHeaders);
+		// TODOsock - implement
+		return false;
 	}
 
-	bool HttpSocket::executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_GET, url, customHeaders);
-	}
+	NORMAL_EXECUTE(Options, OPTIONS);
+	NORMAL_EXECUTE(Get, GET);
+	NORMAL_EXECUTE(Head, HEAD);
+	NORMAL_EXECUTE(Post, POST);
+	NORMAL_EXECUTE(Put, PUT);
+	NORMAL_EXECUTE(Delete, DELETE);
+	NORMAL_EXECUTE(Trace, TRACE);
+	NORMAL_EXECUTE(Connect, CONNECT);
 
-	bool HttpSocket::executeHead(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_HEAD, url, customHeaders);
-	}
+	NORMAL_EXECUTE_ASYNC(Options, OPTIONS);
+	NORMAL_EXECUTE_ASYNC(Get, GET);
+	NORMAL_EXECUTE_ASYNC(Head, HEAD);
+	NORMAL_EXECUTE_ASYNC(Post, POST);
+	NORMAL_EXECUTE_ASYNC(Put, PUT);
+	NORMAL_EXECUTE_ASYNC(Delete, DELETE);
+	NORMAL_EXECUTE_ASYNC(Trace, TRACE);
+	NORMAL_EXECUTE_ASYNC(Connect, CONNECT);
 
-	bool HttpSocket::executePost(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_POST, url, customHeaders);
-	}
+	CONNECTED_EXECUTE(Options, OPTIONS);
+	CONNECTED_EXECUTE(Get, GET);
+	CONNECTED_EXECUTE(Head, HEAD);
+	CONNECTED_EXECUTE(Post, POST);
+	CONNECTED_EXECUTE(Put, PUT);
+	CONNECTED_EXECUTE(Delete, DELETE);
+	CONNECTED_EXECUTE(Trace, TRACE);
+	CONNECTED_EXECUTE(Connect, CONNECT);
 
-	bool HttpSocket::executePut(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_PUT, url, customHeaders);
-	}
-
-	bool HttpSocket::executeDelete(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_DELETE, url, customHeaders);
-	}
-
-	bool HttpSocket::executeTrace(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_TRACE, url, customHeaders);
-	}
-
-	bool HttpSocket::executeConnect(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_CONNECT, url, customHeaders);
-	}
-
-	bool HttpSocket::executeOptions(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_OPTIONS, customHeaders);
-	}
-
-	bool HttpSocket::executeGet(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_GET, customHeaders);
-	}
-
-	bool HttpSocket::executeHead(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_HEAD, customHeaders);
-	}
-
-	bool HttpSocket::executePost(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_POST, customHeaders);
-	}
-
-	bool HttpSocket::executePut(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_PUT, customHeaders);
-	}
-
-	bool HttpSocket::executeDelete(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_DELETE, customHeaders);
-	}
-
-	bool HttpSocket::executeTrace(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_TRACE, customHeaders);
-	}
-
-	bool HttpSocket::executeConnect(HttpResponse* response, hmap<hstr, hstr> customHeaders)
-	{
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_CONNECT, customHeaders);
-	}
+	CONNECTED_EXECUTE_ASYNC(Options, OPTIONS);
+	CONNECTED_EXECUTE_ASYNC(Get, GET);
+	CONNECTED_EXECUTE_ASYNC(Head, HEAD);
+	CONNECTED_EXECUTE_ASYNC(Post, POST);
+	CONNECTED_EXECUTE_ASYNC(Put, PUT);
+	CONNECTED_EXECUTE_ASYNC(Delete, DELETE);
+	CONNECTED_EXECUTE_ASYNC(Trace, TRACE);
+	CONNECTED_EXECUTE_ASYNC(Connect, CONNECT);
 
 	bool HttpSocket::_executeMethodInternal(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
 	{
@@ -207,6 +190,7 @@ namespace sakit
 		if (this->isConnected())
 		{
 			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			this->_terminateConnection();
 		}
 		return this->_executeMethodInternal(response, method, url, customHeaders);
 	}
@@ -219,6 +203,35 @@ namespace sakit
 			return false;
 		}
 		return this->_executeMethodInternal(response, method, this->url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	{
+		HttpResponse response;
+		// TODOsock - implement real async
+		bool result = this->_executeMethodInternal(&response, method, url, customHeaders);
+
+		return result;
+	}
+
+	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	{
+		if (this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			this->_terminateConnection();
+		}
+		return this->_executeMethodInternalAsync(method, url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethodAsync(chstr method, hmap<hstr, hstr>& customHeaders)
+	{
+		if (!this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
+			return false;
+		}
+		return this->_executeMethodInternalAsync(method, this->url, customHeaders);
 	}
 
 	int HttpSocket::_send(hstream* stream, int count)
