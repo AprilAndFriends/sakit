@@ -201,6 +201,16 @@ public:
 	{
 	}
 
+	void onExecuteCompleted(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url)
+	{
+		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response->Raw.size(), url.getHost().c_str());
+		hlog::write(LOG_TAG, response->Raw.read(1500) + "\n...");
+	}
+
+	void onExecuteFailed(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url)
+	{
+	}
+
 } httpSocketDelegate;
 
 void _testAsyncTcpServer()
@@ -507,7 +517,7 @@ void _testHttpSocketAsync()
 
 int main(int argc, char **argv)
 {
-	hlog::setLevelDebug(true);
+	hlog::setLevelDebug(true); // for the nice colors
 	sakit::init();
 	/*
 	_testAsyncTcpServer();

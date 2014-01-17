@@ -148,6 +148,62 @@ namespace sakit
 		return true;
 	}
 
+	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	{
+		if (this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			this->_terminateConnection();
+		}
+		return this->_executeMethodInternal(response, method, url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, hmap<hstr, hstr>& customHeaders)
+	{
+		if (!this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
+			return false;
+		}
+		return this->_executeMethodInternal(response, method, this->url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	{
+		HttpResponse response;
+		// TODOsock - implement real async
+		bool result = this->_executeMethodInternal(&response, method, url, customHeaders);
+		if (result)
+		{
+			this->socketDelegate->onExecuteCompleted(this, &response, url);
+		}
+		else
+		{
+			this->socketDelegate->onExecuteFailed(this, &response, url);
+		}
+		return result;
+	}
+
+	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	{
+		if (this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			this->_terminateConnection();
+		}
+		return this->_executeMethodInternalAsync(method, url, customHeaders);
+	}
+
+	bool HttpSocket::_executeMethodAsync(chstr method, hmap<hstr, hstr>& customHeaders)
+	{
+		if (!this->isConnected())
+		{
+			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
+			return false;
+		}
+		return this->_executeMethodInternalAsync(method, this->url, customHeaders);
+	}
+
 	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
 	{
 		hmutex mutex;
@@ -183,55 +239,6 @@ namespace sakit
 			response->BodyComplete = true;
 		}
 		return response->Raw.size();
-	}
-
-	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
-	{
-		if (this->isConnected())
-		{
-			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
-			this->_terminateConnection();
-		}
-		return this->_executeMethodInternal(response, method, url, customHeaders);
-	}
-
-	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, hmap<hstr, hstr>& customHeaders)
-	{
-		if (!this->isConnected())
-		{
-			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
-			return false;
-		}
-		return this->_executeMethodInternal(response, method, this->url, customHeaders);
-	}
-
-	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
-	{
-		HttpResponse response;
-		// TODOsock - implement real async
-		bool result = this->_executeMethodInternal(&response, method, url, customHeaders);
-
-		return result;
-	}
-
-	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
-	{
-		if (this->isConnected())
-		{
-			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
-			this->_terminateConnection();
-		}
-		return this->_executeMethodInternalAsync(method, url, customHeaders);
-	}
-
-	bool HttpSocket::_executeMethodAsync(chstr method, hmap<hstr, hstr>& customHeaders)
-	{
-		if (!this->isConnected())
-		{
-			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
-			return false;
-		}
-		return this->_executeMethodInternalAsync(method, this->url, customHeaders);
 	}
 
 	int HttpSocket::_send(hstream* stream, int count)
