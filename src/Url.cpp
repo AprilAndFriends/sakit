@@ -29,11 +29,11 @@
 
 namespace sakit
 {
-	Url::Url() : queryDelimiter('&')
+	Url::Url() : valid(false), queryDelimiter('&')
 	{
 	}
 
-	Url::Url(chstr url) : queryDelimiter('&')
+	Url::Url(chstr url) : valid(false), queryDelimiter('&')
 	{
 		if (url == "")
 		{
@@ -72,7 +72,7 @@ namespace sakit
 		this->_checkValues(query);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : queryDelimiter('&')
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), queryDelimiter('&')
 	{
 		this->host = host;
 		this->path = path;
@@ -147,15 +147,11 @@ namespace sakit
 			return;
 		}
 		this->fragment = Url::_decodeWwwFormComponent(this->fragment);
+		this->valid = true;
 	}
 
 	Url::~Url()
 	{
-	}
-
-	bool Url::isValid()
-	{
-		return (this->host != "");
 	}
 
 	hstr Url::getAbsolutePath()

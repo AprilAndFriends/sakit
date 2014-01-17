@@ -31,11 +31,11 @@ namespace sakit
 		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
 		~Url();
 
+		HL_DEFINE_IS(valid, Valid);
 		HL_DEFINE_GET(hstr, host, Host);
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
 		HL_DEFINE_GET(hstr, fragment, Fragment);
-		bool isValid();
 
 		/// @note The returned value is fully encoded.
 		hstr getAbsolutePath();
@@ -48,6 +48,7 @@ namespace sakit
 		static hmap<hstr, hstr> decodeWwwForm(chstr string, char* usedDelimiter = NULL);
 
 	protected:
+		bool valid;
 		hstr host;
 		hstr path;
 		hmap<hstr, hstr> query;

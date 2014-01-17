@@ -108,7 +108,7 @@ namespace sakit
 		this->sock = -1;
 		this->info = NULL;
 		this->address = NULL;
-		this->bufferSize = bufferSize;
+		this->bufferSize = sakit::bufferSize;
 		this->receiveBuffer = new char[this->bufferSize];
 		memset(this->receiveBuffer, 0, this->bufferSize);
 	}
@@ -317,10 +317,7 @@ namespace sakit
 		}
 #endif
 		// control socket IO
-		if (!this->_checkResult(ioctlsocket(this->sock, FIONREAD, (uint32_t*)&received), "ioctlsocket()", false))
-		{
-			return false;
-		}
+		return this->_checkResult(ioctlsocket(this->sock, FIONREAD, (uint32_t*)received), "ioctlsocket()", false);
 	}
 
 	bool PlatformSocket::listen()

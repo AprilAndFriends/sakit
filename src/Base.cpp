@@ -87,6 +87,8 @@ namespace sakit
 			if (lastRemaining != remaining)
 			{
 				lastRemaining = remaining;
+				// retry attempts are reset after a successful read
+				retryAttempts = sakit::getRetryAttempts();
 				continue;
 			}
 			if (remaining != maxBytes)

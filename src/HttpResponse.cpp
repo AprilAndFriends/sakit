@@ -15,46 +15,80 @@
 #include "HttpResponse.h"
 #include "sakit.h"
 
+#define HTTP_DELIMITER "\r\n"
+
 namespace sakit
 {
-	HttpResponse::HttpResponse() : StatusCode(UNDEFINED), headersComplete(false), bodyComplete(false), lastChunkSize(0), lastChunkRead(0)
+	int _findSequence(hstream& stream, unsigned char* sequence, int sequenceLength)
 	{
+		if (sequence != NULL && sequenceLength > 0)
+		{
+			unsigned long position = stream.position();
+			int size = stream.size();
+			int j = 0;
+			for_iter (i, position, size)
+			{
+				if (stream[i] == sequence[j])
+				{
+					j++;
+				}
+				else
+				{
+					j = 0;
+				}
+				if (j == sequenceLength)
+				{
+					return i - position - 1;
+				}
+			}
+		}
+		return -1;
+	}
+
+	HttpResponse::HttpResponse() : StatusCode(UNDEFINED), HeadersComplete(false), BodyComplete(false), chunkSize(0), chunkRead(0)
+	{
+		this->clear();
 	}
 
 	HttpResponse::~HttpResponse()
 	{
 	}
 
-	bool HttpResponse::isComplete()
+	void HttpResponse::clear()
 	{
-		return (this->headersComplete && this->bodyComplete);
+		this->Protocol = "";
+		this->StatusCode = UNDEFINED;
+		this->StatusMessage = "";
+		this->Headers.clear();
+		this->Body.clear();
+		this->Raw.clear();
+		this->HeadersComplete = false;
+		this->BodyComplete = false;
+		this->chunkSize = 0;
+		this->chunkRead = 0;
 	}
 
-	bool HttpResponse::parseFromRaw()
+	void HttpResponse::parseFromRaw()
 	{
-		if (this->isComplete())
+		if (!this->HeadersComplete)
 		{
-			return false;
+			this->_readHeaders();
 		}
+		if (this->HeadersComplete && !this->BodyComplete)
+		{
+			this->_readBody();
+		}
+	}
+
+	void HttpResponse::_readHeaders()
+	{
 		hstr data = this->_getRawData();
-		if (!this->headersComplete)
-		{
-			this->_readHeaders(data);
-		}
-		if (this->headersComplete)
-		{
-			this->_readBody(data);
-		}
-	}
-
-	void HttpResponse::_readHeaders(hstr& data)
-	{
 		int index = 0;
 		hstr line;
 		harray<hstr> lineData;
 		while (true)
 		{
-			index = data.find("\r\n");
+			index = data.find(HTTP_DELIMITER);
 			if (index < 0)
 			{
 				this->Raw.seek(-data.size(), hstream::END);
@@ -64,7 +98,8 @@ namespace sakit
 			data = data(index + 2, -1);
 			if (line == "")
 			{
-				this->headersComplete = true;
+				this->Raw.seek(-data.size(), hstream::END);
+				this->HeadersComplete = true;
 				break;
 			}
 			if (this->StatusCode == HttpResponse::UNDEFINED)
@@ -101,14 +136,58 @@ namespace sakit
 		}
 	}
 
-	void HttpResponse::_readBody(hstr& data)
+	void HttpResponse::_readBody()
 	{
-		// TODOsock - implement normal reading and chunked reading
-		if (this->Headers.try_get_by_key("Transfer-Encoding", "") != "chunked")
+		if (this->Headers.try_get_by_key("Transfer-Encoding", "identity") != "chunked")
 		{
+			this->chunkSize = (int)this->Headers.try_get_by_key("Content-Length", "0");
+			this->chunkRead += this->Body.write_raw(this->Raw);
+			if (this->chunkSize > 0 && this->chunkSize == this->chunkRead)
+			{
+				this->BodyComplete = true;
+			}
 		}
 		else
 		{
+			int offset = 0;
+			int read = 0;
+			while (true)
+			{
+				if (this->chunkSize == 0)
+				{
+					offset = _findSequence(this->Raw, (unsigned char*)HTTP_DELIMITER, strlen(HTTP_DELIMITER));
+					if (offset < 0)
+					{
+						break; // not enough bytes to read
+					}
+					this->chunkSize = (int)hstr(this->Raw.read(offset)).unhex();
+					this->Raw.seek(2);
+					if (this->chunkSize == 0)
+					{
+						this->Body.write_raw(this->Raw);
+						this->Raw.seek(0, hstream::END);
+						this->BodyComplete = true;
+						break;
+					}
+				}
+				if (this->chunkSize > 0)
+				{
+					read = this->chunkSize - this->chunkRead;
+					read = this->Body.write_raw(this->Raw, read);
+					this->Raw.seek(read);
+					this->chunkRead += read;
+					if (this->chunkRead == this->chunkSize)
+					{
+						this->chunkSize = 0;
+						this->chunkRead = 0;
+						this->Raw.seek(2);
+					}
+					if (this->Raw.eof())
+					{
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -117,7 +196,7 @@ namespace sakit
 		int size = (this->Raw.size() - this->Raw.position());
 		char* buffer = new char[size + 1];
 		this->Raw.read_raw(buffer, size);
-		buffer[size + 1] = '\0';  // classic string terminating 0-character
+		buffer[size] = '\0';  // classic string terminating 0-character
 		hstr data = hstr(buffer);
 		delete [] buffer;
 		return data;

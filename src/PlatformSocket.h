@@ -73,7 +73,6 @@ namespace sakit
 		bool connectionLess;
 		char* receiveBuffer;
 		int bufferSize;
-		fd_set readSet;
 
 #if !defined(_WIN32) || !defined(_WINRT)
 		unsigned int sock;
