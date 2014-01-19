@@ -29,8 +29,8 @@ namespace sakit
 		HttpSocketDelegate();
 		virtual ~HttpSocketDelegate();
 
-		virtual void onExecuteCompleted(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url) = 0;
-		virtual void onExecuteFailed(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url) = 0;
+		virtual void onExecuteCompleted(HttpSocket* socket, HttpResponse* response, Url url) = 0;
+		virtual void onExecuteFailed(HttpSocket* socket, HttpResponse* response, Url url) = 0;
 
 	};
 
