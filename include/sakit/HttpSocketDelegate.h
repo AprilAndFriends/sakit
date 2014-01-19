@@ -18,9 +18,11 @@
 
 #include "sakitExport.h"
 #include "ServerDelegate.h"
+#include "Url.h"
 
 namespace sakit
 {
+	class HttpResponse;
 	class HttpSocket;
 
 	class sakitExport HttpSocketDelegate
