@@ -198,7 +198,7 @@ namespace sakit
 
 	bool Url::_checkCharset(chstr string, chstr allowed)
 	{
-		return (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() > 0;
+		return (string == "" || (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() > 0);
 	}
 
 	hstr Url::_encodeWwwFormComponent(chstr string, chstr allowed)
