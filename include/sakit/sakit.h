@@ -33,6 +33,10 @@ namespace sakit
 	sakitFnExport int getRetryAttempts();
 	sakitFnExport void setRetryAttempts(int value);
 	sakitFnExport harray<NetworkAdapter> getNetworkAdapters();
+	/// @note Encodes e.g. " into &quot;
+	sakitFnExport hstr encodeHtmlEntities(chstr string);
+	/// @note Decodes e.g. &quot; into "
+	sakitFnExport hstr decodeHtmlEntities(chstr string);
 
 }
 #endif

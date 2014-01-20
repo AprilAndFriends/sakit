@@ -458,11 +458,6 @@ void _testAsyncUdpClient()
 
 void _testHttpSocket()
 {
-	float retryTimeout = sakit::getRetryTimeout();
-	int retryAttempts = sakit::getRetryAttempts();
-	sakit::setRetryTimeout(0.1f);
-	sakit::setRetryAttempts(100); // makes for a 10 second timeout
-	///////////////////////////////////////////////////////////////////////
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: blocking HTTP client");
 	hlog::debug(LOG_TAG, "");
@@ -481,19 +476,11 @@ void _testHttpSocket()
 	{
 		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
 	}
-	///////////////////////////////////////////////////////////////////////
-	sakit::setRetryTimeout(retryTimeout);
-	sakit::setRetryAttempts(retryAttempts);
 	delete client;
 }
 
 void _testHttpSocketAsync()
 {
-	float retryTimeout = sakit::getRetryTimeout();
-	int retryAttempts = sakit::getRetryAttempts();
-	sakit::setRetryTimeout(0.1f);
-	sakit::setRetryAttempts(100); // makes for a 10 second timeout
-	///////////////////////////////////////////////////////////////////////
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: async HTTP client");
 	hlog::debug(LOG_TAG, "");
@@ -516,25 +503,25 @@ void _testHttpSocketAsync()
 		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
 	}
 	delete client;
-	///////////////////////////////////////////////////////////////////////
-	sakit::setRetryTimeout(retryTimeout);
-	sakit::setRetryAttempts(retryAttempts);
 }
 
 int main(int argc, char **argv)
 {
 	hlog::setLevelDebug(true); // for the nice colors
 	sakit::init();
-	/*
+	// TCP tests
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
+	// UDP tests
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
-	//*/
-	//_testHttpSocket();
+	// HTTP tests
+	sakit::setRetryTimeout(0.1f);
+	sakit::setRetryAttempts(100); // makes for a 10 second timeout
+	_testHttpSocket();
 	_testHttpSocketAsync();
-
+	// done
 	hlog::debug(LOG_TAG, "Done.");
 	sakit::destroy();
 #ifdef _WIN32
