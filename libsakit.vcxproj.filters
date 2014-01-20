@@ -127,6 +127,9 @@
     <ClInclude Include="include\sakit\HttpSocketDelegate.h">
       <Filter>Header Files\Sockets</Filter>
     </ClInclude>
+    <ClInclude Include="src\HttpSocketThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -215,6 +218,9 @@
     </ClCompile>
     <ClCompile Include="src\HttpResponse.cpp">
       <Filter>Source Files\Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpSocketThread.cpp">
+      <Filter>Source Files\Threads</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

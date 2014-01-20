@@ -14,7 +14,7 @@
 #include "HttpResponse.h"
 #include "HttpSocket.h"
 #include "HttpSocketDelegate.h"
-#include "HttpTcpSocketDelegate.h"
+#include "HttpSocketThread.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
 
@@ -49,10 +49,14 @@ namespace sakit
 		this->protocol = protocol;
 		this->port = HttpSocket::DefaultPort;
 		this->socket->setConnectionLess(false);
+		this->thread = new HttpSocketThread(this->socket);
 	}
 
 	HttpSocket::~HttpSocket()
 	{
+		this->thread->running = false;
+		this->thread->join();
+		delete this->thread;
 	}
 
 	bool HttpSocket::isConnected()
@@ -62,8 +66,40 @@ namespace sakit
 
 	bool HttpSocket::isExecuting()
 	{
-		// TODOsock - implement
-		return false;
+		this->thread->mutex.lock();
+		bool result = (this->thread->state == RUNNING);
+		this->thread->mutex.unlock();
+		return result;
+	}
+
+	void HttpSocket::update(float timeSinceLastFrame)
+	{
+		this->thread->mutex.lock();
+		State state = this->thread->state;
+		WorkerThread::Result result = this->thread->result;
+		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		{
+			this->thread->mutex.unlock();
+			return;
+		}
+		this->thread->state = State::IDLE;
+		this->thread->result = WorkerThread::IDLE;
+		HttpResponse* response = this->thread->response;
+		this->thread->response = new HttpResponse();
+		this->thread->mutex.unlock();
+		if (result == WorkerThread::FINISHED)
+		{
+			this->socketDelegate->onExecuteCompleted(this, response, this->url);
+		}
+		else if (result == WorkerThread::FAILED)
+		{
+			this->socketDelegate->onExecuteFailed(this, response, this->url);
+		}
+		delete response;
+		if (!this->keepAlive || response->Headers.try_get_by_key("Connection", "") == "close" || !this->socket->isConnected())
+		{
+			this->_terminateConnection();
+		}
 	}
 
 	NORMAL_EXECUTE(Options, OPTIONS);
@@ -114,15 +150,15 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
 			return false;
 		}
-		unsigned short currentPort = this->port;
-		hstr host = url.getHost();
-		int index = host.find(':');
-		if (index >= 0)
+		this->thread->mutex.lock();
+		State state = this->thread->state;
+		this->thread->mutex.unlock();
+		if (!this->_checkExecuteStatus(state))
 		{
-			currentPort = (unsigned short)(int)host(index + 1, -1);
+			return false;
 		}
-		hstr request = this->_makeRequest(method, url, customHeaders);
-		bool result = this->socket->connect(this->host, currentPort);
+		hstr request = this->_processRequest(method, url, customHeaders);
+		bool result = this->socket->connect(this->host, (url.getPort() == 0 ? this->port : url.getPort()));
 		if (!result)
 		{
 			return false;
@@ -170,18 +206,29 @@ namespace sakit
 
 	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
 	{
-		HttpResponse response;
-		// TODOsock - implement real async
-		bool result = this->_executeMethodInternal(&response, method, url, customHeaders);
-		if (result)
+		if (!url.isValid())
 		{
-			this->socketDelegate->onExecuteCompleted(this, &response, url);
+			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
+			return false;
 		}
-		else
+		this->thread->mutex.lock();
+		State state = this->thread->state;
+		if (!this->_checkExecuteStatus(state))
 		{
-			this->socketDelegate->onExecuteFailed(this, &response, url);
+			this->thread->mutex.unlock();
+			return false;
 		}
-		return result;
+		hstr request = this->_processRequest(method, url, customHeaders);
+		this->thread->response->clear();
+		this->thread->stream->clear();
+		this->thread->stream->write_raw((void*)request.c_str(), request.size());
+		this->thread->stream->rewind();
+		this->thread->host = this->host;
+		this->thread->port = (url.getPort() == 0 ? this->port : url.getPort());
+		this->thread->state = RUNNING;
+		this->thread->mutex.unlock();
+		this->thread->start();
+		return true;
 	}
 
 	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
@@ -248,7 +295,7 @@ namespace sakit
 
 	bool HttpSocket::_sendAsync(hstream* stream, int count)
 	{
-		// TODOsock - implement
+		// not used
 		return false;
 	}
 
@@ -258,17 +305,17 @@ namespace sakit
 		this->url = Url();
 	}
 
-	void HttpSocket::_updateSending()
+	bool HttpSocket::_checkExecuteStatus(State senderState)
 	{
-		// TODOsock - implement
+		if (senderState == RUNNING)
+		{
+			hlog::warn(sakit::logTag, "Cannot execute, already executing!");
+			return false;
+		}
+		return true;
 	}
 
-	void HttpSocket::_updateReceiving()
-	{
-		// TODOsock - implement
-	}
-
-	hstr HttpSocket::_makeRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
+	hstr HttpSocket::_processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
 	{
 		this->host = Host(url.getHost());
 		hstr body = url.getBody();

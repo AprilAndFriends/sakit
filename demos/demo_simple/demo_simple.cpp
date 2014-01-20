@@ -461,8 +461,11 @@ void _testHttpSocket()
 	float retryTimeout = sakit::getRetryTimeout();
 	int retryAttempts = sakit::getRetryAttempts();
 	sakit::setRetryTimeout(0.1f);
-	sakit::setRetryAttempts(50);
+	sakit::setRetryAttempts(100); // makes for a 10 second timeout
 	///////////////////////////////////////////////////////////////////////
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: blocking HTTP client");
+	hlog::debug(LOG_TAG, "");
 	sakit::HttpSocket* client = new sakit::HttpSocket(&httpSocketDelegate);
 	sakit::HttpResponse response;
 	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
@@ -489,8 +492,11 @@ void _testHttpSocketAsync()
 	float retryTimeout = sakit::getRetryTimeout();
 	int retryAttempts = sakit::getRetryAttempts();
 	sakit::setRetryTimeout(0.1f);
-	sakit::setRetryAttempts(50);
+	sakit::setRetryAttempts(100); // makes for a 10 second timeout
 	///////////////////////////////////////////////////////////////////////
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: async HTTP client");
+	hlog::debug(LOG_TAG, "");
 	sakit::HttpSocket* client = new sakit::HttpSocket(&httpSocketDelegate);
 	sakit::HttpResponse response;
 	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");

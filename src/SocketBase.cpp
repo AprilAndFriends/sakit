@@ -21,18 +21,10 @@ namespace sakit
 {
 	SocketBase::SocketBase() : Base()
 	{
-		this->sender = new SenderThread(this->socket);
-		this->receiver = new ReceiverThread(this->socket);
 	}
 
 	SocketBase::~SocketBase()
 	{
-		this->sender->running = false;
-		this->sender->join();
-		delete this->sender;
-		this->receiver->running = false;
-		this->receiver->join();
-		delete this->receiver;
 	}
 
 	int SocketBase::_send(chstr data)
@@ -41,20 +33,6 @@ namespace sakit
 		stream.write(data);
 		stream.rewind();
 		return this->_send(&stream, stream.size());
-	}
-
-	bool SocketBase::_sendAsync(chstr data)
-	{
-		hstream stream;
-		stream.write(data);
-		stream.rewind();
-		return this->_sendAsync(&stream, stream.size());
-	}
-
-	void SocketBase::update(float timeSinceLastFrame)
-	{
-		this->_updateSending();
-		this->_updateReceiving();
 	}
 
 }

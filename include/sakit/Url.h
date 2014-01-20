@@ -33,12 +33,13 @@ namespace sakit
 
 		HL_DEFINE_IS(valid, Valid);
 		HL_DEFINE_GET(hstr, host, Host);
+		HL_DEFINE_GET(unsigned short, port, Port);
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
 		HL_DEFINE_GET(hstr, fragment, Fragment);
 
 		/// @note The returned value is fully encoded.
-		hstr getAbsolutePath();
+		hstr getAbsolutePath(bool withPort = false);
 		/// @note The returned value is fully encoded.
 		hstr getBody();
 		/// @note The returned value is fully encoded.
@@ -50,6 +51,7 @@ namespace sakit
 	protected:
 		bool valid;
 		hstr host;
+		unsigned short port;
 		hstr path;
 		hmap<hstr, hstr> query;
 		hstr fragment;

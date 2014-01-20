@@ -39,7 +39,7 @@ namespace sakit
 		~ConnectorThread();
 
 	protected:
-		Socket::State state;
+		SocketBase::State state;
 
 		void _updateConnecting();
 		void _updateDisconnecting();

@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for sending data.
+/// Defines a thread for executing a HTTP request.
 
-#ifndef SAKIT_SENDER_THREAD_H
-#define SAKIT_SENDER_THREAD_H
+#ifndef SAKIT_HTTP_SOCKET_THREAD_H
+#define SAKIT_HTTP_SOCKET_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hstream.h>
@@ -24,29 +24,25 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class Socket;
-	class SocketBase;
-	class TcpSocket;
-	class UdpServer;
-	class UdpSocket;
+	class HttpResponse;
+	class HttpSocket;
 
-	class sakitExport SenderThread : public WorkerThread
+	class sakitExport HttpSocketThread : public WorkerThread
 	{
 	public:
-		friend class Socket;
-		friend class SocketBase;
-		friend class TcpSocket;
-		friend class UdpServer;
-		friend class UdpSocket;
+		friend class HttpSocket;
 
-		SenderThread(PlatformSocket* socket);
-		~SenderThread();
+		HttpSocketThread(PlatformSocket* socket);
+		~HttpSocketThread();
 
 	protected:
 		SocketBase::State state;
 		hstream* stream;
-		int lastSent;
+		HttpResponse* response;
 
+		void _updateConnect();
+		void _updateSend();
+		void _updateReceive();
 		void _updateProcess();
 
 		static void process(hthread*);

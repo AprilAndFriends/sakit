@@ -42,7 +42,7 @@ namespace sakit
 		~ReceiverThread();
 
 	protected:
-		Socket::State state;
+		SocketBase::State state;
 		hstream* stream;
 		int maxBytes;
 

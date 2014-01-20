@@ -33,19 +33,12 @@ namespace sakit
 	class sakitExport Socket : public SocketBase
 	{
 	public:
-		enum State
-		{
-			IDLE,
-			CONNECTING,
-			CONNECTED,
-			RUNNING,
-			DISCONNECTING
-		};
-
 		~Socket();
 
 		bool isSending();
 		bool isReceiving();
+
+		void update(float timeSinceLastFrame);
 
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
@@ -55,8 +48,13 @@ namespace sakit
 
 	protected:
 		SocketDelegate* socketDelegate;
+		SenderThread* sender;
+		ReceiverThread* receiver;
 
 		Socket(SocketDelegate* socketDelegate);
+
+		virtual bool _sendAsync(hstream* stream, int count) = 0;
+		virtual bool _sendAsync(chstr data);
 
 		void _updateSending();
 		void _updateReceiving();

@@ -29,11 +29,11 @@
 
 namespace sakit
 {
-	Url::Url() : valid(false), queryDelimiter('&')
+	Url::Url() : valid(false), port(0), queryDelimiter('&')
 	{
 	}
 
-	Url::Url(chstr url) : valid(false), queryDelimiter('&')
+	Url::Url(chstr url) : valid(false), port(0), queryDelimiter('&')
 	{
 		if (url == "")
 		{
@@ -99,6 +99,7 @@ namespace sakit
 				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
 				return;
 			}
+			this->port = (unsigned short)portValue;
 		}
 		if (!Url::_checkCharset(this->host, HOST_ALLOWED))
 		{
@@ -154,10 +155,14 @@ namespace sakit
 	{
 	}
 
-	hstr Url::getAbsolutePath()
+	hstr Url::getAbsolutePath(bool withPort)
 	{
 		hstr result;
-		result = HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		result += HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		if (withPort && this->port > 0)
+		{
+			result += ":" + hstr(this->port);
+		}
 		harray<hstr> paths = this->path.split('/', -1, true);
 		foreach (hstr, it, paths)
 		{
@@ -183,7 +188,7 @@ namespace sakit
 
 	hstr Url::toString()
 	{
-		hstr result = this->getAbsolutePath();
+		hstr result = this->getAbsolutePath(true);
 		hstr body = this->getBody();
 		if (body != "")
 		{

@@ -37,6 +37,7 @@ namespace sakit
 {
 	class HttpResponse;
 	class HttpSocketDelegate;
+	class HttpSocketThread;
 	class PlatformSocket;
 	class TcpSocket;
 
@@ -57,6 +58,8 @@ namespace sakit
 		/// @note This is due to keepAlive which has to be set beforehand
 		bool isConnected();
 		bool isExecuting();
+
+		void update(float timeSinceLastFrame);
 
 		bool executeOptions(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
 		bool executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = hmap<hstr, hstr>());
@@ -99,6 +102,7 @@ namespace sakit
 
 	protected:
 		HttpSocketDelegate* socketDelegate;
+		HttpSocketThread* thread;
 		Protocol protocol;
 		bool keepAlive;
 		Url url;
@@ -117,10 +121,10 @@ namespace sakit
 
 		int _receiveHttpDirect(HttpResponse* response);
 
-		void _updateSending();
-		void _updateReceiving();
+		bool _checkExecuteStatus(State senderState);
 
-		hstr _makeRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders);
+		hstr _processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders);
+
 		hstr _makeProtocol();
 
 	};

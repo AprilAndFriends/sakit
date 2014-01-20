@@ -147,6 +147,7 @@
     <ClInclude Include="include\sakit\UdpSocket.h" />
     <ClInclude Include="include\sakit\Url.h" />
     <ClInclude Include="src\ConnectorThread.h" />
+    <ClInclude Include="src\HttpSocketThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
     <ClInclude Include="src\SenderThread.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="src\HttpResponse.cpp" />
     <ClCompile Include="src\HttpSocket.cpp" />
     <ClCompile Include="src\HttpSocketDelegate.cpp" />
+    <ClCompile Include="src\HttpSocketThread.cpp" />
     <ClCompile Include="src\NetworkAdapter.cpp" />
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
