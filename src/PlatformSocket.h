@@ -28,6 +28,9 @@
 #ifdef __APPLE__
 #include <netinet/in.h>
 #endif
+#ifdef _WINRT
+using namespace Windows::Networking::Sockets;
+#endif
 
 namespace sakit
 {
@@ -82,6 +85,24 @@ namespace sakit
 		bool _checkReceivedBytes(unsigned long* received);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
 #else
+		// there is no other way to make this work
+		[Windows::Foundation::Metadata::WebHostHidden]
+		ref class ConnectionAccepter sealed
+		{
+		public:
+			friend class PlatformSocket;
+
+			ConnectionAccepter() { }
+
+			virtual void onConnectedStream(StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object);
+
+		private:
+			PlatformSocket* socket;
+
+			~ConnectionAccepter() { }
+
+		};
+
 		enum Result
 		{
 			IDLE,
@@ -89,9 +110,10 @@ namespace sakit
 			FINISHED,
 			FAILED
 		};
-		Windows::Networking::Sockets::StreamSocket^ sSock;
-		Windows::Networking::Sockets::DatagramSocket^ dSock;
-		Windows::Networking::Sockets::StreamSocketListener^ sServer;
+
+		StreamSocket^ sSock;
+		DatagramSocket^ dSock;
+		StreamSocketListener^ sServer;
 		bool _server;
 		bool _asyncConnected;
 		Result _asyncConnectionResult;
@@ -107,11 +129,14 @@ namespace sakit
 		Result _asyncReceivingResult;
 		int _asyncReceivedSize;
 		hmutex _mutexReceiver;
-
-		static bool _awaitAsync(Result& result, hmutex& mutex);
+		harray<StreamSocket^> _acceptedSockets;
+		hmutex _mutexAcceptedSockets;
+		ConnectionAccepter^ connectionAccepter;
 
 		static Windows::Networking::HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, bool wantIp);
+
+		static bool _awaitAsync(Result& result, hmutex& mutex);
 #endif
 
 		bool _setNonBlocking(bool value);

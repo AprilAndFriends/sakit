@@ -48,7 +48,6 @@ namespace sakit
 		bool print = true;
 #ifdef _WIN32
 #ifndef _WINRT
-		// TODOsock - check if this works in WinRT
 		wchar_t* buffer = L"Unknown error";
 		code = WSAGetLastError();
 		if (code != WSAEWOULDBLOCK)
@@ -64,8 +63,6 @@ namespace sakit
 		{
 			print = false;
 		}
-#else
-		// TODO
 #endif
 #else
 		code = errno;
