@@ -102,9 +102,8 @@ namespace sakit
 #endif
 	}
 
-	PlatformSocket::PlatformSocket() : connectionLess(false)
+	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false)
 	{
-		this->connected = false;
 		this->sock = -1;
 		this->info = NULL;
 		this->address = NULL;
@@ -283,7 +282,7 @@ namespace sakit
 		{
 			return true;
 		}
-		int read = hmin((int)received, bufferSize);
+		int read = hmin((int)received, this->bufferSize);
 		if (count > 0) // if don't read everything
 		{
 			read = hmin(read, count);
@@ -353,7 +352,7 @@ namespace sakit
 		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
 		other->address = (sockaddr_storage*)malloc(size);
 		this->_setNonBlocking(true);
-		int received = recvfrom(this->sock, this->receiveBuffer, bufferSize, 0, (sockaddr*)other->address, &size);
+		int received = recvfrom(this->sock, this->receiveBuffer, this->bufferSize, 0, (sockaddr*)other->address, &size);
 		if (!other->_checkResult(received, "recvfrom()"))
 		{
 			this->_setNonBlocking(false);

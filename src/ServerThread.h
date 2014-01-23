@@ -18,7 +18,6 @@
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "sakitExport.h"
 #include "Server.h"
 #include "WorkerThread.h"
 
@@ -26,7 +25,7 @@ namespace sakit
 {
 	class PlatformSocket;
 
-	class sakitExport ServerThread : public WorkerThread
+	class ServerThread : public WorkerThread
 	{
 	public:
 		friend class Server;

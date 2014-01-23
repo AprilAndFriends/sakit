@@ -17,7 +17,6 @@
 #include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
 
-#include "sakitExport.h"
 #include "Server.h"
 #include "ServerThread.h"
 
@@ -28,7 +27,7 @@ namespace sakit
 	class TcpServer;
 	class TcpSocket;
 
-	class sakitExport TcpServerThread : public ServerThread
+	class TcpServerThread : public ServerThread
 	{
 	public:
 		friend class TcpServer;

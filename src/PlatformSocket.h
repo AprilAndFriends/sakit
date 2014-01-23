@@ -24,7 +24,6 @@
 
 #include "Host.h"
 #include "NetworkAdapter.h"
-#include "sakitExport.h"
 
 #ifdef __APPLE__
 #include <netinet/in.h>
@@ -35,7 +34,7 @@ namespace sakit
 	class HttpResponse;
 	class Socket;
 
-	class sakitExport PlatformSocket
+	class PlatformSocket
 	{
 	public:
 		PlatformSocket();
@@ -79,17 +78,41 @@ namespace sakit
 		struct addrinfo* info;
 		struct sockaddr_storage* address;
 		struct sockaddr_in multicastGroupAddress;
-#else
-		Windows::Networking::Sockets::StreamSocket^ sock;
-		Windows::Networking::HostName^ hostName;
-		bool _asyncProcessing;
-		bool _asyncFinished;
-		unsigned int _asyncSize;
-		bool _awaitAsync();
-#endif
 
 		bool _checkReceivedBytes(unsigned long* received);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
+#else
+		enum Result
+		{
+			IDLE,
+			RUNNING,
+			FINISHED,
+			FAILED
+		};
+		Windows::Networking::Sockets::StreamSocket^ sSock;
+		Windows::Networking::Sockets::DatagramSocket^ dSock;
+		Windows::Networking::Sockets::StreamSocketListener^ sServer;
+		bool _server;
+		bool _asyncConnected;
+		Result _asyncConnectionResult;
+		hmutex _mutexConnection;
+		bool _asyncBound;
+		Result _asyncBindingResult;
+		hmutex _mutexBinder;
+		bool _asyncSent;
+		Result _asyncSendingResult;
+		int _asyncSentSize;
+		hmutex _mutexSender;
+		bool _asyncReceived;
+		Result _asyncReceivingResult;
+		int _asyncReceivedSize;
+		hmutex _mutexReceiver;
+
+		static bool _awaitAsync(Result& result, hmutex& mutex);
+
+		static Windows::Networking::HostName^ _makeHostName(Host host);
+		static hstr _resolve(chstr host, bool wantIp);
+#endif
 
 		bool _setNonBlocking(bool value);
 

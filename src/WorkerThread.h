@@ -20,13 +20,12 @@
 #include <hltypes/hthread.h>
 
 #include "Host.h"
-#include "sakitExport.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	
-	class sakitExport WorkerThread : public hthread
+	class WorkerThread : public hthread
 	{
 	public:
 		enum Result

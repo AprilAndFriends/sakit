@@ -17,7 +17,6 @@
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hstream.h>
 
-#include "sakitExport.h"
 #include "Socket.h"
 #include "WorkerThread.h"
 
@@ -27,7 +26,7 @@ namespace sakit
 	class HttpResponse;
 	class HttpSocket;
 
-	class sakitExport HttpSocketThread : public WorkerThread
+	class HttpSocketThread : public WorkerThread
 	{
 	public:
 		friend class HttpSocket;

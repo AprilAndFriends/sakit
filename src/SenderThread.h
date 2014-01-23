@@ -17,7 +17,6 @@
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hstream.h>
 
-#include "sakitExport.h"
 #include "Socket.h"
 #include "WorkerThread.h"
 
@@ -30,7 +29,7 @@ namespace sakit
 	class UdpServer;
 	class UdpSocket;
 
-	class sakitExport SenderThread : public WorkerThread
+	class SenderThread : public WorkerThread
 	{
 	public:
 		friend class Socket;

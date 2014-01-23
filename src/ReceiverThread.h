@@ -18,7 +18,6 @@
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "sakitExport.h"
 #include "Socket.h"
 #include "WorkerThread.h"
 
@@ -30,7 +29,7 @@ namespace sakit
 	class TcpSocket;
 	class UdpSocket;
 
-	class sakitExport ReceiverThread : public WorkerThread
+	class ReceiverThread : public WorkerThread
 	{
 	public:
 		friend class Socket;

@@ -47,6 +47,7 @@ namespace sakit
 		hstr message;
 		bool print = true;
 #ifdef _WIN32
+#ifndef _WINRT
 		// TODOsock - check if this works in WinRT
 		wchar_t* buffer = L"Unknown error";
 		code = WSAGetLastError();
@@ -64,6 +65,9 @@ namespace sakit
 			print = false;
 		}
 #else
+		// TODO
+#endif
+#else
 		code = errno;
 		print = (code != EAGAIN && code != EWOULDBLOCK);
 		message = strerror(code);
@@ -71,6 +75,7 @@ namespace sakit
 		if (print)
 		{
 			hstr printMessage = basicMessage;
+#ifndef _WINRT
 			if (printMessage != "")
 			{
 				printMessage += ": ";
@@ -79,6 +84,7 @@ namespace sakit
 			{
 				message = hstr(code);
 			}
+#endif
 			hlog::error(sakit::logTag, printMessage + message);
 		}
 		return code;
