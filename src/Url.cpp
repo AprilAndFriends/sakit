@@ -147,7 +147,10 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
 			return;
 		}
-		this->fragment = Url::_decodeWwwFormComponent(this->fragment(1, 0));
+		if (this->fragment != "")
+		{
+			this->fragment = Url::_decodeWwwFormComponent(this->fragment(1, 0));
+		}
 		this->valid = true;
 	}
 
@@ -203,7 +206,21 @@ namespace sakit
 
 	bool Url::_checkCharset(chstr string, chstr allowed)
 	{
-		return (string == "" || (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() == 0);
+		if (string == "")
+		{
+			return true;
+		}
+		harray<char> allAllowed = (allowed + "%0123456789ABCDEFabcdef").split().removed_duplicates();
+		hstr checked = string;
+		foreach (char, it, allAllowed)
+		{
+			checked = checked.replace((*it), "");
+			if (checked == "")
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	hstr Url::_encodeWwwFormComponent(chstr string, chstr allowed)
