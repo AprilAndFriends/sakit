@@ -479,7 +479,7 @@ void _testHttpSocket()
 	delete client;
 }
 
-void _testHttpSocketAsync()
+void _testAsyncHttpSocket()
 {
 	hlog::debug(LOG_TAG, "");
 	hlog::debug(LOG_TAG, "starting test: async HTTP client");
@@ -524,10 +524,10 @@ int main(Platform::Array<Platform::String^>^ args)
 #endif
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	// HTTP tests
-	sakit::setRetryTimeout(0.1f);
-	sakit::setRetryAttempts(100); // makes for a 10 second timeout
+	sakit::setRetryTimeout(0.01f);
+	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
 	_testHttpSocket();
-	_testHttpSocketAsync();
+	_testAsyncHttpSocket();
 	// done
 	hlog::debug(LOG_TAG, "Done.");
 	sakit::destroy();

@@ -158,12 +158,12 @@ namespace sakit
 			return false;
 		}
 		hstr request = this->_processRequest(method, url, customHeaders);
-		bool result = this->socket->connect(this->host, (url.getPort() == 0 ? this->port : url.getPort()));
+		bool result = this->socket->connect(this->host, (this->url.getPort() == 0 ? this->port : this->url.getPort()));
 		if (!result)
 		{
+			this->_terminateConnection();
 			return false;
 		}
-		this->url = url;
 		if (SocketBase::_send(request) == 0)
 		{
 			this->_terminateConnection();
@@ -224,7 +224,7 @@ namespace sakit
 		this->thread->stream->write_raw((void*)request.c_str(), request.size());
 		this->thread->stream->rewind();
 		this->thread->host = this->host;
-		this->thread->port = (url.getPort() == 0 ? this->port : url.getPort());
+		this->thread->port = (this->url.getPort() == 0 ? this->port : this->url.getPort());
 		this->thread->state = RUNNING;
 		this->thread->mutex.unlock();
 		this->thread->start();
@@ -317,8 +317,9 @@ namespace sakit
 
 	hstr HttpSocket::_processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
 	{
-		this->host = Host(url.getHost());
-		hstr body = url.getBody();
+		this->url = url;
+		this->host = Host(this->url.getHost());
+		hstr body = this->url.getBody();
 		customHeaders["Host"] = this->host.toString();
 		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
 		if (!customHeaders.has_key("Accept-Encoding"))
@@ -338,14 +339,15 @@ namespace sakit
 			customHeaders["Content-Length"] = hstr(body.size());
 		}
 		hstr request;
-		request += method + " " + url.getAbsolutePath() + " " + this->_makeProtocol() + SAKIT_HTTP_LINE_ENDING;
+		request += method + " " + this->url.getAbsolutePath() + " " + this->_makeProtocol() + SAKIT_HTTP_LINE_ENDING;
 		foreach_m (hstr, it, customHeaders)
 		{
 			request += it->first + ": " + it->second + SAKIT_HTTP_LINE_ENDING;
 		}
+		request += SAKIT_HTTP_LINE_ENDING;
 		if (body.size() > 0)
 		{
-			request += SAKIT_HTTP_LINE_ENDING + body + SAKIT_HTTP_LINE_ENDING;
+			request += body + SAKIT_HTTP_LINE_ENDING;
 		}
 		return request;
 	}

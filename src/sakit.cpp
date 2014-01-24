@@ -35,8 +35,8 @@ namespace sakit
 	};
 
 	hstr logTag = "sakit";
-	float retryTimeout = 0.1f;
-	int retryAttempts = 100;
+	float retryTimeout = 0.01f;
+	int retryAttempts = 1000;
 	int bufferSize = 65536;
 	harray<Base*> connections;
 	hmutex connectionsMutex;

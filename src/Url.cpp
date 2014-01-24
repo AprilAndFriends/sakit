@@ -140,16 +140,17 @@ namespace sakit
 		}
 		if (query != "")
 		{
-			this->query = Url::decodeWwwForm(query(1, 0));
-		}
-		if (!Url::_checkCharset(this->fragment, FRAGMENT_ALLOWED))
-		{
-			hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
-			return;
+			this->query = Url::decodeWwwForm(query(1, -1)); // also removes the ? caracter
 		}
 		if (this->fragment != "")
 		{
-			this->fragment = Url::_decodeWwwFormComponent(this->fragment(1, 0));
+			this->fragment = this->fragment(1, -1); // remove the # caracter
+			if (!Url::_checkCharset(this->fragment, FRAGMENT_ALLOWED))
+			{
+				hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
+				return;
+			}
+			this->fragment = Url::_decodeWwwFormComponent(this->fragment);
 		}
 		this->valid = true;
 	}
