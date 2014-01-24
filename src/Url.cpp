@@ -65,7 +65,7 @@ namespace sakit
 			if (index >= 0)
 			{
 				*current = newUrl(0, index);
-				*next = newUrl = newUrl(index + 1, -1);
+				*next = newUrl = newUrl(index, -1);
 				current = next;
 			}
 		}
@@ -140,14 +140,14 @@ namespace sakit
 		}
 		if (query != "")
 		{
-			this->query = Url::decodeWwwForm(query);
+			this->query = Url::decodeWwwForm(query(1, 0));
 		}
 		if (!Url::_checkCharset(this->fragment, FRAGMENT_ALLOWED))
 		{
 			hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
 			return;
 		}
-		this->fragment = Url::_decodeWwwFormComponent(this->fragment);
+		this->fragment = Url::_decodeWwwFormComponent(this->fragment(1, 0));
 		this->valid = true;
 	}
 
@@ -203,7 +203,7 @@ namespace sakit
 
 	bool Url::_checkCharset(chstr string, chstr allowed)
 	{
-		return (string == "" || (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() > 0);
+		return (string == "" || (string.split() / (allowed + "%0123456789ABCDEFabcdef").split()).size() == 0);
 	}
 
 	hstr Url::_encodeWwwFormComponent(chstr string, chstr allowed)
