@@ -43,7 +43,7 @@ namespace sakit
 		/// @note The returned value is fully encoded.
 		hstr getBody();
 		/// @note The returned value is fully encoded.
-		hstr toString();
+		hstr toString(bool withPort = true);
 
 		static hstr encodeWwwForm(hmap<hstr, hstr> query, char delimiter = '&');
 		static hmap<hstr, hstr> decodeWwwForm(chstr string, char* usedDelimiter = NULL);

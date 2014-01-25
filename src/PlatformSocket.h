@@ -80,7 +80,7 @@ namespace sakit
 		unsigned int sock;
 		struct addrinfo* info;
 		struct sockaddr_storage* address;
-		struct sockaddr_in multicastGroupAddress;
+		struct sockaddr_in* multicastGroupAddress;
 
 		bool _checkReceivedBytes(unsigned long* received);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);

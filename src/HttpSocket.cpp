@@ -82,7 +82,7 @@ namespace sakit
 			this->thread->mutex.unlock();
 			return;
 		}
-		this->thread->state = State::IDLE;
+		this->thread->state = IDLE;
 		this->thread->result = WorkerThread::IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
@@ -319,7 +319,6 @@ namespace sakit
 	{
 		this->url = url;
 		this->host = Host(this->url.getHost());
-		hstr body = this->url.getBody();
 		customHeaders["Host"] = this->host.toString();
 		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
 		if (!customHeaders.has_key("Accept-Encoding"))
@@ -334,18 +333,30 @@ namespace sakit
 		{
 			customHeaders["Accept"] = "*/*";
 		}
-		if (body.size() > 0)
+		bool urlEncoded = (method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS);
+		hstr absolutePath;
+		hstr body;
+		if (!urlEncoded)
 		{
-			customHeaders["Content-Length"] = hstr(body.size());
+			absolutePath = this->url.getAbsolutePath();
+			body = this->url.getBody();
+			if (body != "")
+			{
+				customHeaders["Content-Length"] = hstr(body.size());
+			}
+		}
+		else
+		{
+			absolutePath = this->url.toString(false);
 		}
 		hstr request;
-		request += method + " " + this->url.getAbsolutePath() + " " + this->_makeProtocol() + SAKIT_HTTP_LINE_ENDING;
+		request += method + " " + absolutePath + " " + this->_makeProtocol() + SAKIT_HTTP_LINE_ENDING;
 		foreach_m (hstr, it, customHeaders)
 		{
 			request += it->first + ": " + it->second + SAKIT_HTTP_LINE_ENDING;
 		}
 		request += SAKIT_HTTP_LINE_ENDING;
-		if (body.size() > 0)
+		if (body != "")
 		{
 			request += body + SAKIT_HTTP_LINE_ENDING;
 		}

@@ -190,9 +190,9 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::toString()
+	hstr Url::toString(bool withPort)
 	{
-		hstr result = this->getAbsolutePath(true);
+		hstr result = this->getAbsolutePath(withPort);
 		hstr body = this->getBody();
 		if (body != "")
 		{

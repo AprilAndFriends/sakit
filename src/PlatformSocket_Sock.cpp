@@ -30,7 +30,7 @@ typedef int socklen_t;
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <ifaddrs.h>
+//#include <ifaddrs.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -110,6 +110,7 @@ namespace sakit
 		this->bufferSize = sakit::bufferSize;
 		this->receiveBuffer = new char[this->bufferSize];
 		memset(this->receiveBuffer, 0, this->bufferSize);
+		this->multicastGroupAddress = NULL;
 	}
 
 	bool PlatformSocket::_setNonBlocking(bool value)
@@ -193,9 +194,14 @@ namespace sakit
 		{
 			return false;
 		}
-		this->multicastGroupAddress.sin_family = ai_family;
-		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.toString().c_str());
-		this->multicastGroupAddress.sin_port = htons(port);
+		if (this->multicastGroupAddress == NULL)
+		{
+			socklen_t size = (socklen_t)sizeof(sockaddr_in);
+			this->multicastGroupAddress = (sockaddr_in*)malloc(size);
+		}
+		this->multicastGroupAddress->sin_family = ai_family;
+		this->multicastGroupAddress->sin_addr.s_addr = inet_addr(groupAddress.toString().c_str());
+		this->multicastGroupAddress->sin_port = htons(port);
 		return this->setMulticastTtl(32);
 	}
 
@@ -230,6 +236,11 @@ namespace sakit
 			free(this->address);
 			this->address = NULL;
 		}
+		if (this->multicastGroupAddress != NULL)
+		{
+			free(this->multicastGroupAddress);
+			this->multicastGroupAddress = NULL;
+		}
 		if (this->sock != -1)
 		{
 			closesocket(this->sock);
@@ -259,7 +270,7 @@ namespace sakit
 		}
 		else
 		{
-			result = ::sendto(this->sock, data, size, 0, (sockaddr*)&this->multicastGroupAddress, sizeof(this->multicastGroupAddress));
+			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->multicastGroupAddress, sizeof(*this->multicastGroupAddress));
 		}
 		if (result >= 0)
 		{
@@ -305,12 +316,12 @@ namespace sakit
 	bool PlatformSocket::_checkReceivedBytes(unsigned long* received)
 	{
 #ifndef _WIN32 // Unix requires a select() call before using ioctl/ioctlsocket
-		timeval interval = {5, 0};
+		timeval interval = {1, 0};
 		fd_set readSet;
 		FD_ZERO(&readSet);
 		FD_SET(this->sock, &readSet);
 		int result = select(this->sock + 1, &readSet, NULL, NULL, &interval);
-		if (this->_checkResult(result, "select()") || result == 0)
+		if (!this->_checkResult(result, "select()") || result == 0)
 		{
 			return false;
 		}
