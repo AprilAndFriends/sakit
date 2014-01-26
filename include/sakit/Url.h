@@ -28,7 +28,7 @@ namespace sakit
 	public:
 		Url();
 		Url(chstr url);
-		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
+		Url(chstr host, chstr path, hmap<hstr, hstr> query = (hmap<hstr, hstr>()), chstr fragment = "");
 		~Url();
 
 		HL_DEFINE_IS(valid, Valid);

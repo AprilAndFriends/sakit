@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	int _findSequence(hstream& stream, unsigned char* sequence, int sequenceLength)
+	static int _findSequence(hstream& stream, unsigned char* sequence, int sequenceLength)
 	{
 		if (sequence != NULL && sequenceLength > 0)
 		{

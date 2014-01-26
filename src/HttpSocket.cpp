@@ -75,7 +75,6 @@ namespace sakit
 	void HttpSocket::update(float timeSinceLastFrame)
 	{
 		this->thread->mutex.lock();
-		State state = this->thread->state;
 		WorkerThread::Result result = this->thread->result;
 		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
 		{
