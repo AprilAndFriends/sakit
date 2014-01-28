@@ -15,10 +15,11 @@
 #include "sakit.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
+#include "State.h"
 
 namespace sakit
 {
-	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket), state(Socket::IDLE)
+	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 	}
 
@@ -58,10 +59,10 @@ namespace sakit
 	{
 		switch (this->state)
 		{
-		case Socket::CONNECTING:
+		case CONNECTING:
 			this->_updateConnecting();
 			break;
-		case Socket::DISCONNECTING:
+		case DISCONNECTING:
 			this->_updateDisconnecting();
 			break;
 		}

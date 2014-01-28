@@ -16,6 +16,7 @@
 #include "SenderThread.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
+#include "State.h"
 #include "WorkerThread.h"
 
 namespace sakit
@@ -64,7 +65,7 @@ namespace sakit
 	void Socket::_updateSending()
 	{
 		this->sender->mutex.lock();
-		WorkerThread::Result result = this->sender->result;
+		State result = this->sender->result;
 		if (this->sender->lastSent > 0)
 		{
 			int sent = this->sender->lastSent;
@@ -76,19 +77,19 @@ namespace sakit
 		{
 			this->sender->mutex.unlock();
 		}
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		if (result == RUNNING || result == IDLE)
 		{
 			return;
 		}
 		this->sender->mutex.lock();
-		this->sender->result = WorkerThread::IDLE;
+		this->sender->result = IDLE;
 		this->sender->state = IDLE;
 		this->sender->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			this->socketDelegate->onSendFinished(this);
 		}
-		else if (result == WorkerThread::FAILED)
+		else if (result == FAILED)
 		{
 			this->socketDelegate->onSendFailed(this);
 		}

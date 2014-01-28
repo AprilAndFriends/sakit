@@ -15,6 +15,7 @@
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "SenderThread.h"
+#include "State.h"
 #include "UdpServer.h"
 #include "UdpServerDelegate.h"
 #include "UdpServerThread.h"

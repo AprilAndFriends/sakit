@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sakit\Base.h" />
+    <ClInclude Include="include\sakit\Bindable.h" />
     <ClInclude Include="include\sakit\Host.h" />
     <ClInclude Include="include\sakit\HttpResponse.h" />
     <ClInclude Include="include\sakit\HttpSocket.h" />
@@ -139,6 +140,7 @@
     <ClInclude Include="include\sakit\Socket.h" />
     <ClInclude Include="include\sakit\SocketBase.h" />
     <ClInclude Include="include\sakit\SocketDelegate.h" />
+    <ClInclude Include="include\sakit\State.h" />
     <ClInclude Include="include\sakit\TcpServer.h" />
     <ClInclude Include="include\sakit\TcpServerDelegate.h" />
     <ClInclude Include="include\sakit\TcpSocket.h" />
@@ -153,7 +155,6 @@
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\SenderThread.h" />
     <ClInclude Include="src\ServerThread.h" />
-    <ClInclude Include="src\SocketThread.h" />
     <ClInclude Include="src\TcpReceiverThread.h" />
     <ClInclude Include="src\TcpServerThread.h" />
     <ClInclude Include="src\UdpReceiverThread.h" />
@@ -162,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Base.cpp" />
+    <ClCompile Include="src\Bindable.cpp" />
     <ClCompile Include="src\ConnectorThread.cpp" />
     <ClCompile Include="src\Host.cpp" />
     <ClCompile Include="src\HttpResponse.cpp" />
@@ -180,7 +182,6 @@
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketBase.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
-    <ClCompile Include="src\SocketThread.cpp" />
     <ClCompile Include="src\TcpReceiverThread.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="src\TcpServerDelegate.cpp" />

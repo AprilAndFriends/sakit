@@ -21,27 +21,28 @@
 
 #include "Host.h"
 #include "SocketBase.h"
+#include "State.h"
 
 namespace sakit
 {
 	class PlatformSocket;
+	class Socket;
+	class TcpSocket;
+	class UdpSocket;
 	
 	class WorkerThread : public hthread
 	{
 	public:
-		enum Result
-		{
-			IDLE,
-			RUNNING,
-			FINISHED,
-			FAILED
-		};
+		friend class Socket;
+		friend class TcpSocket;
+		friend class UdpSocket;
 
 		WorkerThread(PlatformSocket* socket);
 		~WorkerThread();
 
 	protected:
-		Result result;
+		State state;
+		State result;
 		PlatformSocket* socket;
 		Host host;
 		unsigned short port;

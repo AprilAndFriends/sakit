@@ -30,15 +30,6 @@ namespace sakit
 	class sakitExport SocketBase : public Base
 	{
 	public:
-		enum State
-		{
-			IDLE,
-			CONNECTING,
-			CONNECTED,
-			RUNNING,
-			DISCONNECTING
-		};
-
 		~SocketBase();
 
 	protected:

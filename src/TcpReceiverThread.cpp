@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : SocketThread(socket), maxBytes(0)
+	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : WorkerThread(socket), maxBytes(0)
 	{
 		this->stream = new hstream();
 	}

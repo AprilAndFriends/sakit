@@ -18,7 +18,7 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "SocketThread.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {
@@ -27,7 +27,7 @@ namespace sakit
 	class TcpSocket;
 	class UdpSocket;
 
-	class SenderThread : public SocketThread
+	class SenderThread : public WorkerThread
 	{
 	public:
 		friend class Socket;

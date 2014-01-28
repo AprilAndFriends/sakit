@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	ServerThread::ServerThread(PlatformSocket* socket) : WorkerThread(socket), state(Server::IDLE)
+	ServerThread::ServerThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 	}
 
@@ -59,13 +59,13 @@ namespace sakit
 	{
 		switch (this->state)
 		{
-		case Server::BINDING:
+		case BINDING:
 			this->_updateBinding();
 			break;
-		case Server::RUNNING:
+		case RUNNING:
 			this->_updateRunning();
 			break;
-		case Server::UNBINDING:
+		case UNBINDING:
 			this->_updateUnbinding();
 			break;
 		}

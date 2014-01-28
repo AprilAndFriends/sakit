@@ -14,6 +14,7 @@
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "SenderThread.h"
+#include "State.h"
 #include "UdpReceiverThread.h"
 #include "UdpSocket.h"
 #include "UdpSocketDelegate.h"
@@ -100,7 +101,7 @@ namespace sakit
 	void UdpSocket::_updateReceiving()
 	{
 		this->receiver->mutex.lock();
-		WorkerThread::Result result = this->receiver->result;
+		State result = this->receiver->result;
 		if (this->udpReceiver->streams.size() > 0)
 		{
 			harray<Host> hosts = this->udpReceiver->hosts;
@@ -119,15 +120,15 @@ namespace sakit
 		{
 			this->receiver->mutex.unlock();
 		}
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		if (result == RUNNING || result == IDLE)
 		{
 			return;
 		}
 		this->receiver->mutex.lock();
-		this->receiver->result = WorkerThread::IDLE;
+		this->receiver->result = IDLE;
 		this->receiver->state = IDLE;
 		this->receiver->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			this->socketDelegate->onReceiveFinished(this);
 		}

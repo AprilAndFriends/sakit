@@ -19,6 +19,7 @@
 #include "Base.h"
 #include "Host.h"
 #include "sakitExport.h"
+#include "State.h"
 
 namespace sakit
 {
@@ -30,15 +31,6 @@ namespace sakit
 	class sakitExport Server : public Base
 	{
 	public:
-		enum State
-		{
-			IDLE,
-			BINDING,
-			BOUND,
-			RUNNING,
-			UNBINDING
-		};
-
 		~Server();
 
 		bool isBinding();

@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : SocketThread(socket)
+	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 	}
 

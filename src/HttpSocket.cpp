@@ -17,6 +17,7 @@
 #include "HttpSocketThread.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
+#include "State.h"
 
 #define NORMAL_EXECUTE(name, constant) \
 	bool HttpSocket::execute ## name(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders) \
@@ -77,22 +78,22 @@ namespace sakit
 	void HttpSocket::update(float timeSinceLastFrame)
 	{
 		this->thread->mutex.lock();
-		WorkerThread::Result result = this->thread->result;
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		State result = this->thread->result;
+		if (result == RUNNING || result == IDLE)
 		{
 			this->thread->mutex.unlock();
 			return;
 		}
 		this->thread->state = IDLE;
-		this->thread->result = WorkerThread::IDLE;
+		this->thread->result = IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
 		this->thread->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			this->socketDelegate->onExecuteCompleted(this, response, this->url);
 		}
-		else if (result == WorkerThread::FAILED)
+		else if (result == FAILED)
 		{
 			this->socketDelegate->onExecuteFailed(this, response, this->url);
 		}

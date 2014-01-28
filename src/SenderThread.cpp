@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	SenderThread::SenderThread(PlatformSocket* socket) : SocketThread(socket), lastSent(0)
+	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(socket), lastSent(0)
 	{
 		this->stream = new hstream();
 	}

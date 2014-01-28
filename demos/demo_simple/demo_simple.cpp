@@ -33,6 +33,8 @@
 #define TCP_PORT_ASYNC_SERVER 51112
 #define UDP_PORT_SYNC_SERVER 51211
 #define UDP_PORT_ASYNC_SERVER 51212
+#define UDP_PORT_SYNC_CLIENT 51221
+#define UDP_PORT_ASYNC_CLIENT 51222
 
 void _printReceived(hstream* stream)
 {
@@ -601,20 +603,18 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::init();
 #ifndef _WINRT
 	// TCP tests
-	//_testAsyncTcpServer();
-	//_testAsyncTcpClient();
+	_testAsyncTcpServer();
+	_testAsyncTcpClient();
 	// UDP tests
-	//_testAsyncUdpServer();
+	_testAsyncUdpServer();
 	_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests
-	/*
 	sakit::setRetryTimeout(0.01f);
 	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
 	_testHttpSocket();
 	_testAsyncHttpSocket();
-	//*/
 
 	/*
 	sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);

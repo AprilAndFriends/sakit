@@ -139,8 +139,11 @@
     <ClInclude Include="src\UdpServerThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
-    <ClInclude Include="src\SocketThread.h">
-      <Filter>Header Files\Threads</Filter>
+    <ClInclude Include="include\sakit\Bindable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sakit\State.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -243,8 +246,8 @@
     <ClCompile Include="src\UdpServerThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
-    <ClCompile Include="src\SocketThread.cpp">
-      <Filter>Source Files\Threads</Filter>
+    <ClCompile Include="src\Bindable.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

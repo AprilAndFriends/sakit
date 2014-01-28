@@ -73,18 +73,18 @@ namespace sakit
 		Socket::update(timeSinceLastFrame);
 		this->thread->mutex.lock();
 		State state = this->thread->state;
-		WorkerThread::Result result = this->thread->result;
+		State result = this->thread->result;
 		Host host = this->thread->host;
 		unsigned short port = this->thread->port;
 		this->thread->mutex.unlock();
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		if (result == RUNNING || result == IDLE)
 		{
 			return;
 		}
 		this->thread->mutex.lock();
-		this->thread->result = WorkerThread::IDLE;
+		this->thread->result = IDLE;
 		this->thread->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			switch (state)
 			{
@@ -108,7 +108,7 @@ namespace sakit
 				break;
 			}
 		}
-		else if (result == WorkerThread::FAILED)
+		else if (result == FAILED)
 		{
 			switch (state)
 			{
@@ -131,7 +131,7 @@ namespace sakit
 	void TcpSocket::_updateReceiving()
 	{
 		this->receiver->mutex.lock();
-		WorkerThread::Result result = this->receiver->result;
+		State result = this->receiver->result;
 		if (this->tcpReceiver->stream->size() > 0)
 		{
 			hstream* stream = this->tcpReceiver->stream;
@@ -145,19 +145,19 @@ namespace sakit
 		{
 			this->receiver->mutex.unlock();
 		}
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		if (result == RUNNING || result == IDLE)
 		{
 			return;
 		}
 		this->receiver->mutex.lock();
-		this->receiver->result = WorkerThread::IDLE;
+		this->receiver->result = IDLE;
 		this->receiver->state = IDLE;
 		this->receiver->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			this->socketDelegate->onReceiveFinished(this);
 		}
-		else if (result == WorkerThread::FAILED)
+		else if (result == FAILED)
 		{
 			this->tcpSocketDelegate->onReceiveFailed(this);
 		}

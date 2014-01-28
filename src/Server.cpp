@@ -164,18 +164,18 @@ namespace sakit
 	{
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
-		WorkerThread::Result result = this->basicThread->result;
+		State result = this->basicThread->result;
 		Host host = this->basicThread->host;
 		unsigned short port = this->basicThread->port;
 		this->basicThread->mutex.unlock();
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		if (result == RUNNING || result == IDLE)
 		{
 			return;
 		}
 		this->basicThread->mutex.lock();
-		this->basicThread->result = WorkerThread::IDLE;
+		this->basicThread->result = IDLE;
 		this->basicThread->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
+		if (result == FINISHED)
 		{
 			switch (state)
 			{
@@ -205,7 +205,7 @@ namespace sakit
 				break;
 			}
 		}
-		else if (result == WorkerThread::FAILED)
+		else if (result == FAILED)
 		{
 			switch (state)
 			{

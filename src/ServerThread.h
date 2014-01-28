@@ -19,6 +19,7 @@
 #include <hltypes/hstream.h>
 
 #include "Server.h"
+#include "State.h"
 #include "WorkerThread.h"
 
 namespace sakit
@@ -34,8 +35,6 @@ namespace sakit
 		~ServerThread();
 
 	protected:
-		Server::State state;
-
 		void _updateBinding();
 		void _updateUnbinding();
 		void _updateProcess();

@@ -17,11 +17,11 @@
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "SocketDelegate.h"
+#include "State.h"
 
 namespace sakit
 {
-	HttpSocketThread::HttpSocketThread(PlatformSocket* socket) : WorkerThread(socket),
-		state(Socket::IDLE)
+	HttpSocketThread::HttpSocketThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 		this->stream = new hstream();
 		this->response = new HttpResponse();

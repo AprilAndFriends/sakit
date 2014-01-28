@@ -35,7 +35,6 @@ namespace sakit
 		~HttpSocketThread();
 
 	protected:
-		SocketBase::State state;
 		hstream* stream;
 		HttpResponse* response;
 

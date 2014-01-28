@@ -19,14 +19,14 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "SocketThread.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class TcpSocket;
 
-	class TcpReceiverThread : public SocketThread
+	class TcpReceiverThread : public WorkerThread
 	{
 	public:
 		friend class TcpSocket;

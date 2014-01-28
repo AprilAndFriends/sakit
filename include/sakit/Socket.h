@@ -20,14 +20,15 @@
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
-#include "SocketBase.h"
 #include "sakitExport.h"
+#include "SocketBase.h"
+#include "State.h"
 
 namespace sakit
 {
 	class SenderThread;
 	class SocketDelegate;
-	class SocketThread;
+	class WorkerThread;
 
 	class sakitExport Socket : public SocketBase
 	{
@@ -48,7 +49,7 @@ namespace sakit
 	protected:
 		SocketDelegate* socketDelegate;
 		SenderThread* sender;
-		SocketThread* receiver;
+		WorkerThread* receiver;
 
 		Socket(SocketDelegate* socketDelegate);
 

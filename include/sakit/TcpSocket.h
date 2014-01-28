@@ -19,6 +19,7 @@
 #include "Host.h"
 #include "sakitExport.h"
 #include "Socket.h"
+#include "State.h"
 
 namespace sakit
 {

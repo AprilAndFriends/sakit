@@ -138,14 +138,6 @@ namespace sakit
 
 		};
 
-		enum Result
-		{
-			IDLE,
-			RUNNING,
-			FINISHED,
-			FAILED
-		};
-
 		StreamSocket^ sSock;
 		DatagramSocket^ dSock;
 		StreamSocketListener^ sServer;

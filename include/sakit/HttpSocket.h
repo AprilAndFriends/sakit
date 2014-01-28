@@ -18,8 +18,9 @@
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
 
-#include "SocketBase.h"
 #include "sakitExport.h"
+#include "SocketBase.h"
+#include "State.h"
 #include "TcpSocket.h"
 #include "Url.h"
 
