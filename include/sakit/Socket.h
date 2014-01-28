@@ -25,7 +25,6 @@
 
 namespace sakit
 {
-	class ReceiverThread;
 	class SenderThread;
 	class SocketDelegate;
 	class SocketThread;
@@ -49,7 +48,7 @@ namespace sakit
 	protected:
 		SocketDelegate* socketDelegate;
 		SenderThread* sender;
-		ReceiverThread* receiver;
+		SocketThread* receiver;
 
 		Socket(SocketDelegate* socketDelegate);
 

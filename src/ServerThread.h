@@ -42,8 +42,6 @@ namespace sakit
 
 		virtual void _updateRunning() = 0;
 
-		static void process(hthread*);
-
 	};
 
 }

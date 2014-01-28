@@ -12,11 +12,11 @@
 #include <hltypes/hstring.h>
 
 #include "PlatformSocket.h"
-#include "ReceiverThread.h"
 #include "sakit.h"
 #include "SenderThread.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {

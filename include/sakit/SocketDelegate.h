@@ -34,6 +34,8 @@ namespace sakit
 		virtual void onSendFinished(Socket* socket) = 0;
 		virtual void onSendFailed(Socket* socket) = 0;
 
+		virtual void onReceiveFinished(Socket* socket) = 0;
+
 	};
 
 }

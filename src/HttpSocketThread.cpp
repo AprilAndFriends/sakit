@@ -20,7 +20,7 @@
 
 namespace sakit
 {
-	HttpSocketThread::HttpSocketThread(PlatformSocket* socket) : WorkerThread(&process, socket),
+	HttpSocketThread::HttpSocketThread(PlatformSocket* socket) : WorkerThread(socket),
 		state(Socket::IDLE)
 	{
 		this->stream = new hstream();
@@ -127,11 +127,6 @@ namespace sakit
 		{
 			this->_updateReceive();
 		}
-	}
-
-	void HttpSocketThread::process(hthread* thread)
-	{
-		((HttpSocketThread*)thread)->_updateProcess();
 	}
 
 }

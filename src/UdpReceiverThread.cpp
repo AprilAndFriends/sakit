@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
+	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : SocketThread(socket)
 	{
 	}
 
@@ -42,20 +42,17 @@ namespace sakit
 		int count = 0;
 		while (this->running)
 		{
-			if (this->socket->receiveFrom(stream, host, port))
+			if (this->socket->receiveFrom(stream, host, port) && stream->size() > 0)
 			{
-				if (stream->size() > 0)
-				{
-					stream->rewind();
-					this->mutex.lock();
-					this->hosts += host;
-					this->ports += port;
-					this->streams += stream;
-					this->mutex.unlock();
-					host = Host();
-					port = 0;
-					stream = new hstream();
-				}
+				stream->rewind();
+				this->mutex.lock();
+				this->hosts += host;
+				this->ports += port;
+				this->streams += stream;
+				this->mutex.unlock();
+				host = Host();
+				port = 0;
+				stream = new hstream();
 			}
 			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}

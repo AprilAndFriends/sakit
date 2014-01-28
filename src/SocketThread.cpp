@@ -12,24 +12,19 @@
 
 #include "PlatformSocket.h"
 #include "sakit.h"
-#include "ReceiverThread.h"
+#include "Socket.h"
+#include "SocketDelegate.h"
+#include "SocketThread.h"
+#include "TcpSocket.h"
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(&process, socket),
-		state(Socket::IDLE), maxBytes(0)
+	SocketThread::SocketThread(PlatformSocket* socket) : WorkerThread(socket), state(SocketBase::IDLE)
 	{
-		this->stream = new hstream();
 	}
 
-	ReceiverThread::~ReceiverThread()
+	SocketThread::~SocketThread()
 	{
-		delete this->stream;
-	}
-
-	void ReceiverThread::process(hthread* thread)
-	{
-		((ReceiverThread*)thread)->_updateProcess();
 	}
 
 }

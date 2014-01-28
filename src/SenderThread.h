@@ -18,37 +18,30 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "WorkerThread.h"
+#include "SocketThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class Socket;
-	class SocketBase;
 	class TcpSocket;
-	class UdpServer;
 	class UdpSocket;
 
-	class SenderThread : public WorkerThread
+	class SenderThread : public SocketThread
 	{
 	public:
 		friend class Socket;
-		friend class SocketBase;
 		friend class TcpSocket;
-		friend class UdpServer;
 		friend class UdpSocket;
 
 		SenderThread(PlatformSocket* socket);
 		~SenderThread();
 
 	protected:
-		SocketBase::State state;
 		hstream* stream;
 		int lastSent;
 
 		void _updateProcess();
-
-		static void process(hthread*);
 
 	};
 

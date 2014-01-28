@@ -621,7 +621,7 @@ int main(Platform::Array<Platform::String^>^ args)
 	//_testAsyncTcpClient();
 	// UDP tests
 	_testAsyncUdpServer();
-	_testAsyncUdpClient();
+	//_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests

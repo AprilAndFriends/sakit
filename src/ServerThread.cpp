@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	ServerThread::ServerThread(PlatformSocket* socket) : WorkerThread(&process, socket), state(Server::IDLE)
+	ServerThread::ServerThread(PlatformSocket* socket) : WorkerThread(socket), state(Server::IDLE)
 	{
 	}
 
@@ -69,11 +69,6 @@ namespace sakit
 			this->_updateUnbinding();
 			break;
 		}
-	}
-
-	void ServerThread::process(hthread* thread)
-	{
-		((ServerThread*)thread)->_updateProcess();
 	}
 
 }

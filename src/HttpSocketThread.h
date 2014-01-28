@@ -44,8 +44,6 @@ namespace sakit
 		void _updateReceive();
 		void _updateProcess();
 
-		static void process(hthread*);
-
 	};
 
 }

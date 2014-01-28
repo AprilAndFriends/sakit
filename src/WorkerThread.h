@@ -20,6 +20,7 @@
 #include <hltypes/hthread.h>
 
 #include "Host.h"
+#include "SocketBase.h"
 
 namespace sakit
 {
@@ -36,7 +37,7 @@ namespace sakit
 			FAILED
 		};
 
-		WorkerThread(void (*function)(hthread*), PlatformSocket* socket);
+		WorkerThread(PlatformSocket* socket);
 		~WorkerThread();
 
 	protected:
@@ -45,6 +46,10 @@ namespace sakit
 		Host host;
 		unsigned short port;
 		hmutex mutex;
+
+		virtual void _updateProcess() = 0;
+
+		static void process(hthread* thread);
 
 	};
 

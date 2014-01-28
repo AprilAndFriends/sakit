@@ -18,7 +18,7 @@
 
 namespace sakit
 {
-	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(&process, socket), state(Socket::IDLE)
+	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket), state(Socket::IDLE)
 	{
 	}
 
@@ -65,11 +65,6 @@ namespace sakit
 			this->_updateDisconnecting();
 			break;
 		}
-	}
-
-	void ConnectorThread::process(hthread* thread)
-	{
-		((ConnectorThread*)thread)->_updateProcess();
 	}
 
 }

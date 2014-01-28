@@ -9,45 +9,37 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for receiving data.
+/// Defines a thread for handling socket-related functionality.
 
-#ifndef SAKIT_RECEIVER_THREAD_H
-#define SAKIT_RECEIVER_THREAD_H
+#ifndef SAKIT_SOCKET_THREAD_H
+#define SAKIT_SOCKET_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "Socket.h"
+#include "Server.h"
 #include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class Socket;
-	class SocketBase;
 	class TcpSocket;
 	class UdpSocket;
 
-	class ReceiverThread : public WorkerThread
+	class SocketThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
-		friend class SocketBase;
 		friend class TcpSocket;
 		friend class UdpSocket;
 
-		ReceiverThread(PlatformSocket* socket);
-		~ReceiverThread();
+		SocketThread(PlatformSocket* socket);
+		~SocketThread();
 
 	protected:
 		SocketBase::State state;
-		hstream* stream;
-		int maxBytes;
-
-		virtual void _updateProcess() = 0;
-
-		static void process(hthread*);
 
 	};
 

@@ -46,7 +46,7 @@ namespace sakit
 		/// @note Keep in mind that only one datagram is received at the time.
 		int receive(hstream* stream, Host& host, unsigned short& port);
 
-		bool startReceiveAsync(int count = 0);
+		bool startReceiveAsync();
 		
 		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
 

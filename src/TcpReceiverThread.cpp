@@ -17,12 +17,14 @@
 
 namespace sakit
 {
-	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
+	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : SocketThread(socket), maxBytes(0)
 	{
+		this->stream = new hstream();
 	}
 
 	TcpReceiverThread::~TcpReceiverThread()
 	{
+		delete this->stream;
 	}
 
 	void TcpReceiverThread::_updateProcess()

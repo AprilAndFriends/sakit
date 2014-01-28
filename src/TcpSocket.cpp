@@ -132,10 +132,10 @@ namespace sakit
 	{
 		this->receiver->mutex.lock();
 		WorkerThread::Result result = this->receiver->result;
-		if (this->receiver->stream->size() > 0)
+		if (this->tcpReceiver->stream->size() > 0)
 		{
-			hstream* stream = this->receiver->stream;
-			this->receiver->stream = new hstream();
+			hstream* stream = this->tcpReceiver->stream;
+			this->tcpReceiver->stream = new hstream();
 			this->receiver->mutex.unlock();
 			stream->rewind();
 			this->tcpSocketDelegate->onReceived(this, stream);
@@ -155,7 +155,7 @@ namespace sakit
 		this->receiver->mutex.unlock();
 		if (result == WorkerThread::FINISHED)
 		{
-			this->tcpSocketDelegate->onReceiveFinished(this);
+			this->socketDelegate->onReceiveFinished(this);
 		}
 		else if (result == WorkerThread::FAILED)
 		{
@@ -319,7 +319,7 @@ namespace sakit
 			this->thread->mutex.unlock();
 			return false;
 		}
-		this->receiver->maxBytes = maxBytes;
+		this->tcpReceiver->maxBytes = maxBytes;
 		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->thread->mutex.unlock();

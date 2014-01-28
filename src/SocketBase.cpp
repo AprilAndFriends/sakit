@@ -7,15 +7,10 @@
 /// This program is free software; you can redistribute it and/or modify it under
 /// the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 
-#include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
-#include <hltypes/hthread.h>
 
-#include "PlatformSocket.h"
-#include "ReceiverThread.h"
 #include "sakit.h"
-#include "SenderThread.h"
 #include "SocketBase.h"
 
 namespace sakit

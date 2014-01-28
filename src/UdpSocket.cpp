@@ -100,6 +100,7 @@ namespace sakit
 	void UdpSocket::_updateReceiving()
 	{
 		this->receiver->mutex.lock();
+		WorkerThread::Result result = this->receiver->result;
 		if (this->udpReceiver->streams.size() > 0)
 		{
 			harray<Host> hosts = this->udpReceiver->hosts;
@@ -117,6 +118,18 @@ namespace sakit
 		else
 		{
 			this->receiver->mutex.unlock();
+		}
+		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		{
+			return;
+		}
+		this->receiver->mutex.lock();
+		this->receiver->result = WorkerThread::IDLE;
+		this->receiver->state = IDLE;
+		this->receiver->mutex.unlock();
+		if (result == WorkerThread::FINISHED)
+		{
+			this->socketDelegate->onReceiveFinished(this);
 		}
 	}
 
@@ -174,7 +187,7 @@ namespace sakit
 		return true;
 	}
 
-	bool UdpSocket::startReceiveAsync(int maxBytes)
+	bool UdpSocket::startReceiveAsync()
 	{
 		this->receiver->mutex.lock();
 		State receiverState = this->receiver->state;
@@ -183,7 +196,6 @@ namespace sakit
 			this->receiver->mutex.unlock();
 			return false;
 		}
-		this->receiver->maxBytes = maxBytes;
 		this->receiver->state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->start();

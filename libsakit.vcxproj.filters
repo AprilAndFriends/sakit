@@ -88,9 +88,6 @@
     <ClInclude Include="src\ConnectorThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
-    <ClInclude Include="src\ReceiverThread.h">
-      <Filter>Header Files\Threads</Filter>
-    </ClInclude>
     <ClInclude Include="src\SenderThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
@@ -142,6 +139,9 @@
     <ClInclude Include="src\UdpServerThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
+    <ClInclude Include="src\SocketThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -184,9 +184,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ConnectorThread.cpp">
-      <Filter>Source Files\Threads</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ReceiverThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
     <ClCompile Include="src\SenderThread.cpp">
@@ -244,6 +241,9 @@
       <Filter>Source Files\Servers</Filter>
     </ClCompile>
     <ClCompile Include="src\UdpServerThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SocketThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
   </ItemGroup>

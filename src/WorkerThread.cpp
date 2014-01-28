@@ -15,14 +15,18 @@
 
 namespace sakit
 {
-	WorkerThread::WorkerThread(void (*function)(hthread*), PlatformSocket* socket) :
-		hthread(function), result(IDLE), port(0)
+	WorkerThread::WorkerThread(PlatformSocket* socket) : hthread(&process), result(IDLE), port(0)
 	{
 		this->socket = socket;
 	}
 
 	WorkerThread::~WorkerThread()
 	{
+	}
+
+	void WorkerThread::process(hthread* thread)
+	{
+		((WorkerThread*)thread)->_updateProcess();
 	}
 
 }

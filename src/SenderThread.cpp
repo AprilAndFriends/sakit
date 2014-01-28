@@ -19,8 +19,7 @@
 
 namespace sakit
 {
-	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(&process, socket),
-		state(Socket::IDLE), lastSent(0)
+	SenderThread::SenderThread(PlatformSocket* socket) : SocketThread(socket), lastSent(0)
 	{
 		this->stream = new hstream();
 	}
@@ -53,11 +52,6 @@ namespace sakit
 		this->result = FINISHED;
 		this->stream->clear();
 		this->mutex.unlock();
-	}
-
-	void SenderThread::process(hthread* thread)
-	{
-		((SenderThread*)thread)->_updateProcess();
 	}
 
 }
