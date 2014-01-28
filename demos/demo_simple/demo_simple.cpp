@@ -138,28 +138,13 @@ public:
 
 	void onReceived(sakit::Socket* socket, sakit::Host host, unsigned short port, hstream* stream)
 	{
-		hstr data;
-		hstr hex = "0x";
-		char c;
-		while (!stream->eof())
-		{
-			stream->read_raw(&c, 1);
-			data += c;
-			hex += hsprintf("%02X", c);
-		}
-		hlog::writef(LOG_TAG, "- %s received %d bytes (from '%s:%d'):", this->name.c_str(), stream->size(), host.toString().c_str(), port);
-		hlog::write(LOG_TAG, "-> " + data);
-		hlog::write(LOG_TAG, hex);
+		hlog::writef(LOG_TAG, "- %s received %d bytes (from '%s:%d'): %d", this->name.c_str(), stream->size(), host.toString().c_str(), port, stream->size());
+		_printReceived(stream);
 	}
 
 	void onReceiveFinished(sakit::Socket* socket)
 	{
 		hlog::writef(LOG_TAG, "- %s receive finished", this->name.c_str());
-	}
-
-	void onReceiveFailed(sakit::Socket* socket)
-	{
-		hlog::writef(LOG_TAG, "- %s receive failed", this->name.c_str());
 	}
 
 protected:
@@ -169,7 +154,6 @@ protected:
 
 TcpSocketDelegate tcpClientDelegate("CLIENT");
 TcpSocketDelegate tcpAcceptedDelegate("ACCEPTED");
-TcpSocketDelegate tcpReceivedDelegate("RECEIVED");
 UdpSocketDelegate udpClientDelegate("CLIENT");
 
 class TcpServerDelegate : public sakit::TcpServerDelegate
@@ -620,8 +604,8 @@ int main(Platform::Array<Platform::String^>^ args)
 	//_testAsyncTcpServer();
 	//_testAsyncTcpClient();
 	// UDP tests
-	_testAsyncUdpServer();
-	//_testAsyncUdpClient();
+	//_testAsyncUdpServer();
+	_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests
