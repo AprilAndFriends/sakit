@@ -29,6 +29,7 @@ typedef int socklen_t;
 #include <sys/select.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 //#include <ifaddrs.h>
 #include <unistd.h>
