@@ -57,7 +57,7 @@ namespace sakit
 		virtual bool _sendAsync(chstr data);
 
 		void _updateSending();
-		void _updateReceiving();
+		virtual void _updateReceiving() = 0;
 
 		bool _checkSendStatus(State senderState);
 		bool _checkStartReceiveStatus(State receiverState);

@@ -12,6 +12,7 @@
 #include <hltypes/hstring.h>
 #include <hltypes/hthread.h>
 
+#include "PlatformSocket.h"
 #include "ReceiverThread.h"
 #include "sakit.h"
 #include "SenderThread.h"

@@ -24,27 +24,31 @@
 namespace sakit
 {
 	class ConnectorThread;
+	class UdpReceiverThread;
+	class UdpSocketDelegate;
 
 	class sakitExport UdpSocket : public Socket
 	{
 	public:
-		UdpSocket(SocketDelegate* socketDelegate);
+		UdpSocket(UdpSocketDelegate* socketDelegate);
 		~UdpSocket();
 
-		bool hasDestination();
 		bool hasMulticastGroup() { return this->multicastGroup; }
+		bool hasDestination();
+
+		bool setMulticastInterface(Host address);
+		bool setMulticastTtl(int value);
+		bool setMulticastLoopback(bool value);
 
 		bool setDestination(Host host, unsigned short port);
 		bool clearDestination();
 
-		int receive(hstream* stream, int count = 0);
+		/// @note Keep in mind that only one datagram is received at the time.
+		int receive(hstream* stream, Host& host, unsigned short& port);
 
 		bool startReceiveAsync(int count = 0);
 		
 		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
-		bool setMulticastInterface(Host address);
-		bool setMulticastTtl(int value);
-		bool setMulticastLoopback(bool value);
 
 		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
@@ -52,7 +56,11 @@ namespace sakit
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data);
 
 	protected:
+		UdpSocketDelegate* udpSocketDelegate;
+		UdpReceiverThread* udpReceiver;
 		bool multicastGroup;
+
+		void _updateReceiving();
 
 		int _send(hstream* stream, int count);
 		bool _sendAsync(hstream* stream, int count);

@@ -9,30 +9,29 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a socket delegate.
+/// Defines a UDP socket delegate.
 
-#ifndef SAKIT_SOCKET_DELEGATE_H
-#define SAKIT_SOCKET_DELEGATE_H
+#ifndef SAKIT_UDP_SOCKET_DELEGATE_H
+#define SAKIT_UDP_SOCKET_DELEGATE_H
 
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
 #include "Host.h"
 #include "sakitExport.h"
+#include "SocketDelegate.h"
 
 namespace sakit
 {
 	class Socket;
 
-	class sakitExport SocketDelegate
+	class sakitExport UdpSocketDelegate : public SocketDelegate
 	{
 	public:
-		SocketDelegate();
-		virtual ~SocketDelegate();
+		UdpSocketDelegate();
+		virtual ~UdpSocketDelegate();
 
-		virtual void onSent(Socket* socket, int byteCount) = 0;
-		virtual void onSendFinished(Socket* socket) = 0;
-		virtual void onSendFailed(Socket* socket) = 0;
+		virtual void onReceived(Socket* socket, Host host, unsigned short port, hstream* stream) = 0;
 
 	};
 

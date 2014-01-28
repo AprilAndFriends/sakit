@@ -152,6 +152,10 @@ namespace sakit
 		{
 			return false;
 		}
+		if (!this->setNagleAlgorithmActive(false))
+		{
+			return false;
+		}
 		// open connection
 		return this->_checkResult(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
 	}
@@ -164,6 +168,12 @@ namespace sakit
 		}
 		// bind to host:port
 		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
+	}
+
+	bool PlatformSocket::setNagleAlgorithmActive(bool value)
+	{
+		int noDelay = (value ? 0 : 1);
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_TCP, TCP_NODELAY, (char*)&noDelay, sizeof(int)), "setsockopt()");
 	}
 
 	bool PlatformSocket::joinMulticastGroup(Host host, unsigned short port, Host groupAddress)
@@ -282,7 +292,7 @@ namespace sakit
 		return false;
 	}
 
-	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& count)
+	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& maxBytes)
 	{
 		unsigned long received = 0;
 		if (!this->_checkReceivedBytes(&received))
@@ -294,9 +304,9 @@ namespace sakit
 			return true;
 		}
 		int read = hmin((int)received, this->bufferSize);
-		if (count > 0) // if don't read everything
+		if (maxBytes > 0) // if don't read everything
 		{
-			read = hmin(read, count);
+			read = hmin(read, maxBytes);
 		}
 		read = recv(this->sock, this->receiveBuffer, read, 0);
 		if (!this->_checkResult(read, "recv()", false))
@@ -306,9 +316,44 @@ namespace sakit
 		mutex.lock();
 		stream->write_raw(this->receiveBuffer, read);
 		mutex.unlock();
-		if (count > 0) // if don't read everything
+		if (maxBytes > 0) // if don't read everything
 		{
-			count -= read;
+			maxBytes -= read;
+		}
+		return true;
+	}
+
+	bool PlatformSocket::receiveFrom(hstream* stream, Host& host, unsigned short& port)
+	{
+		unsigned long received = 0;
+		if (!this->_checkReceivedBytes(&received))
+		{
+			return false;
+		}
+		if (received == 0)
+		{
+			return true;
+		}
+		int read = hmin((int)received, this->bufferSize);
+		sockaddr_storage address;
+		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
+		this->_setNonBlocking(true);
+		read = recvfrom(this->sock, this->receiveBuffer, read, 0, (sockaddr*)&address, &size);
+		if (!this->_checkResult(read, "recvfrom()"))
+		{
+			this->_setNonBlocking(false);
+			return false;
+		}
+		this->_setNonBlocking(false);
+		if (read > 0)
+		{
+			stream->write_raw(this->receiveBuffer, read);
+			// get the IP and port of the connected client
+			char hostString[CHAR_BUFFER] = {'\0'};
+			char portString[CHAR_BUFFER] = {'\0'};
+			getnameinfo((sockaddr*)&address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+			host = Host(hostString);
+			port = (unsigned short)(int)hstr(portString);
 		}
 		return true;
 	}
@@ -354,31 +399,6 @@ namespace sakit
 		getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
 		((Base*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString));
 		other->connected = true;
-		return true;
-	}
-
-	bool PlatformSocket::receiveFrom(hstream* stream, Socket* socket)
-	{
-		PlatformSocket* other = socket->socket;
-		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
-		other->address = (sockaddr_storage*)malloc(size);
-		this->_setNonBlocking(true);
-		int received = recvfrom(this->sock, this->receiveBuffer, this->bufferSize, 0, (sockaddr*)other->address, &size);
-		if (!other->_checkResult(received, "recvfrom()"))
-		{
-			this->_setNonBlocking(false);
-			return false;
-		}
-		this->_setNonBlocking(false);
-		if (received > 0)
-		{
-			stream->write_raw(this->receiveBuffer, received);
-			// get the IP and port of the connected client
-			char hostString[CHAR_BUFFER] = {'\0'};
-			char portString[CHAR_BUFFER] = {'\0'};
-			getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-			((Base*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString));
-		}
 		return true;
 	}
 

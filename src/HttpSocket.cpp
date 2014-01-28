@@ -50,10 +50,12 @@ namespace sakit
 		this->port = HttpSocket::DefaultPort;
 		this->socket->setConnectionLess(false);
 		this->thread = new HttpSocketThread(this->socket);
+		this->__register();
 	}
 
 	HttpSocket::~HttpSocket()
 	{
+		this->__unregister();
 		this->thread->running = false;
 		this->thread->join();
 		delete this->thread;

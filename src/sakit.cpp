@@ -323,9 +323,9 @@ namespace sakit
 	void update(float timeSinceLastFrame)
 	{
 		connectionsMutex.lock();
-		harray<Base*> connections = sakit::connections;
+		harray<Base*> _connections = sakit::connections;
 		connectionsMutex.unlock();
-		foreach (Base*, it, connections)
+		foreach (Base*, it, _connections)
 		{
 			(*it)->update(timeSinceLastFrame);
 		}

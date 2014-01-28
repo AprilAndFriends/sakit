@@ -12,21 +12,25 @@
 #include <hltypes/hstream.h>
 
 #include "PlatformSocket.h"
-#include "ReceiverThread.h"
 #include "sakit.h"
 #include "SenderThread.h"
-#include "SocketDelegate.h"
+#include "UdpReceiverThread.h"
 #include "UdpSocket.h"
+#include "UdpSocketDelegate.h"
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate), multicastGroup(false)
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(socketDelegate), multicastGroup(false)
 	{
+		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
+		this->receiver = this->udpReceiver = new UdpReceiverThread(this->socket);
+		this->__register();
 	}
 
 	UdpSocket::~UdpSocket()
 	{
+		this->__unregister();
 	}
 
 	bool UdpSocket::hasDestination()
@@ -40,13 +44,18 @@ namespace sakit
 		{
 			this->clearDestination();
 		}
-		bool result = this->socket->createSocket(host, port);
-		if (result)
+#ifndef _WINRT
+		if (!this->socket->createSocket(host, port))
+#else // WinRT is a special kid and UDP requires a "connection"
+		if (!this->socket->connect(host, port))
+#endif
 		{
-			this->host = host;
-			this->port = port;
+			this->clearDestination();
+			return false;
 		}
-		return result;
+		this->host = host;
+		this->port = port;
+		return true;
 	}
 
 	bool UdpSocket::clearDestination()
@@ -88,6 +97,29 @@ namespace sakit
 		return this->socket->setMulticastTtl(value);
 	}
 
+	void UdpSocket::_updateReceiving()
+	{
+		this->receiver->mutex.lock();
+		if (this->udpReceiver->streams.size() > 0)
+		{
+			harray<Host> hosts = this->udpReceiver->hosts;
+			harray<unsigned short> ports = this->udpReceiver->ports;
+			harray<hstream*> streams = this->udpReceiver->streams;
+			this->udpReceiver->hosts.clear();
+			this->udpReceiver->ports.clear();
+			this->udpReceiver->streams.clear();
+			this->receiver->mutex.unlock();
+			for_iter (i, 0, streams.size())
+			{
+				this->udpSocketDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+			}
+		}
+		else
+		{
+			this->receiver->mutex.unlock();
+		}
+	}
+
 	int UdpSocket::_send(hstream* stream, int count)
 	{
 		if (!this->_canSend(stream, count))
@@ -104,7 +136,7 @@ namespace sakit
 		return this->_sendDirect(stream, count);
 	}
 
-	int UdpSocket::receive(hstream* stream, int maxBytes)
+	int UdpSocket::receive(hstream* stream, Host& host, unsigned short& port)
 	{
 		if (!this->_canReceive(stream))
 		{
@@ -117,7 +149,7 @@ namespace sakit
 		{
 			return 0;
 		}
-		return this->_receiveDirect(stream, maxBytes);
+		return this->_receiveFromDirect(stream, host, port);
 	}
 
 	bool UdpSocket::_sendAsync(hstream* stream, int count)
@@ -164,7 +196,7 @@ namespace sakit
 		this->setDestination(host, port);
 	}
 
-	bool UdpSocket::broadcast(unsigned short port, hstream* stream, int count )
+	bool UdpSocket::broadcast(unsigned short port, hstream* stream, int count)
 	{
 		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, stream, count);
 	}
@@ -179,7 +211,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, &stream);
+		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, &stream, INT_MAX);
 	}
 
 	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data)
@@ -187,7 +219,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return PlatformSocket::broadcast(adapters, port, &stream);
+		return PlatformSocket::broadcast(adapters, port, &stream, INT_MAX);
 	}
 
 }

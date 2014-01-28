@@ -20,7 +20,6 @@
 
 namespace sakit
 {
-	class SocketDelegate;
 	class UdpServerDelegate;
 	class UdpServerThread;
 	class UdpSocket;
@@ -28,22 +27,16 @@ namespace sakit
 	class sakitExport UdpServer : public Server
 	{
 	public:
-		UdpServer(UdpServerDelegate* serverDelegate, SocketDelegate* receivedDelegate);
+		UdpServer(UdpServerDelegate* serverDelegate);
 		~UdpServer();
-
-		harray<UdpSocket*> getSockets();
 
 		void update(float timeSinceLastFrame);
 
-		UdpSocket* receive(hstream* stream, float timeout = 0.0f);
+		bool receive(hstream* stream, Host& host, unsigned short& port, float timeout = 0.0f);
 
 	protected:
-		harray<UdpSocket*> sockets;
 		UdpServerThread* thread;
 		UdpServerDelegate* serverDelegate;
-		SocketDelegate* receivedDelegate;
-
-		void _updateSockets();
 
 	};
 

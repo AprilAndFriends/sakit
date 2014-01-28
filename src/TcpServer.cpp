@@ -21,16 +21,18 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServer::TcpServer(TcpServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate) : Server(serverDelegate)
+	TcpServer::TcpServer(TcpServerDelegate* serverDelegate, TcpSocketDelegate* acceptedDelegate) : Server(serverDelegate)
 	{
 		this->basicThread = this->thread = new TcpServerThread(this->socket, this->acceptedDelegate);
 		this->basicDelegate = this->serverDelegate = serverDelegate;
 		this->acceptedDelegate = acceptedDelegate;
 		this->socket->setConnectionLess(false);
+		this->__register();
 	}
 
 	TcpServer::~TcpServer()
 	{
+		this->__unregister();
 		foreach (TcpSocket*, it, this->sockets)
 		{
 			delete (*it);
@@ -71,40 +73,42 @@ namespace sakit
 
 	TcpSocket* TcpServer::accept(float timeout)
 	{
-		TcpSocket* socket = NULL;
+		TcpSocket* tcpSocket = NULL;
 		this->thread->mutex.lock();
 		State state = this->thread->state;
 		this->thread->mutex.unlock();
 		if (this->_checkStartStatus(state))
 		{
+			tcpSocket = new TcpSocket(this->acceptedDelegate);
+			connectionsMutex.lock();
+			connections -= tcpSocket;
+			connectionsMutex.unlock();
 			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 			timeout *= 1000.0f;
 			while (true)
 			{
 				if (!this->socket->listen())
 				{
+					delete tcpSocket;
+					tcpSocket = NULL;
 					break;
 				}
-				socket = new TcpSocket(this->acceptedDelegate);
-				connectionsMutex.lock();
-				connections -= socket;
-				connectionsMutex.unlock();
-				if (this->socket->accept(socket))
+				if (this->socket->accept(tcpSocket))
 				{
-					this->sockets += socket;
+					this->sockets += tcpSocket;
 					break;
 				}
-				delete socket;
-				socket = NULL;
 				timeout -= retryTimeout;
 				if (timeout <= 0.0f)
 				{
+					delete tcpSocket;
+					tcpSocket = NULL;
 					break;
 				}
 				hthread::sleep(retryTimeout);
 			}
 		}
-		return socket;
+		return tcpSocket;
 	}
 
 	void TcpServer::_updateSockets()

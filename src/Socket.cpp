@@ -24,7 +24,6 @@ namespace sakit
 	{
 		this->socketDelegate = socketDelegate;
 		this->sender = new SenderThread(this->socket);
-		this->receiver = new ReceiverThread(this->socket);
 	}
 
 	Socket::~Socket()
@@ -32,9 +31,12 @@ namespace sakit
 		this->sender->running = false;
 		this->sender->join();
 		delete this->sender;
-		this->receiver->running = false;
-		this->receiver->join();
-		delete this->receiver;
+		if (this->receiver != NULL)
+		{
+			this->receiver->running = false;
+			this->receiver->join();
+			delete this->receiver;
+		}
 	}
 
 	bool Socket::isSending()
@@ -89,41 +91,6 @@ namespace sakit
 		else if (result == WorkerThread::FAILED)
 		{
 			this->socketDelegate->onSendFailed(this);
-		}
-	}
-
-	void Socket::_updateReceiving()
-	{
-		this->receiver->mutex.lock();
-		WorkerThread::Result result = this->receiver->result;
-		if (this->receiver->stream->size() > 0)
-		{
-			hstream* stream = this->receiver->stream;
-			this->receiver->stream = new hstream();
-			this->receiver->mutex.unlock();
-			stream->rewind();
-			this->socketDelegate->onReceived(this, stream);
-			delete stream;
-		}
-		else
-		{
-			this->receiver->mutex.unlock();
-		}
-		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
-		{
-			return;
-		}
-		this->receiver->mutex.lock();
-		this->receiver->result = WorkerThread::IDLE;
-		this->receiver->state = IDLE;
-		this->receiver->mutex.unlock();
-		if (result == WorkerThread::FINISHED)
-		{
-			this->socketDelegate->onReceiveFinished(this);
-		}
-		else if (result == WorkerThread::FAILED)
-		{
-			this->socketDelegate->onReceiveFailed(this);
 		}
 	}
 

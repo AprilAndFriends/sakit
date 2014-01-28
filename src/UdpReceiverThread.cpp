@@ -12,18 +12,16 @@
 
 #include "PlatformSocket.h"
 #include "sakit.h"
-#include "Socket.h"
 #include "SocketDelegate.h"
-#include "UdpServerThread.h"
-#include "UdpSocket.h"
+#include "UdpReceiverThread.h"
 
 namespace sakit
 {
-	UdpServerThread::UdpServerThread(PlatformSocket* socket) : ServerThread(socket)
+	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
 	{
 	}
 
-	UdpServerThread::~UdpServerThread()
+	UdpReceiverThread::~UdpReceiverThread()
 	{
 		this->mutex.lock();
 		foreach (hstream*, it, this->streams)
@@ -36,7 +34,7 @@ namespace sakit
 		this->mutex.lock();
 	}
 
-	void UdpServerThread::_updateRunning()
+	void UdpReceiverThread::_updateProcess()
 	{
 		Host host;
 		unsigned short port = 0;

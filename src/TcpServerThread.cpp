@@ -22,8 +22,9 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServerThread::TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate) : ServerThread(socket, acceptedDelegate)
+	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate) : ServerThread(socket)
 	{
+		this->acceptedDelegate = acceptedDelegate;
 	}
 
 	TcpServerThread::~TcpServerThread()
@@ -32,7 +33,10 @@ namespace sakit
 
 	void TcpServerThread::_updateRunning()
 	{
-		TcpSocket* socket = NULL;
+		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
+		connectionsMutex.lock();
+		connections -= tcpSocket;
+		connectionsMutex.unlock();
 		while (this->running)
 		{
 			if (!this->socket->listen())
@@ -40,23 +44,22 @@ namespace sakit
 				this->mutex.lock();
 				this->result = FAILED;
 				this->mutex.unlock();
+				delete tcpSocket;
 				return;
 			}
-			socket = new TcpSocket(this->acceptedDelegate);
-			connectionsMutex.lock();
-			connections -= socket;
-			connectionsMutex.unlock();
-			if (!this->socket->accept(socket))
+			if (this->socket->accept(tcpSocket))
 			{
-				delete socket;
-				hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
-				continue;
+				this->mutex.lock();
+				this->sockets += tcpSocket;
+				this->mutex.unlock();
+				tcpSocket = new TcpSocket(this->acceptedDelegate);
+				connectionsMutex.lock();
+				connections -= tcpSocket;
+				connectionsMutex.unlock();
 			}
-			this->mutex.lock();
-			this->sockets += socket;
-			this->mutex.unlock();
 			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}
+		delete tcpSocket;
 		this->mutex.lock();
 		this->result = FINISHED;
 		this->mutex.unlock();

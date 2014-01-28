@@ -14,22 +14,26 @@
 
 #include "ConnectorThread.h"
 #include "PlatformSocket.h"
-#include "ReceiverThread.h"
 #include "sakit.h"
 #include "SenderThread.h"
-#include "SocketDelegate.h"
+#include "TcpReceiverThread.h"
 #include "TcpSocket.h"
+#include "TcpSocketDelegate.h"
 
 namespace sakit
 {
-	TcpSocket::TcpSocket(SocketDelegate* socketDelegate) : Socket(socketDelegate)
+	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(socketDelegate)
 	{
+		this->tcpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(false);
 		this->thread = new ConnectorThread(this->socket);
+		this->receiver = this->tcpReceiver = new TcpReceiverThread(this->socket);
+		this->__register();
 	}
 
 	TcpSocket::~TcpSocket()
 	{
+		this->__unregister();
 		this->thread->running = false;
 		this->thread->join();
 		delete this->thread;
@@ -59,6 +63,11 @@ namespace sakit
 		return result;
 	}
 
+	bool TcpSocket::setNagleAlgorithmActive(bool value)
+	{
+		return this->socket->setNagleAlgorithmActive(value);
+	}
+
 	void TcpSocket::update(float timeSinceLastFrame)
 	{
 		Socket::update(timeSinceLastFrame);
@@ -85,7 +94,7 @@ namespace sakit
 				this->thread->mutex.unlock();
 				this->host = host;
 				this->port = port;
-				this->socketDelegate->onConnected(this);
+				this->tcpSocketDelegate->onConnected(this);
 				break;
 			case DISCONNECTING:
 				this->thread->mutex.lock();
@@ -95,7 +104,7 @@ namespace sakit
 				port = this->port;
 				this->host = Host();
 				this->port = 0;
-				this->socketDelegate->onDisconnected(this, host, port);
+				this->tcpSocketDelegate->onDisconnected(this, host, port);
 				break;
 			}
 		}
@@ -107,15 +116,50 @@ namespace sakit
 				this->thread->mutex.lock();
 				this->thread->state = IDLE;
 				this->thread->mutex.unlock();
-				this->socketDelegate->onConnectFailed(this, host, port);
+				this->tcpSocketDelegate->onConnectFailed(this, host, port);
 				break;
 			case DISCONNECTING:
 				this->thread->mutex.lock();
 				this->thread->state = CONNECTED;
 				this->thread->mutex.unlock();
-				this->socketDelegate->onDisconnectFailed(this);
+				this->tcpSocketDelegate->onDisconnectFailed(this);
 				break;
 			}
+		}
+	}
+
+	void TcpSocket::_updateReceiving()
+	{
+		this->receiver->mutex.lock();
+		WorkerThread::Result result = this->receiver->result;
+		if (this->receiver->stream->size() > 0)
+		{
+			hstream* stream = this->receiver->stream;
+			this->receiver->stream = new hstream();
+			this->receiver->mutex.unlock();
+			stream->rewind();
+			this->tcpSocketDelegate->onReceived(this, stream);
+			delete stream;
+		}
+		else
+		{
+			this->receiver->mutex.unlock();
+		}
+		if (result == WorkerThread::RUNNING || result == WorkerThread::IDLE)
+		{
+			return;
+		}
+		this->receiver->mutex.lock();
+		this->receiver->result = WorkerThread::IDLE;
+		this->receiver->state = IDLE;
+		this->receiver->mutex.unlock();
+		if (result == WorkerThread::FINISHED)
+		{
+			this->tcpSocketDelegate->onReceiveFinished(this);
+		}
+		else if (result == WorkerThread::FAILED)
+		{
+			this->tcpSocketDelegate->onReceiveFailed(this);
 		}
 	}
 

@@ -30,7 +30,7 @@ namespace sakit
 		UdpServerDelegate();
 		~UdpServerDelegate();
 
-		virtual void onReceived(UdpServer* server, UdpSocket* socket, hstream* stream) = 0;
+		virtual void onReceived(UdpServer* server, Host host, unsigned short port, hstream* stream) = 0;
 
 	};
 

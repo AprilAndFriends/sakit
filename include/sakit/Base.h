@@ -45,13 +45,17 @@ namespace sakit
 
 		Base();
 
-		int _sendDirect(hstream* stream, int count = INT_MAX);
+		int _sendDirect(hstream* stream, int count);
 		int _receiveDirect(hstream* stream, int maxBytes);
+		int _receiveFromDirect(hstream* stream, Host& host, unsigned short& port);
 
 		bool _canSend(hstream* stream, int count);
 		bool _canReceive(hstream* stream);
 
 		virtual void _activateConnection(Host host, unsigned short port);
+
+		void __register();
+		void __unregister();
 
 	};
 

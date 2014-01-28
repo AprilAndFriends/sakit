@@ -30,6 +30,7 @@
 #endif
 #ifdef _WINRT
 using namespace Windows::Networking::Sockets;
+using namespace Windows::Storage::Streams;
 #endif
 
 namespace sakit
@@ -51,9 +52,9 @@ namespace sakit
 		bool bind(Host host, unsigned short port);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
-		bool receive(hstream* stream, hmutex& mutex, int& count);
+		bool receive(hstream* stream, hmutex& mutex, int& maxBytes);
 		bool receive(HttpResponse* response, hmutex& mutex);
-		bool receiveFrom(hstream* stream, Socket* socket);
+		bool receiveFrom(hstream* stream, Host& host, unsigned short& port);
 		bool listen();
 		bool accept(Socket* socket);
 
@@ -61,8 +62,9 @@ namespace sakit
 		bool setMulticastInterface(Host address);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
+		bool setNagleAlgorithmActive(bool value);
 
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count);
 		static hstr resolveHost(chstr domain);
 		static hstr resolveIp(chstr ip);
 		static harray<NetworkAdapter> getNetworkAdapters();
@@ -94,12 +96,45 @@ namespace sakit
 
 			ConnectionAccepter() { }
 
-			virtual void onConnectedStream(StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object);
+			virtual void onConnectedStream(StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ args);
 
 		private:
 			PlatformSocket* socket;
 
 			~ConnectionAccepter() { }
+
+		};
+
+		// there is no other way to make this work
+		[Windows::Foundation::Metadata::WebHostHidden]
+		ref class UdpReceiver sealed
+		{
+		public:
+			friend class PlatformSocket;
+
+			UdpReceiver() { }
+
+			virtual void onReceivedDatagram(DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args);
+			
+		private:
+			PlatformSocket* socket;
+			hmutex dataMutex;
+			harray<Host> hosts;
+			harray<unsigned short> ports;
+			harray<hstream*> streams;
+
+			~UdpReceiver()
+			{
+				this->dataMutex.lock();
+				this->hosts.clear();
+				this->ports.clear();
+				foreach (hstream*, it, this->streams)
+				{
+					delete (*it);
+				}
+				this->streams.clear();
+				this->dataMutex.unlock();
+			}
 
 		};
 
@@ -132,9 +167,11 @@ namespace sakit
 		harray<StreamSocket^> _acceptedSockets;
 		hmutex _mutexAcceptedSockets;
 		ConnectionAccepter^ connectionAccepter;
+		UdpReceiver^ udpReceiver;
 
 		static Windows::Networking::HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, bool wantIp);
+		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
 
 		static bool _awaitAsync(Result& result, hmutex& mutex);
 #endif

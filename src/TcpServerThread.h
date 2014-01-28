@@ -26,16 +26,18 @@ namespace sakit
 	class SocketDelegate;
 	class TcpServer;
 	class TcpSocket;
+	class TcpSocketDelegate;
 
 	class TcpServerThread : public ServerThread
 	{
 	public:
 		friend class TcpServer;
 
-		TcpServerThread(PlatformSocket* socket, SocketDelegate* acceptedDelegate);
+		TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate);
 		~TcpServerThread();
 
 	protected:
+		TcpSocketDelegate* acceptedDelegate;
 		harray<TcpSocket*> sockets;
 
 		void _updateRunning();

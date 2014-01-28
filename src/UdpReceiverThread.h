@@ -9,36 +9,36 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for handling a UDP server.
+/// Defines a thread for receiving data through UDP.
 
-#ifndef SAKIT_UDP_SERVER_THREAD_H
-#define SAKIT_UDP_SERVER_THREAD_H
+#ifndef SAKIT_UDP_RECEIVER_THREAD_H
+#define SAKIT_UDP_RECEIVER_THREAD_H
 
 #include <hltypes/harray.h>
-#include <hltypes/hltypesUtil.h>
+#include <hltypes/hstream.h>
 
-#include "Server.h"
-#include "ServerThread.h"
+#include "Host.h"
+#include "ReceiverThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
-	class UdpServer;
+	class UdpSocket;
 
-	class UdpServerThread : public ServerThread
+	class UdpReceiverThread : public ReceiverThread
 	{
 	public:
-		friend class UdpServer;
+		friend class UdpSocket;
 
-		UdpServerThread(PlatformSocket* socket);
-		~UdpServerThread();
+		UdpReceiverThread(PlatformSocket* socket);
+		~UdpReceiverThread();
 
 	protected:
 		harray<Host> hosts;
 		harray<unsigned short> ports;
 		harray<hstream*> streams;
 
-		void _updateRunning();
+		void _updateProcess();
 
 	};
 

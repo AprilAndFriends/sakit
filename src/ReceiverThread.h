@@ -45,7 +45,7 @@ namespace sakit
 		hstream* stream;
 		int maxBytes;
 
-		void _updateProcess();
+		virtual void _updateProcess() = 0;
 
 		static void process(hthread*);
 

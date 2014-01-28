@@ -9,40 +9,33 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for handling a server.
+/// Defines a thread for receiving data through TCP.
 
-#ifndef SAKIT_SERVER_THREAD_H
-#define SAKIT_SERVER_THREAD_H
+#ifndef SAKIT_TCP_RECEIVER_THREAD_H
+#define SAKIT_TCP_RECEIVER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "Server.h"
-#include "WorkerThread.h"
+#include "Socket.h"
+#include "ReceiverThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
+	class TcpSocket;
 
-	class ServerThread : public WorkerThread
+	class TcpReceiverThread : public ReceiverThread
 	{
 	public:
-		friend class Server;
+		friend class TcpSocket;
 
-		ServerThread(PlatformSocket* socket);
-		~ServerThread();
+		TcpReceiverThread(PlatformSocket* socket);
+		~TcpReceiverThread();
 
 	protected:
-		Server::State state;
-
-		void _updateBinding();
-		void _updateUnbinding();
 		void _updateProcess();
-
-		virtual void _updateRunning() = 0;
-
-		static void process(hthread*);
 
 	};
 

@@ -21,17 +21,15 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	Base::Base() : port(0)
+	void Base::__register()
 	{
 		connectionsMutex.lock();
 		connections += this;
 		connectionsMutex.unlock();
-		this->socket = new PlatformSocket();
 	}
 
-	Base::~Base()
+	void Base::__unregister()
 	{
-		delete this->socket;
 		connectionsMutex.lock();
 		int index = connections.index_of(this);
 		if (index >= 0)
@@ -39,6 +37,16 @@ namespace sakit
 			connections.remove_at(index);
 		}
 		connectionsMutex.unlock();
+	}
+
+	Base::Base() : port(0)
+	{
+		this->socket = new PlatformSocket();
+	}
+
+	Base::~Base()
+	{
+		delete this->socket;
 	}
 
 	hstr Base::getFullHost()
@@ -100,6 +108,22 @@ namespace sakit
 			lastRemaining = 0;
 		}
 		return (maxBytes - remaining);
+	}
+
+	int Base::_receiveFromDirect(hstream* stream, Host& host, unsigned short& port)
+	{
+		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+		int retryAttempts = sakit::getRetryAttempts();
+		while (retryAttempts > 0)
+		{
+			if (this->socket->receiveFrom(stream, host, port))
+			{
+				break;
+			}
+			retryAttempts--;
+			hthread::sleep(retryTimeout);
+		}
+		return stream->size();
 	}
 
 	bool Base::_canSend(hstream* stream, int count)

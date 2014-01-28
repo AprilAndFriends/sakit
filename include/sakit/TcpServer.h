@@ -19,15 +19,15 @@
 
 namespace sakit
 {
-	class SocketDelegate;
 	class TcpServerDelegate;
 	class TcpServerThread;
 	class TcpSocket;
+	class TcpSocketDelegate;
 
 	class sakitExport TcpServer : public Server
 	{
 	public:
-		TcpServer(TcpServerDelegate* serverDelegate, SocketDelegate* acceptedDelegate);
+		TcpServer(TcpServerDelegate* serverDelegate, TcpSocketDelegate* acceptedDelegate);
 		~TcpServer();
 
 		harray<TcpSocket*> getSockets();
@@ -40,7 +40,7 @@ namespace sakit
 		harray<TcpSocket*> sockets;
 		TcpServerThread* thread;
 		TcpServerDelegate* serverDelegate;
-		SocketDelegate* acceptedDelegate;
+		TcpSocketDelegate* acceptedDelegate;
 
 		void _updateSockets();
 

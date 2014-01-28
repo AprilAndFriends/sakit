@@ -12,7 +12,6 @@
 
 #include "PlatformSocket.h"
 #include "sakit.h"
-#include "SocketDelegate.h"
 #include "ReceiverThread.h"
 
 namespace sakit
@@ -26,29 +25,6 @@ namespace sakit
 	ReceiverThread::~ReceiverThread()
 	{
 		delete this->stream;
-	}
-
-	void ReceiverThread::_updateProcess()
-	{
-		int remaining = this->maxBytes;
-		while (this->running)
-		{
-			if (!this->socket->receive(this->stream, this->mutex, remaining))
-			{
-				this->mutex.lock();
-				this->result = FAILED;
-				this->mutex.unlock();
-				return;
-			}
-			if (this->maxBytes > 0 && remaining == 0)
-			{
-				break;
-			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
 	}
 
 	void ReceiverThread::process(hthread* thread)
