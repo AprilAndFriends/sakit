@@ -165,7 +165,7 @@ namespace sakit
 		return true;
 	}
 
-	bool Socket::startReceiveAsync(int maxBytes)
+	bool Socket::_startReceiveAsync(int maxValue)
 	{
 		this->mutexState.lock();
 		this->receiver->mutex.lock();
@@ -178,7 +178,7 @@ namespace sakit
 		}
 		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
 		this->receiver->result = RUNNING;
-		this->receiver->maxCount = maxBytes;
+		this->receiver->maxValue = maxValue;
 		this->receiver->mutex.unlock();
 		this->mutexState.unlock();
 		this->receiver->start();

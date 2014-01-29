@@ -35,7 +35,7 @@ namespace sakit
 		~ReceiverThread();
 
 	protected:
-		int maxCount;
+		int maxValue;
 
 	};
 

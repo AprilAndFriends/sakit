@@ -40,6 +40,7 @@ namespace sakit
 
 		/// @note Keep in mind that only all queued stream data is received at once.
 		int receive(hstream* stream, int maxBytes = 0);
+		bool startReceiveAsync(int maxBytes = 0);
 
 	protected:
 		TcpSocketDelegate* tcpSocketDelegate;
@@ -48,8 +49,6 @@ namespace sakit
 		void _updateReceiving();
 
 		void _activateConnection(Host host, unsigned short port);
-
-		bool _checkStartReceiveStatus(State socketState, State receiverState);
 
 	};
 

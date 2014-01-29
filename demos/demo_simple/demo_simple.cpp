@@ -603,8 +603,8 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::init();
 #ifndef _WINRT
 	// TCP tests
-	_testAsyncTcpServer();
-	_testAsyncTcpClient();
+	//_testAsyncTcpServer();
+	//_testAsyncTcpClient();
 	// UDP tests
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();

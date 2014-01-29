@@ -51,36 +51,43 @@ namespace sakit
 
 	void TcpSocket::_updateReceiving()
 	{
+		hstream* stream = NULL;
+		this->mutexState.lock();
 		this->receiver->mutex.lock();
-		State result = this->receiver->result;
 		if (this->tcpReceiver->stream->size() > 0)
 		{
 			hstream* stream = this->tcpReceiver->stream;
 			this->tcpReceiver->stream = new hstream();
+		}
+		State state = this->state;
+		State result = this->receiver->result;
+		if (result == RUNNING || result == IDLE)
+		{
 			this->receiver->mutex.unlock();
+			this->mutexState.unlock();
+			if (stream != NULL)
+			{
+				stream->rewind();
+				this->tcpSocketDelegate->onReceived(this, stream);
+				delete stream;
+			}
+			return;
+		}
+		this->receiver->result = IDLE;
+		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->receiver->mutex.unlock();
+		this->mutexState.unlock();
+		if (stream != NULL)
+		{
 			stream->rewind();
 			this->tcpSocketDelegate->onReceived(this, stream);
 			delete stream;
 		}
-		else
+		// delegate calls
+		switch (result)
 		{
-			this->receiver->mutex.unlock();
-		}
-		if (result == RUNNING || result == IDLE)
-		{
-			return;
-		}
-		this->receiver->mutex.lock();
-		this->receiver->result = IDLE;
-		this->receiver->_state = IDLE;
-		this->receiver->mutex.unlock();
-		if (result == FINISHED)
-		{
-			this->socketDelegate->onReceiveFinished(this);
-		}
-		else if (result == FAILED)
-		{
-			this->tcpSocketDelegate->onReceiveFailed(this);
+		case FINISHED:	this->socketDelegate->onReceiveFinished(this);	break;
+		case FAILED:	this->tcpSocketDelegate->onReceiveFailed(this);	break;
 		}
 	}
 
@@ -88,19 +95,27 @@ namespace sakit
 	{
 		if (!this->_checkReceiveParameters(stream))
 		{
-			return false;
-		}
-		//this->thread->mutex.lock();
-		this->receiver->mutex.lock();
-		//State socketState = this->thread->state;
-		State receiverState = this->receiver->_state;
-		this->receiver->mutex.unlock();
-		//this->thread->mutex.unlock();
-		if (!this->_checkStartReceiveStatus(IDLE, receiverState))
-		{
 			return 0;
 		}
-		return this->_receiveDirect(stream, maxBytes);
+		this->mutexState.lock();
+		State state = this->state;
+		if (!this->_canReceive(state))
+		{
+			this->mutexState.unlock();
+			return 0;
+		}
+		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
+		this->mutexState.unlock();
+		int result = this->_receiveDirect(stream, maxBytes);
+		this->mutexState.lock();
+		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->mutexState.unlock();
+		return result;
+	}
+
+	bool TcpSocket::startReceiveAsync(int maxBytes)
+	{
+		return this->_startReceiveAsync(maxBytes);
 	}
 
 	void TcpSocket::_activateConnection(Host host, unsigned short port)
@@ -109,17 +124,6 @@ namespace sakit
 		this->mutexState.lock();
 		this->state = CONNECTED;
 		this->mutexState.unlock();
-	}
-
-	bool TcpSocket::_checkStartReceiveStatus(State socketState, State receiverState)
-	{
-		/*
-		if (!this->_checkConnectedStatus(socketState, "start receiving"))
-		{
-			return false;
-		}
-		*/
-		return Socket::_checkStartReceiveStatus(receiverState);
 	}
 
 }

@@ -45,7 +45,6 @@ namespace sakit
 
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
-		bool startReceiveAsync(int maxBytes = 0);
 		bool stopReceiveAsync();
 
 	protected:
@@ -57,6 +56,7 @@ namespace sakit
 		Socket(SocketDelegate* socketDelegate, State idleState);
 
 		int _send(hstream* stream, int count);
+		bool _startReceiveAsync(int maxValue);
 
 		void _updateSending();
 		virtual void _updateReceiving() = 0;

@@ -29,7 +29,7 @@ namespace sakit
 
 	void TcpReceiverThread::_updateProcess()
 	{
-		int remaining = this->maxCount;
+		int remaining = this->maxValue;
 		while (this->running)
 		{
 			if (!this->socket->receive(this->stream, this->mutex, remaining))
@@ -39,7 +39,7 @@ namespace sakit
 				this->mutex.unlock();
 				return;
 			}
-			if (this->maxCount > 0 && remaining == 0)
+			if (this->maxValue > 0 && remaining == 0)
 			{
 				break;
 			}

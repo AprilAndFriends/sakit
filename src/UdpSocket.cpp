@@ -21,7 +21,7 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND), multicastGroup(false)
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), IDLE), multicastGroup(false)
 	{
 		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
@@ -100,34 +100,43 @@ namespace sakit
 
 	void UdpSocket::_updateReceiving()
 	{
+		harray<Host> hosts;
+		harray<unsigned short> ports;
+		harray<hstream*> streams;
+		this->mutexState.lock();
 		this->receiver->mutex.lock();
-		State result = this->receiver->result;
 		if (this->udpReceiver->streams.size() > 0)
 		{
-			harray<Host> hosts = this->udpReceiver->hosts;
-			harray<unsigned short> ports = this->udpReceiver->ports;
-			harray<hstream*> streams = this->udpReceiver->streams;
+			hosts = this->udpReceiver->hosts;
+			ports = this->udpReceiver->ports;
+			streams = this->udpReceiver->streams;
 			this->udpReceiver->hosts.clear();
 			this->udpReceiver->ports.clear();
 			this->udpReceiver->streams.clear();
+		}
+		State state = this->state;
+		State result = this->receiver->result;
+		if (result == RUNNING || result == IDLE)
+		{
 			this->receiver->mutex.unlock();
+			this->mutexState.unlock();
 			for_iter (i, 0, streams.size())
 			{
 				this->udpSocketDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+				delete streams[i];
 			}
-		}
-		else
-		{
-			this->receiver->mutex.unlock();
-		}
-		if (result == RUNNING || result == IDLE)
-		{
 			return;
 		}
-		this->receiver->mutex.lock();
 		this->receiver->result = IDLE;
-		this->receiver->_state = IDLE;
+		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
 		this->receiver->mutex.unlock();
+		this->mutexState.unlock();
+		for_iter (i, 0, streams.size())
+		{
+			this->udpSocketDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+			delete streams[i];
+		}
+		// delegate calls
 		if (result == FINISHED)
 		{
 			this->socketDelegate->onReceiveFinished(this);
@@ -138,16 +147,27 @@ namespace sakit
 	{
 		if (!this->_checkReceiveParameters(stream))
 		{
-			return false;
-		}
-		this->receiver->mutex.lock();
-		State receiverState = this->receiver->_state;
-		this->receiver->mutex.unlock();
-		if (!this->_checkStartReceiveStatus(receiverState))
-		{
 			return 0;
 		}
-		return this->_receiveFromDirect(stream, host, port);
+		this->mutexState.lock();
+		State state = this->state;
+		if (!this->_canReceive(state))
+		{
+			this->mutexState.unlock();
+			return 0;
+		}
+		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
+		this->mutexState.unlock();
+		int result = this->_receiveFromDirect(stream, host, port);
+		this->mutexState.lock();
+		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->mutexState.unlock();
+		return result;
+	}
+
+	bool UdpSocket::startReceiveAsync(int maxPackages)
+	{
+		return this->_startReceiveAsync(maxPackages);
 	}
 
 	void UdpSocket::_activateConnection(Host host, unsigned short port)
