@@ -64,9 +64,9 @@ namespace sakit
 	{
 		bool result = false;
 		this->thread->mutex.lock();
-		State state = this->thread->state;
+		State state = this->thread->_state;
 		this->thread->mutex.unlock();
-		if (this->_checkStartStatus(state))
+		if (this->_canStart(state))
 		{
 			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 			timeout *= 1000.0f;

@@ -70,7 +70,7 @@ namespace sakit
 		}
 		this->receiver->mutex.lock();
 		this->receiver->result = IDLE;
-		this->receiver->state = IDLE;
+		this->receiver->_state = IDLE;
 		this->receiver->mutex.unlock();
 		if (result == FINISHED)
 		{
@@ -91,7 +91,7 @@ namespace sakit
 		//this->thread->mutex.lock();
 		this->sender->mutex.lock();
 		//State socketState = this->thread->state;
-		State senderState = this->sender->state;
+		State senderState = this->sender->_state;
 		this->sender->mutex.unlock();
 		//this->thread->mutex.unlock();
 		if (!this->_checkSendStatus(IDLE, senderState))
@@ -110,7 +110,7 @@ namespace sakit
 		//this->thread->mutex.lock();
 		this->receiver->mutex.lock();
 		//State socketState = this->thread->state;
-		State receiverState = this->receiver->state;
+		State receiverState = this->receiver->_state;
 		this->receiver->mutex.unlock();
 		//this->thread->mutex.unlock();
 		if (!this->_checkStartReceiveStatus(IDLE, receiverState))
@@ -129,7 +129,7 @@ namespace sakit
 		//this->thread->mutex.lock();
 		this->sender->mutex.lock();
 		//State socketState = this->thread->state;
-		State senderState = this->sender->state;
+		State senderState = this->sender->_state;
 		if (!this->_checkSendStatus(IDLE, senderState))
 		{
 			this->sender->mutex.unlock();
@@ -139,7 +139,7 @@ namespace sakit
 		this->sender->stream->clear();
 		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
-		this->sender->state = RUNNING;
+		this->sender->_state = RUNNING;
 		this->sender->mutex.unlock();
 		//this->thread->mutex.unlock();
 		this->sender->start();
@@ -151,7 +151,7 @@ namespace sakit
 		//this->thread->mutex.lock();
 		this->receiver->mutex.lock();
 		//State socketState = this->thread->state;
-		State receiverState = this->receiver->state;
+		State receiverState = this->receiver->_state;
 		if (!this->_checkStartReceiveStatus(IDLE, receiverState))
 		{
 			this->receiver->mutex.unlock();
@@ -159,7 +159,7 @@ namespace sakit
 			return false;
 		}
 		this->tcpReceiver->maxBytes = maxBytes;
-		this->receiver->state = RUNNING;
+		this->receiver->_state = RUNNING;
 		this->receiver->mutex.unlock();
 		//this->thread->mutex.unlock();
 		this->receiver->start();

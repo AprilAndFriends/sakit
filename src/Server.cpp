@@ -13,6 +13,7 @@
 
 #include "PlatformSocket.h"
 #include "sakit.h"
+#include "sakitUtil.h"
 #include "Server.h"
 #include "ServerDelegate.h"
 #include "Socket.h"
@@ -37,39 +38,39 @@ namespace sakit
 
 	bool Server::isRunning()
 	{
-		this->basicThread->mutex.lock();
-		bool result = (this->basicThread->state == RUNNING);
-		this->basicThread->mutex.unlock();
+		this->mutexState.lock();
+		bool result = (this->state == RUNNING);
+		this->mutexState.unlock();
 		return result;
 	}
 
 	bool Server::startAsync()
 	{
-		// TODOsock
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		if (!this->_checkStartStatus(state))
+		this->mutexState.lock();
+		State state = this->state;
+		if (!this->_canStart(state))
 		{
-			this->basicThread->mutex.unlock();
+			this->mutexState.unlock();
 			return false;
 		}
-		this->basicThread->state = RUNNING;
-		this->basicThread->mutex.unlock();
+		this->state = RUNNING;
+		this->basicThread->result = RUNNING;
+		this->mutexState.unlock();
 		this->basicThread->start();
 		return true;
 	}
 
 	bool Server::stopAsync()
 	{
-		// TODOsock
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		this->basicThread->mutex.unlock();
-		if (!this->_checkStopStatus(state))
+		this->mutexState.lock();
+		State state = this->state;
+		if (!this->_canStop(state))
 		{
+			this->mutexState.unlock();
 			return false;
 		}
 		this->basicThread->running = false;
+		this->mutexState.unlock();
 		return true;
 	}
 
@@ -77,101 +78,44 @@ namespace sakit
 	{
 		// TODOsock
 		Binder::_update(timeSinceLastFrame);
+		this->mutexState.lock();
 		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
+		State state = this->state;
 		State result = this->basicThread->result;
-		Host host = this->basicThread->host;
-		unsigned short port = this->basicThread->port;
-		this->basicThread->mutex.unlock();
 		if (result == RUNNING || result == IDLE)
 		{
+			this->basicThread->mutex.unlock();
+			this->mutexState.unlock();
 			return;
 		}
-		this->basicThread->mutex.lock();
 		this->basicThread->result = IDLE;
+		this->state = BOUND;
 		this->basicThread->mutex.unlock();
-		if (result == FINISHED)
+		this->mutexState.unlock();
+		// delegate calls
+		switch (result)
 		{
-			switch (state)
-			{
-				/*
-			case BINDING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = BOUND;
-				this->basicThread->mutex.unlock();
-				this->host = host;
-				this->port = port;
-				this->basicDelegate->onBound(this);
-				break;
-			case UNBINDING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = IDLE;
-				this->basicThread->mutex.unlock();
-				host = this->host;
-				port = this->port;
-				this->host = Host();
-				this->port = 0;
-				this->basicDelegate->onUnbound(this, host, port);
-				break;
-				*/
-			case RUNNING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = BOUND;
-				this->basicThread->mutex.unlock();
-				this->basicDelegate->onStopped(this);
-				break;
-			}
-		}
-		else if (result == FAILED)
-		{
-			switch (state)
-			{
-				/*
-			case BINDING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = IDLE;
-				this->basicThread->mutex.unlock();
-				this->basicDelegate->onBindFailed(this, host, port);
-				break;
-			case UNBINDING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = BOUND;
-				this->basicThread->mutex.unlock();
-				this->basicDelegate->onUnbindFailed(this);
-				break;
-				*/
-			case RUNNING:
-				this->basicThread->mutex.lock();
-				this->basicThread->state = BOUND;
-				this->basicThread->mutex.unlock();
-				this->basicDelegate->onRunFailed(this);
-				break;
-			}
+		case FINISHED:
+			this->basicDelegate->onStopped(this);
+			break;
+		case FAILED:
+			this->basicDelegate->onStartFailed(this);
+			break;
 		}
 	}
 
-	bool Server::_checkStartStatus(State state)
+	bool Server::_canStart(State state)
 	{
-		switch (state)
-		{
-		case IDLE:		hlog::warn(sakit::logTag, "Cannot start, not bound!");			return false;
-		case BINDING:	hlog::warn(sakit::logTag, "Cannot start, still binding!");		return false;
-		case RUNNING:	hlog::warn(sakit::logTag, "Cannot start, already running!");	return false;
-		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot start, already unbinding!");	return false;
-		}
-		return true;
+		harray<State> allowed;
+		allowed += BOUND;
+		return _checkState(state, allowed, "start");
 	}
 
-	bool Server::_checkStopStatus(State state)
+	bool Server::_canStop(State state)
 	{
-		switch (state)
-		{
-		case IDLE:		hlog::warn(sakit::logTag, "Cannot stop, not bound!");			return false;
-		case BINDING:	hlog::warn(sakit::logTag, "Cannot stop, still binding!");		return false;
-		case BOUND:		hlog::warn(sakit::logTag, "Cannot stop, not running!");			return false;
-		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot stop, already unbinding!");	return false;
-		}
-		return true;
+		harray<State> allowed;
+		allowed += RUNNING;
+		return _checkState(state, allowed, "stop");
 	}
 
 }

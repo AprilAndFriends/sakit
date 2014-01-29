@@ -31,8 +31,7 @@ namespace sakit
 	{
 	}
 
-	//void TcpServerThread::_updateProcess()
-	void TcpServerThread::_updateRunning()
+	void TcpServerThread::_updateProcess()
 	{
 		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
 		connectionsMutex.lock();
@@ -64,51 +63,6 @@ namespace sakit
 		this->mutex.lock();
 		this->result = FINISHED;
 		this->mutex.unlock();
-	}
-
-	void TcpServerThread::_updateBinding()
-	{
-		if (!this->socket->bind(this->host, this->port))
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
-	}
-
-	void TcpServerThread::_updateUnbinding()
-	{
-		if (!this->socket->disconnect())
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
-	}
-
-	void TcpServerThread::_updateProcess()
-	{
-		switch (this->state)
-		{
-		case BINDING:
-			this->_updateBinding();
-			break;
-		case UNBINDING:
-			this->_updateUnbinding();
-			break;
-		////
-		case RUNNING:
-			this->_updateRunning();
-			break;
-		}
 	}
 
 }

@@ -30,7 +30,7 @@ namespace sakit
 		~ServerDelegate();
 
 		virtual void onStopped(Server* server) = 0;
-		virtual void onRunFailed(Server* server) = 0;
+		virtual void onStartFailed(Server* server) = 0;
 
 	};
 

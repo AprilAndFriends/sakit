@@ -36,6 +36,8 @@ namespace sakit
 		~ConnectorThread();
 
 	protected:
+		State state;
+
 		void _updateConnecting();
 		void _updateDisconnecting();
 		void _updateProcess();

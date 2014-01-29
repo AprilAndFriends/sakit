@@ -126,7 +126,7 @@ namespace sakit
 		}
 		this->receiver->mutex.lock();
 		this->receiver->result = IDLE;
-		this->receiver->state = IDLE;
+		this->receiver->_state = IDLE;
 		this->receiver->mutex.unlock();
 		if (result == FINISHED)
 		{
@@ -141,7 +141,7 @@ namespace sakit
 			return false;
 		}
 		this->sender->mutex.lock();
-		State senderState = this->sender->state;
+		State senderState = this->sender->_state;
 		this->sender->mutex.unlock();
 		if (!this->_checkSendStatus(senderState))
 		{
@@ -157,7 +157,7 @@ namespace sakit
 			return false;
 		}
 		this->receiver->mutex.lock();
-		State receiverState = this->receiver->state;
+		State receiverState = this->receiver->_state;
 		this->receiver->mutex.unlock();
 		if (!this->_checkStartReceiveStatus(receiverState))
 		{
@@ -173,7 +173,7 @@ namespace sakit
 			return false;
 		}
 		this->sender->mutex.lock();
-		State senderState = this->sender->state;
+		State senderState = this->sender->_state;
 		if (!this->_checkSendStatus(senderState))
 		{
 			this->sender->mutex.unlock();
@@ -182,7 +182,7 @@ namespace sakit
 		this->sender->stream->clear();
 		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
-		this->sender->state = RUNNING;
+		this->sender->_state = RUNNING;
 		this->sender->mutex.unlock();
 		this->sender->start();
 		return true;
@@ -191,13 +191,13 @@ namespace sakit
 	bool UdpSocket::startReceiveAsync()
 	{
 		this->receiver->mutex.lock();
-		State receiverState = this->receiver->state;
+		State receiverState = this->receiver->_state;
 		if (!this->_checkStartReceiveStatus(receiverState))
 		{
 			this->receiver->mutex.unlock();
 			return false;
 		}
-		this->receiver->state = RUNNING;
+		this->receiver->_state = RUNNING;
 		this->receiver->mutex.unlock();
 		this->receiver->start();
 		return true;

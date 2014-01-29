@@ -185,9 +185,9 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 		hlog::write(LOG_TAG, "- SERVER stopped");
 	}
 
-	void onRunFailed(sakit::Server* server)
+	void onStartFailed(sakit::Server* server)
 	{
-		hlog::error(LOG_TAG, "- SERVER running error");
+		hlog::error(LOG_TAG, "- SERVER start failed");
 	}
 
 	void onAccepted(sakit::TcpServer* server, sakit::TcpSocket* socket)
@@ -231,7 +231,7 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::write(LOG_TAG, "- SERVER stopped");
 	}
 
-	void onRunFailed(sakit::Server* server)
+	void onStartFailed(sakit::Server* server)
 	{
 		hlog::error(LOG_TAG, "- SERVER running error");
 	}
@@ -603,8 +603,8 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::init();
 #ifndef _WINRT
 	// TCP tests
-	_testAsyncTcpServer();
-	_testAsyncTcpClient();
+	//_testAsyncTcpServer();
+	//_testAsyncTcpClient();
 	// UDP tests
 	//_testAsyncUdpServer();
 	//_testAsyncUdpClient();

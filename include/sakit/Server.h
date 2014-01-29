@@ -45,8 +45,8 @@ namespace sakit
 
 		Server(ServerDelegate* serverDelegate);
 
-		bool _checkStartStatus(State state);
-		bool _checkStopStatus(State state);
+		bool _canStart(State state);
+		bool _canStop(State state);
 
 	};
 

@@ -36,6 +36,8 @@ namespace sakit
 		~BinderThread();
 
 	protected:
+		State state;
+
 		void _updateBinding();
 		void _updateUnbinding();
 		void _updateProcess();

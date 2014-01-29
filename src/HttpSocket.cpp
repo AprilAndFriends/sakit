@@ -70,7 +70,7 @@ namespace sakit
 	bool HttpSocket::isExecuting()
 	{
 		this->thread->mutex.lock();
-		bool result = (this->thread->state == RUNNING);
+		bool result = (this->thread->_state == RUNNING);
 		this->thread->mutex.unlock();
 		return result;
 	}
@@ -84,7 +84,7 @@ namespace sakit
 			this->thread->mutex.unlock();
 			return;
 		}
-		this->thread->state = IDLE;
+		this->thread->_state = IDLE;
 		this->thread->result = IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
@@ -153,7 +153,7 @@ namespace sakit
 			return false;
 		}
 		this->thread->mutex.lock();
-		State state = this->thread->state;
+		State state = this->thread->_state;
 		this->thread->mutex.unlock();
 		if (!this->_checkExecuteStatus(state))
 		{
@@ -214,7 +214,7 @@ namespace sakit
 			return false;
 		}
 		this->thread->mutex.lock();
-		State state = this->thread->state;
+		State state = this->thread->_state;
 		if (!this->_checkExecuteStatus(state))
 		{
 			this->thread->mutex.unlock();
@@ -227,7 +227,7 @@ namespace sakit
 		this->thread->stream->rewind();
 		this->thread->host = this->host;
 		this->thread->port = (this->url.getPort() == 0 ? this->port : this->url.getPort());
-		this->thread->state = RUNNING;
+		this->thread->_state = RUNNING;
 		this->thread->mutex.unlock();
 		this->thread->start();
 		return true;

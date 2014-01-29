@@ -41,10 +41,6 @@ namespace sakit
 
 		void _updateProcess();
 
-		void _updateBinding();
-		void _updateUnbinding();
-		void _updateRunning();
-
 	};
 
 }

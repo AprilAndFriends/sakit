@@ -43,7 +43,7 @@ namespace sakit
 	bool Socket::isSending()
 	{
 		this->sender->mutex.lock();
-		bool result = (this->sender->state == RUNNING);
+		bool result = (this->sender->_state == RUNNING);
 		this->sender->mutex.unlock();
 		return result;
 	}
@@ -51,7 +51,7 @@ namespace sakit
 	bool Socket::isReceiving()
 	{
 		this->receiver->mutex.lock();
-		bool result = (this->receiver->state == RUNNING);
+		bool result = (this->receiver->_state == RUNNING);
 		this->receiver->mutex.unlock();
 		return result;
 	}
@@ -83,7 +83,7 @@ namespace sakit
 		}
 		this->sender->mutex.lock();
 		this->sender->result = IDLE;
-		this->sender->state = IDLE;
+		this->sender->_state = IDLE;
 		this->sender->mutex.unlock();
 		if (result == FINISHED)
 		{
@@ -126,7 +126,7 @@ namespace sakit
 	bool Socket::stopReceiveAsync()
 	{
 		this->receiver->mutex.lock();
-		State receiverState = this->receiver->state;
+		State receiverState = this->receiver->_state;
 		if (!this->_checkStopReceiveStatus(receiverState))
 		{
 			this->receiver->mutex.unlock();
