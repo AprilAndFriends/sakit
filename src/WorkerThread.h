@@ -26,6 +26,7 @@
 namespace sakit
 {
 	class PlatformSocket;
+	class Server;
 	class Socket;
 	class TcpSocket;
 	class UdpSocket;
@@ -33,6 +34,7 @@ namespace sakit
 	class WorkerThread : public hthread
 	{
 	public:
+		friend class Server;
 		friend class Socket;
 		friend class TcpSocket;
 		friend class UdpSocket;

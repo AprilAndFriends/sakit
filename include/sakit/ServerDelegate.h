@@ -14,6 +14,7 @@
 #ifndef SAKIT_SERVER_DELEGATE_H
 #define SAKIT_SERVER_DELEGATE_H
 
+#include "BinderDelegate.h"
 #include "Host.h"
 #include "sakitExport.h"
 
@@ -22,16 +23,12 @@ namespace sakit
 	class Server;
 	class Socket;
 
-	class sakitExport ServerDelegate
+	class sakitExport ServerDelegate : public BinderDelegate
 	{
 	public:
 		ServerDelegate();
-		virtual ~ServerDelegate();
+		~ServerDelegate();
 
-		virtual void onBound(Server* server) = 0;
-		virtual void onBindFailed(Server* server, Host host, unsigned short port) = 0;
-		virtual void onUnbound(Server* server, Host host, unsigned short port) = 0;
-		virtual void onUnbindFailed(Server* server) = 0;
 		virtual void onStopped(Server* server) = 0;
 		virtual void onRunFailed(Server* server) = 0;
 

@@ -59,24 +59,24 @@ public:
 		this->name = name;
 	}
 
-	void onConnected(sakit::Socket* socket)
+	void onConnected(sakit::Connector* connector, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- %s connected to '%s'", this->name.c_str(), socket->getFullHost().c_str());
+		hlog::writef(LOG_TAG, "- %s connected to '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
-	void onDisconnected(sakit::Socket* socket, sakit::Host host, unsigned short port)
+	void onDisconnected(sakit::Connector* connector, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
-	void onConnectFailed(sakit::Socket* socket, sakit::Host host, unsigned short port)
+	void onConnectFailed(sakit::Connector* connector, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- %s connect failed to '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
-	void onDisconnectFailed(sakit::Socket* socket)
+	void onDisconnectFailed(sakit::Connector* connector, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- %s disconnect failed from '%s'", this->name.c_str(), socket->getFullHost().c_str());
+		hlog::errorf(LOG_TAG, "- %s disconnect failed from '%s:%d'", this->name.c_str(), host.toString().c_str(), port);
 	}
 
 	void onSent(sakit::Socket* socket, int bytes)
@@ -160,24 +160,24 @@ UdpSocketDelegate udpClientDelegate("CLIENT");
 
 class TcpServerDelegate : public sakit::TcpServerDelegate
 {
-	void onBound(sakit::Server* server)
+	void onBound(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER bound to '%s'", server->getFullHost().c_str());
+		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
+	void onBindFailed(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
+	void onUnbound(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onUnbindFailed(sakit::Server* server)
+	void onUnbindFailed(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s'", server->getFullHost().c_str());
+		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onStopped(sakit::Server* server)
@@ -206,24 +206,24 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 
 class UdpServerDelegate : public sakit::UdpServerDelegate
 {
-	void onBound(sakit::Server* server)
+	void onBound(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER bound to '%s'", server->getFullHost().c_str());
+		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onBindFailed(sakit::Server* server, sakit::Host host, unsigned short port)
+	void onBindFailed(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
 		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onUnbound(sakit::Server* server, sakit::Host host, unsigned short port)
+	void onUnbound(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
 		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", host.toString().c_str(), port);
 	}
 
-	void onUnbindFailed(sakit::Server* server)
+	void onUnbindFailed(sakit::Binder* binder, sakit::Host host, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s'", server->getFullHost().c_str());
+		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", host.toString().c_str(), port);
 	}
 
 	void onStopped(sakit::Server* server)
@@ -284,7 +284,7 @@ void _testAsyncTcpServer()
 	{
 		while (server->isBinding())
 		{
-			sakit::update(0.0f);
+			sakit::update();
 			hthread::sleep(100.0f);
 		}
 		if (server->isBound())
@@ -303,7 +303,7 @@ void _testAsyncTcpServer()
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
 					while (server->getSockets().size() == 0)
 					{
-						sakit::update(0.0f);
+						sakit::update();
 						hthread::sleep(100.0f);
 					}
 					stream.clear();
@@ -317,7 +317,7 @@ void _testAsyncTcpServer()
 				server->stopAsync();
 				while (server->isRunning())
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				}
 				delete client;
@@ -326,7 +326,7 @@ void _testAsyncTcpServer()
 			{
 				while (server->isUnbinding())
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				}
 			}
@@ -350,13 +350,13 @@ void _testAsyncTcpClient()
 			sakit::TcpSocket* accepted = NULL;
 			while (accepted == NULL)
 			{
-				sakit::update(0.0f);
+				sakit::update();
 				accepted = server->accept(0.1f);
 				hthread::sleep(100.0f);
 			}
 			do
 			{
-				sakit::update(0.0f);
+				sakit::update();
 				hthread::sleep(100.0f);
 			} while (client->isConnecting());
 			if (client->isConnected()) // should be true after accepting a connection
@@ -368,7 +368,7 @@ void _testAsyncTcpClient()
 				client->sendAsync(&stream);
 				do
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				} while (client->isSending());
 				// accepted handling
@@ -383,19 +383,19 @@ void _testAsyncTcpClient()
 				client->startReceiveAsync(); // start receiving
 				for_iter (i, 0, 10)
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				}
 				client->stopReceiveAsync();
 				do
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				} while (client->isReceiving());
 				client->disconnectAsync();
 				do
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				} while (client->isDisconnecting());
 			}
@@ -420,7 +420,7 @@ void _testAsyncUdpServer()
 	{
 		while (server->isBinding())
 		{
-			sakit::update(0.0f);
+			sakit::update();
 			hthread::sleep(100.0f);
 		}
 		if (server->isBound())
@@ -439,7 +439,7 @@ void _testAsyncUdpServer()
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
 					for_iter (i, 0, 10)
 					{
-						sakit::update(0.0f);
+						sakit::update();
 						hthread::sleep(100.0f);
 					}
 					stream.clear();
@@ -454,7 +454,7 @@ void _testAsyncUdpServer()
 				server->stopAsync();
 				while (server->isRunning())
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				}
 				delete client;
@@ -463,7 +463,7 @@ void _testAsyncUdpServer()
 			{
 				while (server->isUnbinding())
 				{
-					sakit::update(0.0f);
+					sakit::update();
 					hthread::sleep(100.0f);
 				}
 			}
@@ -491,7 +491,7 @@ void _testAsyncUdpClient()
 			client->sendAsync(&stream);
 			do
 			{
-				sakit::update(0.0f);
+				sakit::update();
 				hthread::sleep(100.0f);
 			} while (client->isSending());
 			// received handling
@@ -512,13 +512,13 @@ void _testAsyncUdpClient()
 					client->startReceiveAsync(); // start receiving
 					for_iter (i, 0, 10)
 					{
-						sakit::update(0.0f);
+						sakit::update();
 						hthread::sleep(100.0f);
 					}
 					client->stopReceiveAsync();
 					do
 					{
-						sakit::update(0.0f);
+						sakit::update();
 						hthread::sleep(100.0f);
 					} while (client->isReceiving());
 					client->clearDestination(); // there is no async destination clearing, it's not needed
@@ -581,7 +581,7 @@ void _testAsyncHttpSocket()
 	{
 		do
 		{
-			sakit::update(0.0f);
+			sakit::update();
 			hthread::sleep(100.0f);
 		} while (client->isExecuting());
 	}
@@ -606,15 +606,15 @@ int main(Platform::Array<Platform::String^>^ args)
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
 	// UDP tests
-	_testAsyncUdpServer();
-	_testAsyncUdpClient();
+	//_testAsyncUdpServer();
+	//_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests
 	sakit::setRetryTimeout(0.01f);
 	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
-	_testHttpSocket();
-	_testAsyncHttpSocket();
+	//_testHttpSocket();
+	//_testAsyncHttpSocket();
 
 	/*
 	sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);

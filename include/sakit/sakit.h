@@ -27,7 +27,7 @@ namespace sakit
 	sakitFnExport void init(int bufferSize = 65536);
 	sakitFnExport void destroy();
 	/// @brief A call to this function will trigger delegate callbacks.
-	sakitFnExport void update(float timeSinceLastFrame);
+	sakitFnExport void update(float timeSinceLastFrame = 0.0f);
 	sakitFnExport float getRetryTimeout();
 	sakitFnExport void setRetryTimeout(float value);
 	sakitFnExport int getRetryAttempts();

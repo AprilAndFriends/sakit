@@ -18,17 +18,16 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Server.h"
-#include "ServerThread.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
-	class SocketDelegate;
 	class TcpServer;
 	class TcpSocket;
 	class TcpSocketDelegate;
 
-	class TcpServerThread : public ServerThread
+	class TcpServerThread : public WorkerThread
 	{
 	public:
 		friend class TcpServer;
@@ -40,6 +39,10 @@ namespace sakit
 		TcpSocketDelegate* acceptedDelegate;
 		harray<TcpSocket*> sockets;
 
+		void _updateProcess();
+
+		void _updateBinding();
+		void _updateUnbinding();
 		void _updateRunning();
 
 	};

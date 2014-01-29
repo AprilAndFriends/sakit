@@ -17,6 +17,7 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Base.h"
+#include "Binder.h"
 #include "Host.h"
 #include "sakitExport.h"
 #include "State.h"
@@ -24,40 +25,28 @@
 namespace sakit
 {
 	class ServerDelegate;
-	class ServerThread;
-	class Socket;
-	class SocketDelegate;
+	class WorkerThread;
 
-	class sakitExport Server : public Base
+	class sakitExport Server : public Base, public Binder
 	{
 	public:
 		~Server();
 
-		bool isBinding();
-		bool isBound();
 		bool isRunning();
-		bool isUnbinding();
 
-		void update(float timeSinceLastFrame);
+		void update(float timeSinceLastFrame = 0.0f);
 
-		bool bind(Host host, unsigned short port);
-		bool unbind();
-
-		bool bindAsync(Host host, unsigned short port);
-		bool unbindAsync();
 		bool startAsync();
 		bool stopAsync();
 
 	protected:
 		ServerDelegate* basicDelegate;
-		ServerThread* basicThread;
+		WorkerThread* basicThread;
 
 		Server(ServerDelegate* serverDelegate);
 
-		bool _checkBindStatus(State state);
 		bool _checkStartStatus(State state);
 		bool _checkStopStatus(State state);
-		bool _checkUnbindStatus(State state);
 
 	};
 

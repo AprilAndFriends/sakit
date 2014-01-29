@@ -9,10 +9,10 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for handling a server.
+/// Defines a thread for binding a socket to a host and/or port.
 
-#ifndef SAKIT_SERVER_THREAD_H
-#define SAKIT_SERVER_THREAD_H
+#ifndef SAKIT_BINDER_THREAD_H
+#define SAKIT_BINDER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
@@ -24,22 +24,21 @@
 
 namespace sakit
 {
+	class Binder;
 	class PlatformSocket;
 
-	class ServerThread : public WorkerThread
+	class BinderThread : public WorkerThread
 	{
 	public:
-		friend class Server;
+		friend class Binder;
 
-		ServerThread(PlatformSocket* socket);
-		~ServerThread();
+		BinderThread(PlatformSocket* socket);
+		~BinderThread();
 
 	protected:
 		void _updateBinding();
 		void _updateUnbinding();
 		void _updateProcess();
-
-		virtual void _updateRunning() = 0;
 
 	};
 

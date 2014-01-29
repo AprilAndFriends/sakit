@@ -25,14 +25,12 @@
 namespace sakit
 {
 	class PlatformSocket;
-	class ServerDelegate;
-	class SocketDelegate;
-	class TcpSocket;
+	class Connector;
 
 	class ConnectorThread : public WorkerThread
 	{
 	public:
-		friend class TcpSocket;
+		friend class Connector;
 
 		ConnectorThread(PlatformSocket* socket);
 		~ConnectorThread();

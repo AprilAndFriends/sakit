@@ -18,14 +18,14 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Server.h"
-#include "ServerThread.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class UdpServer;
 
-	class UdpServerThread : public ServerThread
+	class UdpServerThread : public WorkerThread
 	{
 	public:
 		friend class UdpServer;
@@ -38,7 +38,7 @@ namespace sakit
 		harray<unsigned short> ports;
 		harray<hstream*> streams;
 
-		void _updateRunning();
+		void _updateProcess();
 
 	};
 

@@ -15,16 +15,17 @@
 #include "sakit.h"
 #include "Server.h"
 #include "ServerDelegate.h"
-#include "ServerThread.h"
 #include "Socket.h"
 #include "TcpSocket.h"
+#include "WorkerThread.h"
 
 namespace sakit
 {
-	Server::Server(ServerDelegate* serverDelegate) : Base()
+	Server::Server(ServerDelegate* serverDelegate) : Base(), Binder(this->socket, dynamic_cast<BinderDelegate*>(serverDelegate))
 	{
 		this->basicDelegate = serverDelegate;
 		this->basicThread = NULL;
+		Binder::_integrate(&this->state, &this->mutexState, &this->host, &this->port);
 	}
 
 	Server::~Server()
@@ -32,22 +33,6 @@ namespace sakit
 		this->basicThread->running = false;
 		this->basicThread->join();
 		delete this->basicThread;
-	}
-
-	bool Server::isBinding()
-	{
-		this->basicThread->mutex.lock();
-		bool result = (this->basicThread->state == BINDING);
-		this->basicThread->mutex.unlock();
-		return result;
-	}
-
-	bool Server::isBound()
-	{
-		this->basicThread->mutex.lock();
-		bool result = (this->basicThread->state == BOUND || this->basicThread->state == UNBINDING || this->basicThread->state == RUNNING);
-		this->basicThread->mutex.unlock();
-		return result;
 	}
 
 	bool Server::isRunning()
@@ -58,82 +43,9 @@ namespace sakit
 		return result;
 	}
 
-	bool Server::isUnbinding()
-	{
-		this->basicThread->mutex.lock();
-		bool result = (this->basicThread->state == UNBINDING);
-		this->basicThread->mutex.unlock();
-		return result;
-	}
-
-	bool Server::bind(Host host, unsigned short port)
-	{
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		this->basicThread->mutex.unlock();
-		bool result = (this->_checkBindStatus(state) && this->socket->bind(host, port));
-		if (result)
-		{
-			this->basicThread->mutex.lock();
-			this->basicThread->state = BOUND;
-			this->basicThread->mutex.unlock();
-			this->host = host;
-			this->port = port;
-		}
-		return result;
-	}
-
-	bool Server::unbind()
-	{
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		this->basicThread->mutex.unlock();
-		bool result = (this->_checkUnbindStatus(state) && this->socket->disconnect());
-		if (result)
-		{
-			this->basicThread->mutex.lock();
-			this->basicThread->state = IDLE;
-			this->basicThread->mutex.unlock();
-			this->host = Host();
-			this->port = 0;
-		}
-		return result;
-	}
-
-	bool Server::bindAsync(Host host, unsigned short port)
-	{
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		if (!this->_checkBindStatus(state))
-		{
-			this->basicThread->mutex.unlock();
-			return false;
-		}
-		this->basicThread->host = host;
-		this->basicThread->port = port;
-		this->basicThread->state = BINDING;
-		this->basicThread->mutex.unlock();
-		this->basicThread->start();
-		return true;
-	}
-
-	bool Server::unbindAsync()
-	{
-		this->basicThread->mutex.lock();
-		State state = this->basicThread->state;
-		if (!this->_checkUnbindStatus(state))
-		{
-			this->basicThread->mutex.unlock();
-			return false;
-		}
-		this->basicThread->state = UNBINDING;
-		this->basicThread->mutex.unlock();
-		this->basicThread->start();
-		return true;
-	}
-
 	bool Server::startAsync()
 	{
+		// TODOsock
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
 		if (!this->_checkStartStatus(state))
@@ -149,6 +61,7 @@ namespace sakit
 
 	bool Server::stopAsync()
 	{
+		// TODOsock
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
 		this->basicThread->mutex.unlock();
@@ -162,6 +75,8 @@ namespace sakit
 
 	void Server::update(float timeSinceLastFrame)
 	{
+		// TODOsock
+		Binder::_update(timeSinceLastFrame);
 		this->basicThread->mutex.lock();
 		State state = this->basicThread->state;
 		State result = this->basicThread->result;
@@ -179,6 +94,7 @@ namespace sakit
 		{
 			switch (state)
 			{
+				/*
 			case BINDING:
 				this->basicThread->mutex.lock();
 				this->basicThread->state = BOUND;
@@ -197,6 +113,7 @@ namespace sakit
 				this->port = 0;
 				this->basicDelegate->onUnbound(this, host, port);
 				break;
+				*/
 			case RUNNING:
 				this->basicThread->mutex.lock();
 				this->basicThread->state = BOUND;
@@ -209,6 +126,7 @@ namespace sakit
 		{
 			switch (state)
 			{
+				/*
 			case BINDING:
 				this->basicThread->mutex.lock();
 				this->basicThread->state = IDLE;
@@ -221,6 +139,7 @@ namespace sakit
 				this->basicThread->mutex.unlock();
 				this->basicDelegate->onUnbindFailed(this);
 				break;
+				*/
 			case RUNNING:
 				this->basicThread->mutex.lock();
 				this->basicThread->state = BOUND;
@@ -229,18 +148,6 @@ namespace sakit
 				break;
 			}
 		}
-	}
-
-	bool Server::_checkBindStatus(State state)
-	{
-		switch (state)
-		{
-		case BINDING:	hlog::warn(sakit::logTag, "Cannot bind, already binding!");		return false;
-		case BOUND:		hlog::warn(sakit::logTag, "Cannot bind, already bound!");		return false;
-		case RUNNING:	hlog::warn(sakit::logTag, "Cannot bind, already running!");		return false;
-		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot bind, already unbinding!");	return false;
-		}
-		return true;
 	}
 
 	bool Server::_checkStartStatus(State state)
@@ -263,18 +170,6 @@ namespace sakit
 		case BINDING:	hlog::warn(sakit::logTag, "Cannot stop, still binding!");		return false;
 		case BOUND:		hlog::warn(sakit::logTag, "Cannot stop, not running!");			return false;
 		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot stop, already unbinding!");	return false;
-		}
-		return true;
-	}
-
-	bool Server::_checkUnbindStatus(State state)
-	{
-		switch (state)
-		{
-		case IDLE:		hlog::warn(sakit::logTag, "Cannot unbind, not bound!");			return false;
-		case BINDING:	hlog::warn(sakit::logTag, "Cannot unbind, still binding!");		return false;
-		case RUNNING:	hlog::warn(sakit::logTag, "Cannot unbind, already running!");	return false;
-		case UNBINDING:	hlog::warn(sakit::logTag, "Cannot unbind, already unbinding!");	return false;
 		}
 		return true;
 	}

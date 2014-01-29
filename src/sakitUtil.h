@@ -9,26 +9,19 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a bindable object.
+/// Defines utility functions used internally.
 
-#ifndef SAKIT_BINDABLE_H
-#define SAKIT_BINDABLE_H
+#ifndef SAKIT_UTIL_H
+#define SAKIT_UTIL_H
 
-#include <hltypes/hltypesUtil.h>
+#include <hltypes/harray.h>
+#include <hltypes/hstring.h>
 
-#include "sakitExport.h"
+#include "State.h"
 
 namespace sakit
 {
-	class sakitExport Bindable
-	{
-	public:
-		virtual ~Bindable();
-
-	protected:
-		Bindable();
-
-	};
+	bool _checkState(State current, harray<State> allowed, chstr action);
 
 }
 #endif

@@ -17,6 +17,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
+#include "ConnectorDelegate.h"
 #include "Host.h"
 #include "sakitExport.h"
 #include "SocketDelegate.h"
@@ -25,16 +26,11 @@ namespace sakit
 {
 	class Socket;
 
-	class sakitExport TcpSocketDelegate : public SocketDelegate
+	class sakitExport TcpSocketDelegate : public SocketDelegate, public ConnectorDelegate
 	{
 	public:
 		TcpSocketDelegate();
-		virtual ~TcpSocketDelegate();
-
-		virtual void onConnected(Socket* socket) = 0;
-		virtual void onDisconnected(Socket* socket, Host host, unsigned short port) = 0;
-		virtual void onConnectFailed(Socket* socket, Host host, unsigned short port) = 0;
-		virtual void onDisconnectFailed(Socket* socket) = 0;
+		~TcpSocketDelegate();
 
 		virtual void onReceived(Socket* socket, hstream* stream) = 0;
 		virtual void onReceiveFailed(Socket* socket) = 0;

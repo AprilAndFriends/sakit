@@ -15,11 +15,13 @@
 #define SAKIT_BASE_H
 
 #include <hltypes/hltypesUtil.h>
+#include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
 #include "Host.h"
 #include "sakitExport.h"
+#include "State.h"
 
 namespace sakit
 {
@@ -34,12 +36,14 @@ namespace sakit
 
 		HL_DEFINE_GET(Host, host, Host);
 		HL_DEFINE_GET(unsigned short, port, Port);
-		hstr getFullHost();
+		virtual hstr getFullHost();
 
-		virtual void update(float timeSinceLastFrame) = 0;
+		virtual void update(float timeSinceLastFrame = 0.0f) = 0;
 
 	protected:
 		PlatformSocket* socket;
+		State state;
+		hmutex mutexState;
 		Host host;
 		unsigned short port;
 

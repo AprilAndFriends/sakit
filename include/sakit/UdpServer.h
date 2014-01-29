@@ -30,7 +30,7 @@ namespace sakit
 		UdpServer(UdpServerDelegate* serverDelegate);
 		~UdpServer();
 
-		void update(float timeSinceLastFrame);
+		void update(float timeSinceLastFrame = 0.0f);
 
 		bool receive(hstream* stream, Host& host, unsigned short& port, float timeout = 0.0f);
 

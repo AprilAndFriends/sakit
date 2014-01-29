@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	UdpServerThread::UdpServerThread(PlatformSocket* socket) : ServerThread(socket)
+	UdpServerThread::UdpServerThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 	}
 
@@ -36,7 +36,7 @@ namespace sakit
 		this->mutex.lock();
 	}
 
-	void UdpServerThread::_updateRunning()
+	void UdpServerThread::_updateProcess()
 	{
 		Host host;
 		unsigned short port = 0;

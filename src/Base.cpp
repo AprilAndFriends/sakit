@@ -39,7 +39,7 @@ namespace sakit
 		connectionsMutex.unlock();
 	}
 
-	Base::Base() : port(0)
+	Base::Base() : port(0), state(IDLE)
 	{
 		this->socket = new PlatformSocket();
 	}

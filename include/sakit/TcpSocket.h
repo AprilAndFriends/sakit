@@ -16,6 +16,7 @@
 
 #include <hltypes/hstream.h>
 
+#include "Connector.h"
 #include "Host.h"
 #include "sakitExport.h"
 #include "Socket.h"
@@ -27,35 +28,24 @@ namespace sakit
 	class TcpReceiverThread;
 	class TcpSocketDelegate;
 
-	class sakitExport TcpSocket : public Socket
+	class sakitExport TcpSocket : public Socket, public Connector
 	{
 	public:
 		TcpSocket(TcpSocketDelegate* socketDelegate);
 		~TcpSocket();
 
-		bool isConnecting();
-		bool isConnected();
-		bool isDisconnecting();
-
 		bool setNagleAlgorithmActive(bool value);
 
-		void update(float timeSinceLastFrame);
+		void update(float timeSinceLastFrame = 0.0f);
 
-		// TODOsock - make it work with chstr port as well
-		bool connect(Host host, unsigned short port);
-		bool disconnect();
 		/// @note Keep in mind that only all queued stream data is received at once.
 		int receive(hstream* stream, int maxBytes = 0);
 
-		// TODOsock - make it work with chstr port as well
-		bool connectAsync(Host host, unsigned short port);
-		bool disconnectAsync();
 		bool startReceiveAsync(int maxBytes = 0);
 
 	protected:
 		TcpSocketDelegate* tcpSocketDelegate;
 		TcpReceiverThread* tcpReceiver;
-		ConnectorThread* thread;
 
 		void _updateReceiving();
 
@@ -64,9 +54,6 @@ namespace sakit
 
 		void _activateConnection(Host host, unsigned short port);
 
-		bool _checkConnectStatus(State socketState);
-		bool _checkConnectedStatus(State socketState, chstr action);
-		bool _checkDisconnectStatus(State socketState, State senderState, State receiverState);
 		bool _checkSendStatus(State socketState, State senderState);
 		bool _checkStartReceiveStatus(State socketState, State receiverState);
 

@@ -14,20 +14,20 @@
 #include "sakit.h"
 #include "Socket.h"
 #include "SocketDelegate.h"
-#include "ServerThread.h"
+#include "BinderThread.h"
 #include "TcpSocket.h"
 
 namespace sakit
 {
-	ServerThread::ServerThread(PlatformSocket* socket) : WorkerThread(socket)
+	BinderThread::BinderThread(PlatformSocket* socket) : WorkerThread(socket)
 	{
 	}
 
-	ServerThread::~ServerThread()
+	BinderThread::~BinderThread()
 	{
 	}
 
-	void ServerThread::_updateBinding()
+	void BinderThread::_updateBinding()
 	{
 		if (!this->socket->bind(this->host, this->port))
 		{
@@ -41,7 +41,7 @@ namespace sakit
 		this->mutex.unlock();
 	}
 
-	void ServerThread::_updateUnbinding()
+	void BinderThread::_updateUnbinding()
 	{
 		if (!this->socket->disconnect())
 		{
@@ -55,15 +55,12 @@ namespace sakit
 		this->mutex.unlock();
 	}
 
-	void ServerThread::_updateProcess()
+	void BinderThread::_updateProcess()
 	{
 		switch (this->state)
 		{
 		case BINDING:
 			this->_updateBinding();
-			break;
-		case RUNNING:
-			this->_updateRunning();
 			break;
 		case UNBINDING:
 			this->_updateUnbinding();
