@@ -37,10 +37,12 @@ namespace sakit
 
 		// TODOsock - make it work with chstr port as well
 		bool bind(Host host, unsigned short port);
+		bool bind(unsigned short port);
 		bool unbind();
 
 		// TODOsock - make it work with chstr port as well
 		bool bindAsync(Host host, unsigned short port);
+		bool bindAsync(unsigned short port);
 		bool unbindAsync();
 
 	protected:

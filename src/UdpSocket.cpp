@@ -21,11 +21,13 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), IDLE), multicastGroup(false)
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND),
+		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate)), multicastGroup(false)
 	{
 		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
 		this->receiver = this->udpReceiver = new UdpReceiverThread(this->socket);
+		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
 		this->__register();
 	}
 
@@ -45,8 +47,14 @@ namespace sakit
 		{
 			this->clearDestination();
 		}
+		// TODOsock - refactor if possible
 #ifndef _WINRT
-		if (!this->socket->createSocket(host, port))
+		if (!this->socket->createSocket())
+		{
+			this->clearDestination();
+			return false;
+		}
+		if (!this->socket->resolve(host, port))
 #else // WinRT is a special kid and UDP requires a "connection"
 		if (!this->socket->connect(host, port))
 #endif
@@ -96,6 +104,12 @@ namespace sakit
 	bool UdpSocket::setMulticastLoopback(bool value)
 	{
 		return this->socket->setMulticastTtl(value);
+	}
+
+	void UdpSocket::update(float timeSinceLastFrame)
+	{
+		Binder::_update(timeSinceLastFrame);
+		Socket::update(timeSinceLastFrame);
 	}
 
 	void UdpSocket::_updateReceiving()

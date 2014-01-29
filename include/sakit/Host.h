@@ -38,6 +38,7 @@ namespace sakit
 		bool operator!=(const Host& other) const;
 
 		static const Host Localhost;
+		static const Host Any;
 
 		/// @return The IP of the domain/host.
 		static hstr resolveHost(chstr domain);

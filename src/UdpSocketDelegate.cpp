@@ -11,7 +11,7 @@
 
 namespace sakit
 {
-	UdpSocketDelegate::UdpSocketDelegate() : SocketDelegate()
+	UdpSocketDelegate::UdpSocketDelegate() : SocketDelegate(), BinderDelegate()
 	{
 	}
 

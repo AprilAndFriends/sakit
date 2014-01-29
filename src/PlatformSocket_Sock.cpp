@@ -121,9 +121,35 @@ namespace sakit
 		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue), "ioctlsocket()");
 	}
 
-	bool PlatformSocket::createSocket(Host host, unsigned short port)
+	bool PlatformSocket::createSocket()
 	{
 		this->connected = true;
+		if (this->info != NULL)
+		{
+			this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
+		}
+		else
+		{
+			addrinfo hints;
+#ifndef _ANDROID
+			hints.ai_family = AF_INET;
+#else
+			hints.ai_family = PF_INET;
+#endif
+			hints.ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
+			hints.ai_protocol = IPPROTO_IP;
+			this->sock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
+		}
+		if (!this->_checkResult(this->sock, "socket()"))
+		{
+			this->disconnect();
+			return false;
+		}
+		return true;
+	}
+
+	bool PlatformSocket::resolve(Host host, unsigned short port)
+	{
 		int result = 0;
 		// create host info
 		addrinfo hints;
@@ -142,14 +168,16 @@ namespace sakit
 			this->disconnect();
 			return false;
 		}
-		// create socket
-		this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
-		return this->_checkResult(this->sock, "socket()");
+		return true;
 	}
 
 	bool PlatformSocket::connect(Host host, unsigned short port)
 	{
-		if (!this->createSocket(host, port))
+		if (!this->createSocket())
+		{
+			return false;
+		}
+		if (!this->resolve(host, port))
 		{
 			return false;
 		}
@@ -163,12 +191,37 @@ namespace sakit
 
 	bool PlatformSocket::bind(Host host, unsigned short port)
 	{
-		if (!this->createSocket(host, port))
+		if (host == Host::Any)
+		{
+			return this->bind(port);
+		}
+		if (!this->createSocket())
+		{
+			return false;
+		}
+		if (!this->resolve(host, port))
 		{
 			return false;
 		}
 		// bind to host:port
 		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
+	}
+
+	bool PlatformSocket::bind(unsigned short port)
+	{
+		if (!this->createSocket())
+		{
+			return false;
+		}
+		sockaddr_in local;
+#ifndef _ANDROID
+		local.sin_family = AF_INET;
+#else
+		local.sin_family = PF_INET;
+#endif
+		local.sin_port = htons(port);
+		local.sin_addr.s_addr = htonl(INADDR_ANY);
+		return this->_checkResult(::bind(this->sock, (sockaddr*)&local, sizeof(sockaddr_in)), "bind()");
 	}
 
 	bool PlatformSocket::setNagleAlgorithmActive(bool value)

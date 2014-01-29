@@ -166,6 +166,11 @@ namespace sakit
 		return result;
 	}
 	
+	bool Binder::bind(unsigned short port)
+	{
+		return this->bind(Host::Any, port);
+	}
+	
 	bool Binder::unbind()
 	{
 		this->_mutexState->lock();
@@ -210,6 +215,11 @@ namespace sakit
 		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
+	}
+	
+	bool Binder::bindAsync(unsigned short port)
+	{
+		return this->bindAsync(Host::Any, port);
 	}
 	
 	bool Binder::unbindAsync()

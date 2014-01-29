@@ -33,8 +33,10 @@
 #define TCP_PORT_ASYNC_SERVER 51112
 #define UDP_PORT_SYNC_SERVER 51211
 #define UDP_PORT_ASYNC_SERVER 51212
-#define UDP_PORT_SYNC_CLIENT 51221
-#define UDP_PORT_ASYNC_CLIENT 51222
+#define UDP_PORT_SYNC_SERVER_ANSWER 51221
+#define UDP_PORT_ASYNC_SERVER_ANSWER 51222
+#define UDP_PORT_SYNC_CLIENT 51311
+#define UDP_PORT_ASYNC_CLIENT 51312
 
 void _printReceived(hstream* stream)
 {
@@ -241,14 +243,22 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::writef(LOG_TAG, "- SERVER '%s' received data (from '%s:%d'): %d", server->getFullHost().c_str(), host.toString().c_str(), port, stream->size());
 		_printReceived(stream);
 		sakit::UdpSocket* udpSocket = new sakit::UdpSocket(&udpClientDelegate);
-		if (udpSocket->setDestination(host, port))
+		if (udpSocket->bind(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER_ANSWER))
 		{
-			int sent = udpSocket->send("Hello.");
-			hlog::write(LOG_TAG, "UDP-SOCKET sent: " + hstr(sent));
+			hlog::writef(LOG_TAG, "UDP-Spcket bound to '%s:%d'", udpSocket->getLocalHost().toString().c_str(), udpSocket->getLocalPort());
+			if (udpSocket->setDestination(host, port))
+			{
+				int sent = udpSocket->send("Hello.");
+				hlog::write(LOG_TAG, "UDP-SOCKET sent: " + hstr(sent));
+			}
+			else
+			{
+				hlog::error(LOG_TAG, "Could not set destination!");
+			}
 		}
 		else
 		{
-			hlog::error(LOG_TAG, "Could not set destination!");
+			hlog::error(LOG_TAG, "Could not bind UDP socket!");
 		}
 		delete udpSocket;
 	}
@@ -428,7 +438,7 @@ void _testAsyncUdpServer()
 			if (server->startAsync())
 			{
 				sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
-				if (client->setDestination(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER))
+				if (client->bind(sakit::Host::Localhost, UDP_PORT_SYNC_CLIENT) && client->setDestination(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER))
 				{
 					hlog::write(LOG_TAG, "Connected to " + client->getFullHost());
 					hstream stream;
@@ -482,57 +492,78 @@ void _testAsyncUdpClient()
 	{
 		hlog::writef(LOG_TAG, "Server bound to '%s'", server->getFullHost().c_str());
 		sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
-		if (client->setDestination(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER)) // there is no async destination setting, it's not needed
+		if (client->bindAsync(sakit::Host::Localhost, UDP_PORT_ASYNC_CLIENT))
 		{
-			hstream stream;
-			char data[12] = "Hi there.\0g";
-			stream.write_raw(data, 12);
-			stream.rewind();
-			client->sendAsync(&stream);
 			do
 			{
 				sakit::update();
 				hthread::sleep(100.0f);
-			} while (client->isSending());
-			// received handling
-			stream.clear();
-			sakit::Host host;
-			unsigned short port = 0;
-			if (server->receive(&stream, host, port))
+			} while (client->isBinding());
+			hlog::writef(LOG_TAG, "CLIENT bound to '%s:%d'", client->getLocalHost().toString().c_str(), client->getLocalPort());
+			if (client->setDestination(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER)) // there is no async destination setting, it's not needed
 			{
+				hstream stream;
+				char data[12] = "Hi there.\0g";
+				stream.write_raw(data, 12);
 				stream.rewind();
-				hlog::writef(LOG_TAG, "RECEIVED received (from '%s:%d'): %d", host.toString().c_str(), port, stream.size());
-				_printReceived(&stream);
-				sakit::UdpSocket* received = new sakit::UdpSocket(&udpClientDelegate);
-				if (received->setDestination(host, port))
+				client->sendAsync(&stream);
+				do
 				{
-					int sent = received->send("Hello.");
-					hlog::write(LOG_TAG, "RECEIVED sent: " + hstr(sent));
-					// back to client
-					client->startReceiveAsync(); // start receiving
-					for_iter (i, 0, 10)
+					sakit::update();
+					hthread::sleep(100.0f);
+				} while (client->isSending());
+				// received handling
+				stream.clear();
+				sakit::Host host;
+				unsigned short port = 0;
+				if (server->receive(&stream, host, port))
+				{
+					stream.rewind();
+					hlog::writef(LOG_TAG, "RECEIVED received (from '%s:%d'): %d", host.toString().c_str(), port, stream.size());
+					_printReceived(&stream);
+					sakit::UdpSocket* received = new sakit::UdpSocket(&udpClientDelegate);
+					if (received->bind(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER_ANSWER))
 					{
-						sakit::update();
-						hthread::sleep(100.0f);
+						hlog::writef(LOG_TAG, "RECEIVED bound to '%s:%d'", received->getLocalHost().toString().c_str(), received->getLocalPort());
+						if (received->setDestination(host, port))
+						{
+							int sent = received->send("Hello.");
+							hlog::write(LOG_TAG, "RECEIVED sent: " + hstr(sent));
+							// back to client
+							client->startReceiveAsync(); // start receiving
+							for_iter (i, 0, 10)
+							{
+								sakit::update();
+								hthread::sleep(100.0f);
+							}
+							client->stopReceiveAsync();
+							do
+							{
+								sakit::update();
+								hthread::sleep(100.0f);
+							} while (client->isReceiving());
+							client->clearDestination(); // there is no async destination clearing, it's not needed
+						}
+						else
+						{
+							hlog::error(LOG_TAG, "Could not set destination!");
+						}
 					}
-					client->stopReceiveAsync();
-					do
+					else
 					{
-						sakit::update();
-						hthread::sleep(100.0f);
-					} while (client->isReceiving());
-					client->clearDestination(); // there is no async destination clearing, it's not needed
+						hlog::error(LOG_TAG, "Could not bind UDP socket!");
+					}
+					delete received;
 				}
 				else
 				{
-					hlog::error(LOG_TAG, "Could not set destination!");
+					hlog::error(LOG_TAG, "Could not receive!");
 				}
-				delete received;
 			}
-			else
-			{
-				hlog::error(LOG_TAG, "Could not receive!");
-			}
+		}
+		else
+		{
+			hlog::error(LOG_TAG, "Could not bind UDP socket!");
 		}
 		delete client;
 		if (server->unbind())

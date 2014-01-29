@@ -47,9 +47,11 @@ namespace sakit
 		HL_DEFINE_IS(connected, Connected);
 		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
 
-		bool createSocket(Host host, unsigned short port);
+		bool createSocket();
+		bool resolve(Host host, unsigned short port);
 		bool connect(Host host, unsigned short port);
 		bool bind(Host host, unsigned short port);
+		bool bind(unsigned short port);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& maxBytes);

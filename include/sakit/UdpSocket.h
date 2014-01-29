@@ -16,6 +16,7 @@
 
 #include <hltypes/hstream.h>
 
+#include "Binder.h"
 #include "Host.h"
 #include "NetworkAdapter.h"
 #include "sakitExport.h"
@@ -27,18 +28,22 @@ namespace sakit
 	class UdpReceiverThread;
 	class UdpSocketDelegate;
 
-	class sakitExport UdpSocket : public Socket
+	class sakitExport UdpSocket : public Socket, public Binder
 	{
 	public:
 		UdpSocket(UdpSocketDelegate* socketDelegate);
 		~UdpSocket();
 
+		HL_DEFINE_GET(Host, localHost, LocalHost);
+		HL_DEFINE_GET(unsigned short, localPort, LocalPort);
 		bool hasMulticastGroup() { return this->multicastGroup; }
 		bool hasDestination();
 
 		bool setMulticastInterface(Host address);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
+
+		void update(float timeSinceLastFrame = 0.0f);
 
 		bool setDestination(Host host, unsigned short port);
 		bool clearDestination();
@@ -55,6 +60,8 @@ namespace sakit
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data);
 
 	protected:
+		Host localHost;
+		unsigned short localPort;
 		UdpSocketDelegate* udpSocketDelegate;
 		UdpReceiverThread* udpReceiver;
 		bool multicastGroup;

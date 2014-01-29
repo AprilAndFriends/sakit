@@ -18,6 +18,7 @@
 namespace sakit
 {
 	const Host Host::Localhost("localhost");
+	const Host Host::Any("0.0.0.0");
 
 	Host::Host()
 	{

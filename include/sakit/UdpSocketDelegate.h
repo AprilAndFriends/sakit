@@ -17,6 +17,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
+#include "BinderDelegate.h"
 #include "Host.h"
 #include "sakitExport.h"
 #include "SocketDelegate.h"
@@ -25,7 +26,7 @@ namespace sakit
 {
 	class Socket;
 
-	class sakitExport UdpSocketDelegate : public SocketDelegate
+	class sakitExport UdpSocketDelegate : public SocketDelegate, public BinderDelegate
 	{
 	public:
 		UdpSocketDelegate();
