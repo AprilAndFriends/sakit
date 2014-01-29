@@ -43,8 +43,6 @@ namespace sakit
 		~WorkerThread();
 
 	protected:
-		State _state; // TODOsock - remove
-
 		State result;
 		PlatformSocket* socket;
 		Host host;

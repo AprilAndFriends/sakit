@@ -38,56 +38,63 @@ namespace sakit
 	
 	void UdpServer::update(float timeSinceLastFrame)
 	{
+		harray<Host> hosts;
+		harray<unsigned short> ports;
+		harray<hstream*> streams;
+		this->mutexState.lock();
 		this->udpServerThread->mutex.lock();
 		if (this->udpServerThread->streams.size() > 0)
 		{
-			harray<Host> hosts = this->udpServerThread->hosts;
-			harray<unsigned short> ports = this->udpServerThread->ports;
-			harray<hstream*> streams = this->udpServerThread->streams;
+			hosts = this->udpServerThread->hosts;
+			ports = this->udpServerThread->ports;
+			streams = this->udpServerThread->streams;
 			this->udpServerThread->hosts.clear();
 			this->udpServerThread->ports.clear();
 			this->udpServerThread->streams.clear();
-			this->udpServerThread->mutex.unlock();
-			for_iter (i, 0, streams.size())
-			{
-				this->udpServerDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
-			}
 		}
-		else
+		this->udpServerThread->mutex.unlock();
+		this->mutexState.unlock();
+		for_iter (i, 0, streams.size())
 		{
-			this->udpServerThread->mutex.unlock();
+			this->udpServerDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+			delete streams[i];
 		}
 		Server::update(timeSinceLastFrame);
 	}
 
 	bool UdpServer::receive(hstream* stream, Host& host, unsigned short& port, float timeout)
 	{
-		bool result = false;
-		this->udpServerThread->mutex.lock();
-		State state = this->udpServerThread->_state;
-		this->udpServerThread->mutex.unlock();
-		if (this->_canStart(state))
+		this->mutexState.lock();
+		if (!this->_canStart(this->state))
 		{
-			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-			timeout *= 1000.0f;
-			while (true)
-			{
-				if (this->socket->receiveFrom(stream, host, port))
-				{
-					if (stream->size() > 0)
-					{
-						result = true;
-					}
-					break;
-				}
-				timeout -= retryTimeout;
-				if (timeout <= 0.0f)
-				{
-					break;
-				}
-				hthread::sleep(retryTimeout);
-			}
+			this->mutexState.unlock();
+			return false;
 		}
+		this->state = RUNNING;
+		this->mutexState.unlock();
+		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+		timeout *= 1000.0f;
+		bool result = false;
+		while (true)
+		{
+			if (this->socket->receiveFrom(stream, host, port))
+			{
+				if (stream->size() > 0)
+				{
+					result = true;
+				}
+				break;
+			}
+			timeout -= retryTimeout;
+			if (timeout <= 0.0f)
+			{
+				break;
+			}
+			hthread::sleep(retryTimeout);
+		}
+		this->mutexState.lock();
+		this->state = BOUND;
+		this->mutexState.unlock();
 		return result;
 	}
 

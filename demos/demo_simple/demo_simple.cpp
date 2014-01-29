@@ -603,8 +603,8 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::init();
 #ifndef _WINRT
 	// TCP tests
-	//_testAsyncTcpServer();
-	//_testAsyncTcpClient();
+	_testAsyncTcpServer();
+	_testAsyncTcpClient();
 	// UDP tests
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
@@ -613,8 +613,8 @@ int main(Platform::Array<Platform::String^>^ args)
 	// HTTP tests
 	sakit::setRetryTimeout(0.01f);
 	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
-	//_testHttpSocket();
-	//_testAsyncHttpSocket();
+	_testHttpSocket();
+	_testAsyncHttpSocket();
 
 	/*
 	sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);

@@ -122,7 +122,7 @@ namespace sakit
 
 		int _receiveHttpDirect(HttpResponse* response);
 
-		bool _checkExecuteStatus(State senderState);
+		bool _canExecute(State state);
 
 		hstr _processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders);
 

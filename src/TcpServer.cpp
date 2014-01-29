@@ -52,62 +52,65 @@ namespace sakit
 			(*it)->update(timeSinceLastFrame);
 		}
 		this->_updateSockets();
+		harray<TcpSocket*> sockets;
+		this->mutexState.lock();
 		this->tcpServerThread->mutex.lock();
 		if (this->tcpServerThread->sockets.size() > 0)
 		{
-			harray<TcpSocket*> sockets = this->tcpServerThread->sockets;
+			sockets = this->tcpServerThread->sockets;
 			this->tcpServerThread->sockets.clear();
-			this->tcpServerThread->mutex.unlock();
 			this->sockets += sockets;
-			foreach (TcpSocket*, it, sockets)
-			{
-				this->tcpServerDelegate->onAccepted(this, (*it));
-			}
 		}
-		else
+		this->tcpServerThread->mutex.unlock();
+		this->mutexState.unlock();
+		foreach (TcpSocket*, it, sockets)
 		{
-			this->tcpServerThread->mutex.unlock();
+			this->tcpServerDelegate->onAccepted(this, (*it));
 		}
 		Server::update(timeSinceLastFrame);
 	}
 
 	TcpSocket* TcpServer::accept(float timeout)
 	{
-		TcpSocket* tcpSocket = NULL;
-		this->tcpServerThread->mutex.lock();
-		State state = this->tcpServerThread->_state;
-		this->tcpServerThread->mutex.unlock();
-		if (this->_canStart(state))
+		this->mutexState.lock();
+		if (!this->_canStart(this->state))
 		{
-			tcpSocket = new TcpSocket(this->acceptedDelegate);
-			connectionsMutex.lock();
-			connections -= tcpSocket;
-			connectionsMutex.unlock();
-			float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-			timeout *= 1000.0f;
-			while (true)
-			{
-				if (!this->socket->listen())
-				{
-					delete tcpSocket;
-					tcpSocket = NULL;
-					break;
-				}
-				if (this->socket->accept(tcpSocket))
-				{
-					this->sockets += tcpSocket;
-					break;
-				}
-				timeout -= retryTimeout;
-				if (timeout <= 0.0f)
-				{
-					delete tcpSocket;
-					tcpSocket = NULL;
-					break;
-				}
-				hthread::sleep(retryTimeout);
-			}
+			this->mutexState.unlock();
+			return NULL;
 		}
+		this->state = RUNNING;
+		this->mutexState.unlock();
+		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
+		connectionsMutex.lock();
+		connections -= tcpSocket;
+		connectionsMutex.unlock();
+		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
+		timeout *= 1000.0f;
+		while (true)
+		{
+			if (!this->socket->listen())
+			{
+				delete tcpSocket;
+				tcpSocket = NULL;
+				break;
+			}
+			if (this->socket->accept(tcpSocket))
+			{
+				this->sockets += tcpSocket;
+				break;
+			}
+			timeout -= retryTimeout;
+			if (timeout <= 0.0f)
+			{
+				delete tcpSocket;
+				tcpSocket = NULL;
+				break;
+			}
+			hthread::sleep(retryTimeout);
+		}
+		this->mutexState.lock();
+		this->state = BOUND;
+		this->mutexState.unlock();
 		return tcpSocket;
 	}
 
