@@ -7,6 +7,55 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10A5829189992FF00C708FF /* Binder.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5822189992FF00C708FF /* Binder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582A189992FF00C708FF /* BinderDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5823189992FF00C708FF /* BinderDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582B189992FF00C708FF /* Connector.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5824189992FF00C708FF /* Connector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582C189992FF00C708FF /* ConnectorDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5825189992FF00C708FF /* ConnectorDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582D189992FF00C708FF /* State.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5826189992FF00C708FF /* State.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582E189992FF00C708FF /* TcpSocketDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5827189992FF00C708FF /* TcpSocketDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A582F189992FF00C708FF /* UdpSocketDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A5828189992FF00C708FF /* UdpSocketDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A10A583E1899934200C708FF /* Binder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58301899934200C708FF /* Binder.cpp */; };
+		A10A583F1899934200C708FF /* Binder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58301899934200C708FF /* Binder.cpp */; };
+		A10A58401899934200C708FF /* BinderDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58311899934200C708FF /* BinderDelegate.cpp */; };
+		A10A58411899934200C708FF /* BinderDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58311899934200C708FF /* BinderDelegate.cpp */; };
+		A10A58421899934200C708FF /* BinderThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58321899934200C708FF /* BinderThread.cpp */; };
+		A10A58431899934200C708FF /* BinderThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58321899934200C708FF /* BinderThread.cpp */; };
+		A10A58441899934200C708FF /* BinderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58331899934200C708FF /* BinderThread.h */; };
+		A10A58451899934200C708FF /* BinderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58331899934200C708FF /* BinderThread.h */; };
+		A10A58461899934200C708FF /* Connector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58341899934200C708FF /* Connector.cpp */; };
+		A10A58471899934200C708FF /* Connector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58341899934200C708FF /* Connector.cpp */; };
+		A10A58481899934200C708FF /* ConnectorDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58351899934200C708FF /* ConnectorDelegate.cpp */; };
+		A10A58491899934200C708FF /* ConnectorDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58351899934200C708FF /* ConnectorDelegate.cpp */; };
+		A10A584A1899934200C708FF /* sakitUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58361899934200C708FF /* sakitUtil.cpp */; };
+		A10A584B1899934200C708FF /* sakitUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58361899934200C708FF /* sakitUtil.cpp */; };
+		A10A584C1899934200C708FF /* sakitUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58371899934200C708FF /* sakitUtil.h */; };
+		A10A584D1899934200C708FF /* sakitUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58371899934200C708FF /* sakitUtil.h */; };
+		A10A584E1899934200C708FF /* TcpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58381899934200C708FF /* TcpReceiverThread.cpp */; };
+		A10A584F1899934200C708FF /* TcpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58381899934200C708FF /* TcpReceiverThread.cpp */; };
+		A10A58501899934200C708FF /* TcpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58391899934200C708FF /* TcpReceiverThread.h */; };
+		A10A58511899934200C708FF /* TcpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58391899934200C708FF /* TcpReceiverThread.h */; };
+		A10A58521899934200C708FF /* TcpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583A1899934200C708FF /* TcpSocketDelegate.cpp */; };
+		A10A58531899934200C708FF /* TcpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583A1899934200C708FF /* TcpSocketDelegate.cpp */; };
+		A10A58541899934200C708FF /* UdpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583B1899934200C708FF /* UdpReceiverThread.cpp */; };
+		A10A58551899934200C708FF /* UdpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583B1899934200C708FF /* UdpReceiverThread.cpp */; };
+		A10A58561899934200C708FF /* UdpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A583C1899934200C708FF /* UdpReceiverThread.h */; };
+		A10A58571899934200C708FF /* UdpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A583C1899934200C708FF /* UdpReceiverThread.h */; };
+		A10A58581899934200C708FF /* UdpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583D1899934200C708FF /* UdpSocketDelegate.cpp */; };
+		A10A58591899934200C708FF /* UdpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583D1899934200C708FF /* UdpSocketDelegate.cpp */; };
+		A10A585A1899935A00C708FF /* Binder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58301899934200C708FF /* Binder.cpp */; };
+		A10A585B1899935A00C708FF /* BinderDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58311899934200C708FF /* BinderDelegate.cpp */; };
+		A10A585C1899935A00C708FF /* BinderThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58321899934200C708FF /* BinderThread.cpp */; };
+		A10A585D1899935A00C708FF /* BinderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58331899934200C708FF /* BinderThread.h */; };
+		A10A585E1899935A00C708FF /* Connector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58341899934200C708FF /* Connector.cpp */; };
+		A10A585F1899935A00C708FF /* ConnectorDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58351899934200C708FF /* ConnectorDelegate.cpp */; };
+		A10A58601899935A00C708FF /* sakitUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58361899934200C708FF /* sakitUtil.cpp */; };
+		A10A58611899935A00C708FF /* sakitUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58371899934200C708FF /* sakitUtil.h */; };
+		A10A58621899935A00C708FF /* TcpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A58381899934200C708FF /* TcpReceiverThread.cpp */; };
+		A10A58631899935A00C708FF /* TcpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A58391899934200C708FF /* TcpReceiverThread.h */; };
+		A10A58641899935A00C708FF /* TcpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583A1899934200C708FF /* TcpSocketDelegate.cpp */; };
+		A10A58651899935A00C708FF /* UdpReceiverThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583B1899934200C708FF /* UdpReceiverThread.cpp */; };
+		A10A58661899935A00C708FF /* UdpReceiverThread.h in Headers */ = {isa = PBXBuildFile; fileRef = A10A583C1899934200C708FF /* UdpReceiverThread.h */; };
+		A10A58671899935A00C708FF /* UdpSocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10A583D1899934200C708FF /* UdpSocketDelegate.cpp */; };
 		A1773F8E18951E0C002810BD /* HttpResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = A1773F8B18951E0C002810BD /* HttpResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1773F8F18951E0C002810BD /* SocketBase.h in Headers */ = {isa = PBXBuildFile; fileRef = A1773F8C18951E0C002810BD /* SocketBase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1773F9018951E0C002810BD /* Url.h in Headers */ = {isa = PBXBuildFile; fileRef = A1773F8D18951E0C002810BD /* Url.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -38,8 +87,6 @@
 		A1FB29A8189526B100F3E2F4 /* SenderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D07271885656100B2A00C /* SenderThread.h */; };
 		A1FB29A9189526B100F3E2F4 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07281885656100B2A00C /* Server.cpp */; };
 		A1FB29AA189526B100F3E2F4 /* ServerDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07291885656100B2A00C /* ServerDelegate.cpp */; };
-		A1FB29AB189526B100F3E2F4 /* ServerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072A1885656100B2A00C /* ServerThread.cpp */; };
-		A1FB29AC189526B100F3E2F4 /* ServerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D072B1885656100B2A00C /* ServerThread.h */; };
 		A1FB29AD189526B100F3E2F4 /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072C1885656100B2A00C /* Socket.cpp */; };
 		A1FB29AE189526B100F3E2F4 /* SocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072D1885656100B2A00C /* SocketDelegate.cpp */; };
 		A1FB29AF189526B100F3E2F4 /* TcpServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072E1885656100B2A00C /* TcpServer.cpp */; };
@@ -77,8 +124,6 @@
 		A1FB29D4189526B300F3E2F4 /* SenderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D07271885656100B2A00C /* SenderThread.h */; };
 		A1FB29D5189526B300F3E2F4 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07281885656100B2A00C /* Server.cpp */; };
 		A1FB29D6189526B300F3E2F4 /* ServerDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07291885656100B2A00C /* ServerDelegate.cpp */; };
-		A1FB29D7189526B300F3E2F4 /* ServerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072A1885656100B2A00C /* ServerThread.cpp */; };
-		A1FB29D8189526B300F3E2F4 /* ServerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D072B1885656100B2A00C /* ServerThread.h */; };
 		A1FB29D9189526B300F3E2F4 /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072C1885656100B2A00C /* Socket.cpp */; };
 		A1FB29DA189526B300F3E2F4 /* SocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072D1885656100B2A00C /* SocketDelegate.cpp */; };
 		A1FB29DB189526B300F3E2F4 /* TcpServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072E1885656100B2A00C /* TcpServer.cpp */; };
@@ -128,8 +173,6 @@
 		D12D07681885656100B2A00C /* SenderThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D07271885656100B2A00C /* SenderThread.h */; };
 		D12D076B1885656100B2A00C /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07281885656100B2A00C /* Server.cpp */; };
 		D12D076E1885656100B2A00C /* ServerDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07291885656100B2A00C /* ServerDelegate.cpp */; };
-		D12D07711885656100B2A00C /* ServerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072A1885656100B2A00C /* ServerThread.cpp */; };
-		D12D07741885656100B2A00C /* ServerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D072B1885656100B2A00C /* ServerThread.h */; };
 		D12D07771885656100B2A00C /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072C1885656100B2A00C /* Socket.cpp */; };
 		D12D077A1885656100B2A00C /* SocketDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072D1885656100B2A00C /* SocketDelegate.cpp */; };
 		D12D077D1885656100B2A00C /* TcpServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D072E1885656100B2A00C /* TcpServer.cpp */; };
@@ -149,6 +192,27 @@
 /* Begin PBXFileReference section */
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* sakit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = sakit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10A5822189992FF00C708FF /* Binder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Binder.h; path = include/sakit/Binder.h; sourceTree = "<group>"; };
+		A10A5823189992FF00C708FF /* BinderDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BinderDelegate.h; path = include/sakit/BinderDelegate.h; sourceTree = "<group>"; };
+		A10A5824189992FF00C708FF /* Connector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Connector.h; path = include/sakit/Connector.h; sourceTree = "<group>"; };
+		A10A5825189992FF00C708FF /* ConnectorDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConnectorDelegate.h; path = include/sakit/ConnectorDelegate.h; sourceTree = "<group>"; };
+		A10A5826189992FF00C708FF /* State.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = State.h; path = include/sakit/State.h; sourceTree = "<group>"; };
+		A10A5827189992FF00C708FF /* TcpSocketDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TcpSocketDelegate.h; path = include/sakit/TcpSocketDelegate.h; sourceTree = "<group>"; };
+		A10A5828189992FF00C708FF /* UdpSocketDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UdpSocketDelegate.h; path = include/sakit/UdpSocketDelegate.h; sourceTree = "<group>"; };
+		A10A58301899934200C708FF /* Binder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Binder.cpp; path = src/Binder.cpp; sourceTree = "<group>"; };
+		A10A58311899934200C708FF /* BinderDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BinderDelegate.cpp; path = src/BinderDelegate.cpp; sourceTree = "<group>"; };
+		A10A58321899934200C708FF /* BinderThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BinderThread.cpp; path = src/BinderThread.cpp; sourceTree = "<group>"; };
+		A10A58331899934200C708FF /* BinderThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BinderThread.h; path = src/BinderThread.h; sourceTree = "<group>"; };
+		A10A58341899934200C708FF /* Connector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Connector.cpp; path = src/Connector.cpp; sourceTree = "<group>"; };
+		A10A58351899934200C708FF /* ConnectorDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectorDelegate.cpp; path = src/ConnectorDelegate.cpp; sourceTree = "<group>"; };
+		A10A58361899934200C708FF /* sakitUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sakitUtil.cpp; path = src/sakitUtil.cpp; sourceTree = "<group>"; };
+		A10A58371899934200C708FF /* sakitUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sakitUtil.h; path = src/sakitUtil.h; sourceTree = "<group>"; };
+		A10A58381899934200C708FF /* TcpReceiverThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TcpReceiverThread.cpp; path = src/TcpReceiverThread.cpp; sourceTree = "<group>"; };
+		A10A58391899934200C708FF /* TcpReceiverThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TcpReceiverThread.h; path = src/TcpReceiverThread.h; sourceTree = "<group>"; };
+		A10A583A1899934200C708FF /* TcpSocketDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TcpSocketDelegate.cpp; path = src/TcpSocketDelegate.cpp; sourceTree = "<group>"; };
+		A10A583B1899934200C708FF /* UdpReceiverThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UdpReceiverThread.cpp; path = src/UdpReceiverThread.cpp; sourceTree = "<group>"; };
+		A10A583C1899934200C708FF /* UdpReceiverThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UdpReceiverThread.h; path = src/UdpReceiverThread.h; sourceTree = "<group>"; };
+		A10A583D1899934200C708FF /* UdpSocketDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UdpSocketDelegate.cpp; path = src/UdpSocketDelegate.cpp; sourceTree = "<group>"; };
 		A1773F8B18951E0C002810BD /* HttpResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpResponse.h; path = include/sakit/HttpResponse.h; sourceTree = "<group>"; };
 		A1773F8C18951E0C002810BD /* SocketBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SocketBase.h; path = include/sakit/SocketBase.h; sourceTree = "<group>"; };
 		A1773F8D18951E0C002810BD /* Url.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Url.h; path = include/sakit/Url.h; sourceTree = "<group>"; };
@@ -192,8 +256,6 @@
 		D12D07271885656100B2A00C /* SenderThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SenderThread.h; path = src/SenderThread.h; sourceTree = "<group>"; };
 		D12D07281885656100B2A00C /* Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Server.cpp; path = src/Server.cpp; sourceTree = "<group>"; };
 		D12D07291885656100B2A00C /* ServerDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServerDelegate.cpp; path = src/ServerDelegate.cpp; sourceTree = "<group>"; };
-		D12D072A1885656100B2A00C /* ServerThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServerThread.cpp; path = src/ServerThread.cpp; sourceTree = "<group>"; };
-		D12D072B1885656100B2A00C /* ServerThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ServerThread.h; path = src/ServerThread.h; sourceTree = "<group>"; };
 		D12D072C1885656100B2A00C /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Socket.cpp; path = src/Socket.cpp; sourceTree = "<group>"; };
 		D12D072D1885656100B2A00C /* SocketDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SocketDelegate.cpp; path = src/SocketDelegate.cpp; sourceTree = "<group>"; };
 		D12D072E1885656100B2A00C /* TcpServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TcpServer.cpp; path = src/TcpServer.cpp; sourceTree = "<group>"; };
@@ -261,6 +323,20 @@
 		7F42F6E711EB0E0200B1C1DF /* src */ = {
 			isa = PBXGroup;
 			children = (
+				A10A58301899934200C708FF /* Binder.cpp */,
+				A10A58311899934200C708FF /* BinderDelegate.cpp */,
+				A10A58321899934200C708FF /* BinderThread.cpp */,
+				A10A58331899934200C708FF /* BinderThread.h */,
+				A10A58341899934200C708FF /* Connector.cpp */,
+				A10A58351899934200C708FF /* ConnectorDelegate.cpp */,
+				A10A58361899934200C708FF /* sakitUtil.cpp */,
+				A10A58371899934200C708FF /* sakitUtil.h */,
+				A10A58381899934200C708FF /* TcpReceiverThread.cpp */,
+				A10A58391899934200C708FF /* TcpReceiverThread.h */,
+				A10A583A1899934200C708FF /* TcpSocketDelegate.cpp */,
+				A10A583B1899934200C708FF /* UdpReceiverThread.cpp */,
+				A10A583C1899934200C708FF /* UdpReceiverThread.h */,
+				A10A583D1899934200C708FF /* UdpSocketDelegate.cpp */,
 				A1773F9118951E24002810BD /* HttpResponse.cpp */,
 				A1773F9218951E24002810BD /* HttpSocketThread.cpp */,
 				A1773F9318951E24002810BD /* HttpSocketThread.h */,
@@ -284,8 +360,6 @@
 				D12D07271885656100B2A00C /* SenderThread.h */,
 				D12D07281885656100B2A00C /* Server.cpp */,
 				D12D07291885656100B2A00C /* ServerDelegate.cpp */,
-				D12D072A1885656100B2A00C /* ServerThread.cpp */,
-				D12D072B1885656100B2A00C /* ServerThread.h */,
 				D12D072C1885656100B2A00C /* Socket.cpp */,
 				D12D072D1885656100B2A00C /* SocketDelegate.cpp */,
 				D12D072E1885656100B2A00C /* TcpServer.cpp */,
@@ -307,6 +381,13 @@
 		7F42F6E811EB0E0600B1C1DF /* include */ = {
 			isa = PBXGroup;
 			children = (
+				A10A5822189992FF00C708FF /* Binder.h */,
+				A10A5823189992FF00C708FF /* BinderDelegate.h */,
+				A10A5824189992FF00C708FF /* Connector.h */,
+				A10A5825189992FF00C708FF /* ConnectorDelegate.h */,
+				A10A5826189992FF00C708FF /* State.h */,
+				A10A5827189992FF00C708FF /* TcpSocketDelegate.h */,
+				A10A5828189992FF00C708FF /* UdpSocketDelegate.h */,
 				A1773F8B18951E0C002810BD /* HttpResponse.h */,
 				A1773F8C18951E0C002810BD /* SocketBase.h */,
 				A1773F8D18951E0C002810BD /* Url.h */,
@@ -339,31 +420,41 @@
 			buildActionMask = 2147483647;
 			files = (
 				D12D07121885654B00B2A00C /* TcpServerDelegate.h in Headers */,
+				A10A582A189992FF00C708FF /* BinderDelegate.h in Headers */,
+				A10A582D189992FF00C708FF /* State.h in Headers */,
+				A10A58631899935A00C708FF /* TcpReceiverThread.h in Headers */,
 				D12D07131885654B00B2A00C /* TcpSocket.h in Headers */,
 				D12D070E1885654B00B2A00C /* ServerDelegate.h in Headers */,
 				D12D07A11885656100B2A00C /* WorkerThread.h in Headers */,
 				D12D07951885656100B2A00C /* UdpServerThread.h in Headers */,
 				D12D07591885656100B2A00C /* PlatformSocket.h in Headers */,
+				A10A585D1899935A00C708FF /* BinderThread.h in Headers */,
 				D12D07861885656100B2A00C /* TcpServerThread.h in Headers */,
 				D12D070C1885654B00B2A00C /* sakitExport.h in Headers */,
+				A10A58661899935A00C708FF /* UdpReceiverThread.h in Headers */,
 				D12D07151885654B00B2A00C /* UdpServerDelegate.h in Headers */,
 				D12D070A1885654B00B2A00C /* NetworkAdapter.h in Headers */,
 				A1773F9018951E0C002810BD /* Url.h in Headers */,
+				A10A582B189992FF00C708FF /* Connector.h in Headers */,
 				D12D07111885654B00B2A00C /* TcpServer.h in Headers */,
 				D12D07071885654B00B2A00C /* Host.h in Headers */,
+				A10A58611899935A00C708FF /* sakitUtil.h in Headers */,
 				A1773F8F18951E0C002810BD /* SocketBase.h in Headers */,
 				D12D07101885654B00B2A00C /* SocketDelegate.h in Headers */,
-				D12D07741885656100B2A00C /* ServerThread.h in Headers */,
 				D12D07161885654B00B2A00C /* UdpSocket.h in Headers */,
+				A10A582C189992FF00C708FF /* ConnectorDelegate.h in Headers */,
 				D12D07081885654B00B2A00C /* HttpSocket.h in Headers */,
+				A10A582F189992FF00C708FF /* UdpSocketDelegate.h in Headers */,
 				D12D070F1885654B00B2A00C /* Socket.h in Headers */,
 				D12D075F1885656100B2A00C /* ReceiverThread.h in Headers */,
 				D12D070B1885654B00B2A00C /* sakit.h in Headers */,
 				D12D070D1885654B00B2A00C /* Server.h in Headers */,
 				D12D07141885654B00B2A00C /* UdpServer.h in Headers */,
 				D12D07411885656100B2A00C /* ConnectorThread.h in Headers */,
+				A10A5829189992FF00C708FF /* Binder.h in Headers */,
 				D12D07091885654B00B2A00C /* HttpSocketDelegate.h in Headers */,
 				A1773F8E18951E0C002810BD /* HttpResponse.h in Headers */,
+				A10A582E189992FF00C708FF /* TcpSocketDelegate.h in Headers */,
 				D12D07061885654B00B2A00C /* Base.h in Headers */,
 				A1773F9818951E24002810BD /* HttpSocketThread.h in Headers */,
 				D12D07681885656100B2A00C /* SenderThread.h in Headers */,
@@ -374,15 +465,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10A58511899934200C708FF /* TcpReceiverThread.h in Headers */,
 				A1FB29D4189526B300F3E2F4 /* SenderThread.h in Headers */,
-				A1FB29D8189526B300F3E2F4 /* ServerThread.h in Headers */,
 				A1FB29E6189526B300F3E2F4 /* WorkerThread.h in Headers */,
+				A10A58571899934200C708FF /* UdpReceiverThread.h in Headers */,
 				A1FB29C7189526B300F3E2F4 /* ConnectorThread.h in Headers */,
+				A10A584D1899934200C708FF /* sakitUtil.h in Headers */,
 				A1FB29CF189526B300F3E2F4 /* PlatformSocket.h in Headers */,
 				A1FB29C2189526B300F3E2F4 /* HttpSocketThread.h in Headers */,
 				A1FB29D1189526B300F3E2F4 /* ReceiverThread.h in Headers */,
 				A1FB29DE189526B300F3E2F4 /* TcpServerThread.h in Headers */,
 				A1FB29E3189526B300F3E2F4 /* UdpServerThread.h in Headers */,
+				A10A58451899934200C708FF /* BinderThread.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,15 +484,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10A58501899934200C708FF /* TcpReceiverThread.h in Headers */,
 				A1FB29A8189526B100F3E2F4 /* SenderThread.h in Headers */,
-				A1FB29AC189526B100F3E2F4 /* ServerThread.h in Headers */,
 				A1FB29BA189526B100F3E2F4 /* WorkerThread.h in Headers */,
+				A10A58561899934200C708FF /* UdpReceiverThread.h in Headers */,
 				A1FB299B189526B100F3E2F4 /* ConnectorThread.h in Headers */,
+				A10A584C1899934200C708FF /* sakitUtil.h in Headers */,
 				A1FB29A3189526B100F3E2F4 /* PlatformSocket.h in Headers */,
 				A1FB2996189526B100F3E2F4 /* HttpSocketThread.h in Headers */,
 				A1FB29A5189526B100F3E2F4 /* ReceiverThread.h in Headers */,
 				A1FB29B2189526B100F3E2F4 /* TcpServerThread.h in Headers */,
 				A1FB29B7189526B100F3E2F4 /* UdpServerThread.h in Headers */,
+				A10A58441899934200C708FF /* BinderThread.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -504,27 +601,35 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1773F9618951E24002810BD /* HttpResponse.cpp in Sources */,
+				A10A585A1899935A00C708FF /* Binder.cpp in Sources */,
 				D12D075C1885656100B2A00C /* ReceiverThread.cpp in Sources */,
 				D12D077A1885656100B2A00C /* SocketDelegate.cpp in Sources */,
 				A1773F9918951E24002810BD /* SocketBase.cpp in Sources */,
 				D12D07621885656100B2A00C /* sakit.cpp in Sources */,
 				D12D07981885656100B2A00C /* UdpSocket.cpp in Sources */,
 				D12D07471885656100B2A00C /* HttpSocket.cpp in Sources */,
+				A10A585E1899935A00C708FF /* Connector.cpp in Sources */,
+				A10A585B1899935A00C708FF /* BinderDelegate.cpp in Sources */,
 				D12D07921885656100B2A00C /* UdpServerThread.cpp in Sources */,
-				D12D07711885656100B2A00C /* ServerThread.cpp in Sources */,
 				D12D07771885656100B2A00C /* Socket.cpp in Sources */,
 				D12D07831885656100B2A00C /* TcpServerThread.cpp in Sources */,
 				D12D074A1885656100B2A00C /* HttpSocketDelegate.cpp in Sources */,
+				A10A585C1899935A00C708FF /* BinderThread.cpp in Sources */,
 				D12D07531885656100B2A00C /* PlatformSocket_WinRT.cpp in Sources */,
+				A10A58671899935A00C708FF /* UdpSocketDelegate.cpp in Sources */,
 				D12D07891885656100B2A00C /* TcpSocket.cpp in Sources */,
+				A10A58601899935A00C708FF /* sakitUtil.cpp in Sources */,
 				D12D07441885656100B2A00C /* Host.cpp in Sources */,
 				A1773F9A18951E24002810BD /* Url.cpp in Sources */,
 				A1773F9718951E24002810BD /* HttpSocketThread.cpp in Sources */,
 				D12D073B1885656100B2A00C /* Base.cpp in Sources */,
 				D12D076E1885656100B2A00C /* ServerDelegate.cpp in Sources */,
 				D12D07801885656100B2A00C /* TcpServerDelegate.cpp in Sources */,
+				A10A58651899935A00C708FF /* UdpReceiverThread.cpp in Sources */,
 				D12D078C1885656100B2A00C /* UdpServer.cpp in Sources */,
+				A10A58641899935A00C708FF /* TcpSocketDelegate.cpp in Sources */,
 				D12D074D1885656100B2A00C /* NetworkAdapter.cpp in Sources */,
+				A10A58621899935A00C708FF /* TcpReceiverThread.cpp in Sources */,
 				D12D078F1885656100B2A00C /* UdpServerDelegate.cpp in Sources */,
 				D12D076B1885656100B2A00C /* Server.cpp in Sources */,
 				D12D073E1885656100B2A00C /* ConnectorThread.cpp in Sources */,
@@ -532,6 +637,7 @@
 				D12D07561885656100B2A00C /* PlatformSocket.cpp in Sources */,
 				D12D07651885656100B2A00C /* SenderThread.cpp in Sources */,
 				D12D07501885656100B2A00C /* PlatformSocket_Sock.cpp in Sources */,
+				A10A585F1899935A00C708FF /* ConnectorDelegate.cpp in Sources */,
 				D12D079E1885656100B2A00C /* WorkerThread.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -541,34 +647,43 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1FB29C9189526B300F3E2F4 /* HttpSocket.cpp in Sources */,
+				A10A583F1899934200C708FF /* Binder.cpp in Sources */,
 				A1FB29C8189526B300F3E2F4 /* Host.cpp in Sources */,
 				A1FB29C3189526B300F3E2F4 /* SocketBase.cpp in Sources */,
 				A1FB29C1189526B300F3E2F4 /* HttpSocketThread.cpp in Sources */,
 				A1FB29D9189526B300F3E2F4 /* Socket.cpp in Sources */,
 				A1FB29D5189526B300F3E2F4 /* Server.cpp in Sources */,
 				A1FB29C0189526B300F3E2F4 /* HttpResponse.cpp in Sources */,
+				A10A58471899934200C708FF /* Connector.cpp in Sources */,
+				A10A58411899934200C708FF /* BinderDelegate.cpp in Sources */,
 				A1FB29C6189526B300F3E2F4 /* ConnectorThread.cpp in Sources */,
 				A1FB29E4189526B300F3E2F4 /* UdpSocket.cpp in Sources */,
 				A1FB29DB189526B300F3E2F4 /* TcpServer.cpp in Sources */,
 				A1FB29DA189526B300F3E2F4 /* SocketDelegate.cpp in Sources */,
+				A10A58431899934200C708FF /* BinderThread.cpp in Sources */,
 				A1FB29CD189526B300F3E2F4 /* PlatformSocket_WinRT.cpp in Sources */,
+				A10A58591899934200C708FF /* UdpSocketDelegate.cpp in Sources */,
 				A1FB29C4189526B300F3E2F4 /* Url.cpp in Sources */,
+				A10A584B1899934200C708FF /* sakitUtil.cpp in Sources */,
 				A1FB29E0189526B300F3E2F4 /* UdpServer.cpp in Sources */,
 				A1FB29CE189526B300F3E2F4 /* PlatformSocket.cpp in Sources */,
 				A1FB29CA189526B300F3E2F4 /* HttpSocketDelegate.cpp in Sources */,
 				A1FB29D6189526B300F3E2F4 /* ServerDelegate.cpp in Sources */,
 				A1FB29D3189526B300F3E2F4 /* SenderThread.cpp in Sources */,
 				A1FB29CB189526B300F3E2F4 /* NetworkAdapter.cpp in Sources */,
+				A10A58551899934200C708FF /* UdpReceiverThread.cpp in Sources */,
 				A1FB29E1189526B300F3E2F4 /* UdpServerDelegate.cpp in Sources */,
+				A10A58531899934200C708FF /* TcpSocketDelegate.cpp in Sources */,
 				A1FB29D2189526B300F3E2F4 /* sakit.cpp in Sources */,
+				A10A584F1899934200C708FF /* TcpReceiverThread.cpp in Sources */,
 				A1FB29E2189526B300F3E2F4 /* UdpServerThread.cpp in Sources */,
 				A1FB29DD189526B300F3E2F4 /* TcpServerThread.cpp in Sources */,
 				A1FB29E5189526B300F3E2F4 /* WorkerThread.cpp in Sources */,
 				A1FB29C5189526B300F3E2F4 /* Base.cpp in Sources */,
 				A1FB29D0189526B300F3E2F4 /* ReceiverThread.cpp in Sources */,
 				A1FB29DF189526B300F3E2F4 /* TcpSocket.cpp in Sources */,
-				A1FB29D7189526B300F3E2F4 /* ServerThread.cpp in Sources */,
 				A1FB29CC189526B300F3E2F4 /* PlatformSocket_Sock.cpp in Sources */,
+				A10A58491899934200C708FF /* ConnectorDelegate.cpp in Sources */,
 				A1FB29DC189526B300F3E2F4 /* TcpServerDelegate.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -578,34 +693,43 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1FB299D189526B100F3E2F4 /* HttpSocket.cpp in Sources */,
+				A10A583E1899934200C708FF /* Binder.cpp in Sources */,
 				A1FB299C189526B100F3E2F4 /* Host.cpp in Sources */,
 				A1FB2997189526B100F3E2F4 /* SocketBase.cpp in Sources */,
 				A1FB2995189526B100F3E2F4 /* HttpSocketThread.cpp in Sources */,
 				A1FB29AD189526B100F3E2F4 /* Socket.cpp in Sources */,
 				A1FB29A9189526B100F3E2F4 /* Server.cpp in Sources */,
 				A1FB2994189526B100F3E2F4 /* HttpResponse.cpp in Sources */,
+				A10A58461899934200C708FF /* Connector.cpp in Sources */,
+				A10A58401899934200C708FF /* BinderDelegate.cpp in Sources */,
 				A1FB299A189526B100F3E2F4 /* ConnectorThread.cpp in Sources */,
 				A1FB29B8189526B100F3E2F4 /* UdpSocket.cpp in Sources */,
 				A1FB29AF189526B100F3E2F4 /* TcpServer.cpp in Sources */,
 				A1FB29AE189526B100F3E2F4 /* SocketDelegate.cpp in Sources */,
+				A10A58421899934200C708FF /* BinderThread.cpp in Sources */,
 				A1FB29A1189526B100F3E2F4 /* PlatformSocket_WinRT.cpp in Sources */,
+				A10A58581899934200C708FF /* UdpSocketDelegate.cpp in Sources */,
 				A1FB2998189526B100F3E2F4 /* Url.cpp in Sources */,
+				A10A584A1899934200C708FF /* sakitUtil.cpp in Sources */,
 				A1FB29B4189526B100F3E2F4 /* UdpServer.cpp in Sources */,
 				A1FB29A2189526B100F3E2F4 /* PlatformSocket.cpp in Sources */,
 				A1FB299E189526B100F3E2F4 /* HttpSocketDelegate.cpp in Sources */,
 				A1FB29AA189526B100F3E2F4 /* ServerDelegate.cpp in Sources */,
 				A1FB29A7189526B100F3E2F4 /* SenderThread.cpp in Sources */,
 				A1FB299F189526B100F3E2F4 /* NetworkAdapter.cpp in Sources */,
+				A10A58541899934200C708FF /* UdpReceiverThread.cpp in Sources */,
 				A1FB29B5189526B100F3E2F4 /* UdpServerDelegate.cpp in Sources */,
+				A10A58521899934200C708FF /* TcpSocketDelegate.cpp in Sources */,
 				A1FB29A6189526B100F3E2F4 /* sakit.cpp in Sources */,
+				A10A584E1899934200C708FF /* TcpReceiverThread.cpp in Sources */,
 				A1FB29B6189526B100F3E2F4 /* UdpServerThread.cpp in Sources */,
 				A1FB29B1189526B100F3E2F4 /* TcpServerThread.cpp in Sources */,
 				A1FB29B9189526B100F3E2F4 /* WorkerThread.cpp in Sources */,
 				A1FB2999189526B100F3E2F4 /* Base.cpp in Sources */,
 				A1FB29A4189526B100F3E2F4 /* ReceiverThread.cpp in Sources */,
 				A1FB29B3189526B100F3E2F4 /* TcpSocket.cpp in Sources */,
-				A1FB29AB189526B100F3E2F4 /* ServerThread.cpp in Sources */,
 				A1FB29A0189526B100F3E2F4 /* PlatformSocket_Sock.cpp in Sources */,
+				A10A58481899934200C708FF /* ConnectorDelegate.cpp in Sources */,
 				A1FB29B0189526B100F3E2F4 /* TcpServerDelegate.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -79,7 +79,6 @@ namespace sakit
 		Binder::_update(timeSinceLastFrame);
 		this->mutexState.lock();
 		this->serverThread->mutex.lock();
-		State state = this->state;
 		State result = this->serverThread->result;
 		if (result == RUNNING || result == IDLE)
 		{

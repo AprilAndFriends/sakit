@@ -128,7 +128,6 @@ namespace sakit
 			this->udpReceiver->ports.clear();
 			this->udpReceiver->streams.clear();
 		}
-		State state = this->state;
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{

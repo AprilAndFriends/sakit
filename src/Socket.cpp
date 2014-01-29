@@ -71,7 +71,6 @@ namespace sakit
 			sent = this->sender->lastSent;
 			this->sender->lastSent = 0;
 		}
-		State state = this->state;
 		State result = this->sender->result;
 		if (result == RUNNING || result == IDLE)
 		{

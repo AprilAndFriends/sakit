@@ -21,6 +21,7 @@
 
 namespace sakit
 {
+	hstr _getText(State state);
 	bool _checkState(State current, harray<State> allowed, chstr action);
 
 }

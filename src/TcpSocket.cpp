@@ -56,10 +56,9 @@ namespace sakit
 		this->receiver->mutex.lock();
 		if (this->tcpReceiver->stream->size() > 0)
 		{
-			hstream* stream = this->tcpReceiver->stream;
+			stream = this->tcpReceiver->stream;
 			this->tcpReceiver->stream = new hstream();
 		}
-		State state = this->state;
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{

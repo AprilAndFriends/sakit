@@ -41,7 +41,6 @@ namespace sakit
 		Host host;
 		unsigned short port = 0;
 		hstream* stream = new hstream();
-		int count = 0;
 		while (this->running)
 		{
 			if (this->socket->receiveFrom(stream, host, port))
