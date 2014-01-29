@@ -36,11 +36,10 @@ namespace sakit
 
 	void UdpReceiverThread::_updateProcess()
 	{
-		// TODOsock - add maxCount
 		Host host;
 		unsigned short port = 0;
 		hstream* stream = new hstream();
-		int count = 0;
+		int count = this->maxValue;
 		while (this->running)
 		{
 			if (this->socket->receiveFrom(stream, host, port) && stream->size() > 0)
@@ -54,6 +53,11 @@ namespace sakit
 				host = Host();
 				port = 0;
 				stream = new hstream();
+			}
+			count--;
+			if (this->maxValue > 0 && count == 0)
+			{
+				break;
 			}
 			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
 		}

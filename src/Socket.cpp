@@ -165,6 +165,31 @@ namespace sakit
 		return true;
 	}
 
+	bool Socket::_prepareReceive(hstream* stream)
+	{
+		bool result = false;
+		if (this->_checkReceiveParameters(stream))
+		{
+			this->mutexState.lock();
+			State state = this->state;
+			result = this->_canReceive(state);
+			if (result)
+			{
+				this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
+			}
+			this->mutexState.unlock();
+		}
+		return result;
+	}
+
+	int Socket::_finishReceive(int result)
+	{
+		this->mutexState.lock();
+		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->mutexState.unlock();
+		return result;
+	}
+
 	bool Socket::_startReceiveAsync(int maxValue)
 	{
 		this->mutexState.lock();

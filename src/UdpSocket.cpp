@@ -145,24 +145,11 @@ namespace sakit
 
 	int UdpSocket::receive(hstream* stream, Host& host, unsigned short& port)
 	{
-		if (!this->_checkReceiveParameters(stream))
+		if (!this->_prepareReceive(stream))
 		{
 			return 0;
 		}
-		this->mutexState.lock();
-		State state = this->state;
-		if (!this->_canReceive(state))
-		{
-			this->mutexState.unlock();
-			return 0;
-		}
-		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
-		this->mutexState.unlock();
-		int result = this->_receiveFromDirect(stream, host, port);
-		this->mutexState.lock();
-		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		this->mutexState.unlock();
-		return result;
+		return this->_finishReceive(this->_receiveFromDirect(stream, host, port));
 	}
 
 	bool UdpSocket::startReceiveAsync(int maxPackages)

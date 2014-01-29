@@ -56,6 +56,8 @@ namespace sakit
 		Socket(SocketDelegate* socketDelegate, State idleState);
 
 		int _send(hstream* stream, int count);
+		bool _prepareReceive(hstream* stream);
+		int _finishReceive(int result);
 		bool _startReceiveAsync(int maxValue);
 
 		void _updateSending();
