@@ -19,4 +19,20 @@ namespace sakit
 	{
 	}
 
+	void SocketDelegate::onSent(Socket* socket, int byteCount)
+	{
+	}
+
+	void SocketDelegate::onSendFinished(Socket* socket)
+	{
+	}
+
+	void SocketDelegate::onSendFailed(Socket* socket)
+	{
+	}
+
+	void SocketDelegate::onReceiveFinished(Socket* socket)
+	{
+	}
+
 }

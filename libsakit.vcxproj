@@ -157,6 +157,7 @@
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\HttpSocketThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
+    <ClInclude Include="src\ReceiverThread.h" />
     <ClInclude Include="src\sakitUtil.h" />
     <ClInclude Include="src\SenderThread.h" />
     <ClInclude Include="src\TcpReceiverThread.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="src\PlatformSocket.cpp" />
     <ClCompile Include="src\PlatformSocket_Sock.cpp" />
     <ClCompile Include="src\PlatformSocket_WinRT.cpp" />
+    <ClCompile Include="src\ReceiverThread.cpp" />
     <ClCompile Include="src\sakit.cpp" />
     <ClCompile Include="src\sakitUtil.cpp" />
     <ClCompile Include="src\SenderThread.cpp" />

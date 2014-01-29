@@ -30,11 +30,11 @@ namespace sakit
 		SocketDelegate();
 		virtual ~SocketDelegate();
 
-		virtual void onSent(Socket* socket, int byteCount) = 0;
-		virtual void onSendFinished(Socket* socket) = 0;
-		virtual void onSendFailed(Socket* socket) = 0;
+		virtual void onSent(Socket* socket, int byteCount);
+		virtual void onSendFinished(Socket* socket);
+		virtual void onSendFailed(Socket* socket);
 
-		virtual void onReceiveFinished(Socket* socket) = 0;
+		virtual void onReceiveFinished(Socket* socket);
 
 	};
 

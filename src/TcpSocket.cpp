@@ -15,6 +15,7 @@
 #include "ConnectorThread.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
+#include "sakitUtil.h"
 #include "SenderThread.h"
 #include "TcpReceiverThread.h"
 #include "TcpSocket.h"
@@ -22,7 +23,8 @@
 
 namespace sakit
 {
-	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(socketDelegate), Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
+	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), CONNECTED),
+		Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
 	{
 		this->tcpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(false);
@@ -82,28 +84,9 @@ namespace sakit
 		}
 	}
 
-	int TcpSocket::_send(hstream* stream, int count)
-	{
-		if (!this->_canSend(stream, count))
-		{
-			return false;
-		}
-		//this->thread->mutex.lock();
-		this->sender->mutex.lock();
-		//State socketState = this->thread->state;
-		State senderState = this->sender->_state;
-		this->sender->mutex.unlock();
-		//this->thread->mutex.unlock();
-		if (!this->_checkSendStatus(IDLE, senderState))
-		{
-			return false;
-		}
-		return this->_sendDirect(stream, count);
-	}
-
 	int TcpSocket::receive(hstream* stream, int maxBytes)
 	{
-		if (!this->_canReceive(stream))
+		if (!this->_checkReceiveParameters(stream))
 		{
 			return false;
 		}
@@ -120,69 +103,12 @@ namespace sakit
 		return this->_receiveDirect(stream, maxBytes);
 	}
 
-	bool TcpSocket::_sendAsync(hstream* stream, int count)
-	{
-		if (!this->_canSend(stream, count))
-		{
-			return false;
-		}
-		//this->thread->mutex.lock();
-		this->sender->mutex.lock();
-		//State socketState = this->thread->state;
-		State senderState = this->sender->_state;
-		if (!this->_checkSendStatus(IDLE, senderState))
-		{
-			this->sender->mutex.unlock();
-			//this->thread->mutex.unlock();
-			return false;
-		}
-		this->sender->stream->clear();
-		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
-		this->sender->stream->rewind();
-		this->sender->_state = RUNNING;
-		this->sender->mutex.unlock();
-		//this->thread->mutex.unlock();
-		this->sender->start();
-		return true;
-	}
-
-	bool TcpSocket::startReceiveAsync(int maxBytes)
-	{
-		//this->thread->mutex.lock();
-		this->receiver->mutex.lock();
-		//State socketState = this->thread->state;
-		State receiverState = this->receiver->_state;
-		if (!this->_checkStartReceiveStatus(IDLE, receiverState))
-		{
-			this->receiver->mutex.unlock();
-			//this->thread->mutex.unlock();
-			return false;
-		}
-		this->tcpReceiver->maxBytes = maxBytes;
-		this->receiver->_state = RUNNING;
-		this->receiver->mutex.unlock();
-		//this->thread->mutex.unlock();
-		this->receiver->start();
-		return true;
-	}
-
 	void TcpSocket::_activateConnection(Host host, unsigned short port)
 	{
 		Base::_activateConnection(host, port);
 		this->mutexState.lock();
 		this->state = CONNECTED;
 		this->mutexState.unlock();
-	}
-
-	bool TcpSocket::_checkSendStatus(State socketState, State senderState)
-	{
-		/*
-		if (!this->_checkConnectedStatus(socketState, "send"))
-		{
-			return false;
-		}
-		*/
-		return Socket::_checkSendStatus(senderState);
 	}
 
 	bool TcpSocket::_checkStartReceiveStatus(State socketState, State receiverState)

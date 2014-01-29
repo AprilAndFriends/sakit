@@ -35,8 +35,8 @@ namespace sakit
 		bool receive(hstream* stream, Host& host, unsigned short& port, float timeout = 0.0f);
 
 	protected:
-		UdpServerThread* thread;
-		UdpServerDelegate* serverDelegate;
+		UdpServerThread* udpServerThread;
+		UdpServerDelegate* udpServerDelegate;
 
 	};
 

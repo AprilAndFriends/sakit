@@ -38,8 +38,8 @@ namespace sakit
 
 	protected:
 		harray<TcpSocket*> sockets;
-		TcpServerThread* thread;
-		TcpServerDelegate* serverDelegate;
+		TcpServerThread* tcpServerThread;
+		TcpServerDelegate* tcpServerDelegate;
 		TcpSocketDelegate* acceptedDelegate;
 
 		void _updateSockets();

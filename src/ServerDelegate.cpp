@@ -19,4 +19,12 @@ namespace sakit
 	{
 	}
 
+	void ServerDelegate::onStopped(Server* server)
+	{
+	}
+
+	void ServerDelegate::onStartFailed(Server* server)
+	{
+	}
+
 }

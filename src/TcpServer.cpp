@@ -21,10 +21,10 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServer::TcpServer(TcpServerDelegate* serverDelegate, TcpSocketDelegate* acceptedDelegate) : Server(serverDelegate)
+	TcpServer::TcpServer(TcpServerDelegate* tcpServerDelegate, TcpSocketDelegate* acceptedDelegate) : Server(dynamic_cast<ServerDelegate*>(tcpServerDelegate))
 	{
-		this->basicThread = this->thread = new TcpServerThread(this->socket, this->acceptedDelegate);
-		this->basicDelegate = this->serverDelegate = serverDelegate;
+		this->serverThread = this->tcpServerThread = new TcpServerThread(this->socket, this->acceptedDelegate);
+		this->tcpServerDelegate = tcpServerDelegate;
 		this->acceptedDelegate = acceptedDelegate;
 		this->socket->setConnectionLess(false);
 		this->__register();
@@ -52,21 +52,21 @@ namespace sakit
 			(*it)->update(timeSinceLastFrame);
 		}
 		this->_updateSockets();
-		this->thread->mutex.lock();
-		if (this->thread->sockets.size() > 0)
+		this->tcpServerThread->mutex.lock();
+		if (this->tcpServerThread->sockets.size() > 0)
 		{
-			harray<TcpSocket*> sockets = this->thread->sockets;
-			this->thread->sockets.clear();
-			this->thread->mutex.unlock();
+			harray<TcpSocket*> sockets = this->tcpServerThread->sockets;
+			this->tcpServerThread->sockets.clear();
+			this->tcpServerThread->mutex.unlock();
 			this->sockets += sockets;
 			foreach (TcpSocket*, it, sockets)
 			{
-				this->serverDelegate->onAccepted(this, (*it));
+				this->tcpServerDelegate->onAccepted(this, (*it));
 			}
 		}
 		else
 		{
-			this->thread->mutex.unlock();
+			this->tcpServerThread->mutex.unlock();
 		}
 		Server::update(timeSinceLastFrame);
 	}
@@ -74,9 +74,9 @@ namespace sakit
 	TcpSocket* TcpServer::accept(float timeout)
 	{
 		TcpSocket* tcpSocket = NULL;
-		this->thread->mutex.lock();
-		State state = this->thread->_state;
-		this->thread->mutex.unlock();
+		this->tcpServerThread->mutex.lock();
+		State state = this->tcpServerThread->_state;
+		this->tcpServerThread->mutex.unlock();
 		if (this->_canStart(state))
 		{
 			tcpSocket = new TcpSocket(this->acceptedDelegate);

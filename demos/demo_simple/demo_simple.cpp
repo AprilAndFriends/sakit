@@ -603,11 +603,11 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::init();
 #ifndef _WINRT
 	// TCP tests
-	//_testAsyncTcpServer();
-	//_testAsyncTcpClient();
+	_testAsyncTcpServer();
+	_testAsyncTcpClient();
 	// UDP tests
-	//_testAsyncUdpServer();
-	//_testAsyncUdpClient();
+	_testAsyncUdpServer();
+	_testAsyncUdpClient();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests

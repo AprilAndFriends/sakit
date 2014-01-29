@@ -21,7 +21,7 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(socketDelegate), multicastGroup(false)
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND), multicastGroup(false)
 	{
 		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
@@ -134,25 +134,9 @@ namespace sakit
 		}
 	}
 
-	int UdpSocket::_send(hstream* stream, int count)
-	{
-		if (!this->_canSend(stream, count))
-		{
-			return false;
-		}
-		this->sender->mutex.lock();
-		State senderState = this->sender->_state;
-		this->sender->mutex.unlock();
-		if (!this->_checkSendStatus(senderState))
-		{
-			return false;
-		}
-		return this->_sendDirect(stream, count);
-	}
-
 	int UdpSocket::receive(hstream* stream, Host& host, unsigned short& port)
 	{
-		if (!this->_canReceive(stream))
+		if (!this->_checkReceiveParameters(stream))
 		{
 			return false;
 		}
@@ -164,43 +148,6 @@ namespace sakit
 			return 0;
 		}
 		return this->_receiveFromDirect(stream, host, port);
-	}
-
-	bool UdpSocket::_sendAsync(hstream* stream, int count)
-	{
-		if (!this->_canSend(stream, count))
-		{
-			return false;
-		}
-		this->sender->mutex.lock();
-		State senderState = this->sender->_state;
-		if (!this->_checkSendStatus(senderState))
-		{
-			this->sender->mutex.unlock();
-			return false;
-		}
-		this->sender->stream->clear();
-		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
-		this->sender->stream->rewind();
-		this->sender->_state = RUNNING;
-		this->sender->mutex.unlock();
-		this->sender->start();
-		return true;
-	}
-
-	bool UdpSocket::startReceiveAsync()
-	{
-		this->receiver->mutex.lock();
-		State receiverState = this->receiver->_state;
-		if (!this->_checkStartReceiveStatus(receiverState))
-		{
-			this->receiver->mutex.unlock();
-			return false;
-		}
-		this->receiver->_state = RUNNING;
-		this->receiver->mutex.unlock();
-		this->receiver->start();
-		return true;
 	}
 
 	void UdpSocket::_activateConnection(Host host, unsigned short port)

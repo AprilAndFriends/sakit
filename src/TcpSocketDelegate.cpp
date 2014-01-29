@@ -19,4 +19,12 @@ namespace sakit
 	{
 	}
 
+	void TcpSocketDelegate::onReceived(Socket* socket, hstream* stream)
+	{
+	}
+
+	void TcpSocketDelegate::onReceiveFailed(Socket* socket)
+	{
+	}
+
 }

@@ -32,8 +32,8 @@ namespace sakit
 		TcpSocketDelegate();
 		~TcpSocketDelegate();
 
-		virtual void onReceived(Socket* socket, hstream* stream) = 0;
-		virtual void onReceiveFailed(Socket* socket) = 0;
+		virtual void onReceived(Socket* socket, hstream* stream);
+		virtual void onReceiveFailed(Socket* socket);
 
 	};
 

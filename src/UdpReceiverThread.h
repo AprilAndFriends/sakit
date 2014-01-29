@@ -18,14 +18,14 @@
 #include <hltypes/hstream.h>
 
 #include "Host.h"
-#include "WorkerThread.h"
+#include "ReceiverThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class UdpSocket;
 
-	class UdpReceiverThread : public WorkerThread
+	class UdpReceiverThread : public ReceiverThread
 	{
 	public:
 		friend class UdpSocket;

@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : WorkerThread(socket)
+	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
 	{
 	}
 
@@ -36,6 +36,7 @@ namespace sakit
 
 	void UdpReceiverThread::_updateProcess()
 	{
+		// TODOsock - add maxCount
 		Host host;
 		unsigned short port = 0;
 		hstream* stream = new hstream();

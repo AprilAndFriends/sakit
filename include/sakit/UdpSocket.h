@@ -46,8 +46,6 @@ namespace sakit
 		/// @note Keep in mind that only one datagram is received at the time.
 		int receive(hstream* stream, Host& host, unsigned short& port);
 
-		bool startReceiveAsync();
-		
 		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
 
 		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
@@ -61,9 +59,6 @@ namespace sakit
 		bool multicastGroup;
 
 		void _updateReceiving();
-
-		int _send(hstream* stream, int count);
-		bool _sendAsync(hstream* stream, int count);
 
 		void _activateConnection(Host host, unsigned short port);
 

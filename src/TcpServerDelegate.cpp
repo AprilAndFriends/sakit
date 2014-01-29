@@ -19,4 +19,8 @@ namespace sakit
 	{
 	}
 
+	void TcpServerDelegate::onAccepted(TcpServer* server, TcpSocket* socket)
+	{
+	}
+
 }

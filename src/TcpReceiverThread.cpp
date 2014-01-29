@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : WorkerThread(socket), maxBytes(0)
+	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
 	{
 		this->stream = new hstream();
 	}
@@ -29,7 +29,7 @@ namespace sakit
 
 	void TcpReceiverThread::_updateProcess()
 	{
-		int remaining = this->maxBytes;
+		int remaining = this->maxCount;
 		while (this->running)
 		{
 			if (!this->socket->receive(this->stream, this->mutex, remaining))
@@ -39,7 +39,7 @@ namespace sakit
 				this->mutex.unlock();
 				return;
 			}
-			if (this->maxBytes > 0 && remaining == 0)
+			if (this->maxCount > 0 && remaining == 0)
 			{
 				break;
 			}

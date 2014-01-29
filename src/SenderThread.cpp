@@ -32,9 +32,11 @@ namespace sakit
 	void SenderThread::_updateProcess()
 	{
 		int count = this->stream->size();
+		int sent = 0;
 		while (this->running)
 		{
-			if (!this->socket->send(this->stream, count, this->lastSent))
+			sent = 0;
+			if (!this->socket->send(this->stream, count, sent))
 			{
 				this->mutex.lock();
 				this->result = FAILED;
@@ -42,6 +44,9 @@ namespace sakit
 				this->mutex.unlock();
 				return;
 			}
+			this->mutex.lock();
+			this->lastSent += sent;
+			this->mutex.unlock();
 			if (this->stream->eof())
 			{
 				break;

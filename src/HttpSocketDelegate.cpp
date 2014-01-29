@@ -19,4 +19,12 @@ namespace sakit
 	{
 	}
 
+	void HttpSocketDelegate::onExecuteCompleted(HttpSocket* socket, HttpResponse* response, Url url)
+	{
+	}
+
+	void HttpSocketDelegate::onExecuteFailed(HttpSocket* socket, HttpResponse* response, Url url)
+	{
+	}
+
 }

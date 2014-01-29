@@ -9,12 +9,13 @@
 /// 
 /// @section DESCRIPTION
 /// 
-/// Defines a thread for sending data.
+/// Defines a generic thread for receiving data.
 
-#ifndef SAKIT_SENDER_THREAD_H
-#define SAKIT_SENDER_THREAD_H
+#ifndef SAKIT_RECEIVER_THREAD_H
+#define SAKIT_RECEIVER_THREAD_H
 
 #include <hltypes/hltypesUtil.h>
+#include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
@@ -25,19 +26,16 @@ namespace sakit
 	class PlatformSocket;
 	class Socket;
 
-	class SenderThread : public WorkerThread
+	class ReceiverThread : public WorkerThread
 	{
 	public:
 		friend class Socket;
 
-		SenderThread(PlatformSocket* socket);
-		~SenderThread();
+		ReceiverThread(PlatformSocket* socket);
+		~ReceiverThread();
 
 	protected:
-		hstream* stream;
-		int lastSent;
-
-		void _updateProcess();
+		int maxCount;
 
 	};
 

@@ -24,16 +24,16 @@ namespace sakit
 {
 	Server::Server(ServerDelegate* serverDelegate) : Base(), Binder(this->socket, dynamic_cast<BinderDelegate*>(serverDelegate))
 	{
-		this->basicDelegate = serverDelegate;
-		this->basicThread = NULL;
+		this->serverDelegate = serverDelegate;
+		this->serverThread = NULL;
 		Binder::_integrate(&this->state, &this->mutexState, &this->host, &this->port);
 	}
 
 	Server::~Server()
 	{
-		this->basicThread->running = false;
-		this->basicThread->join();
-		delete this->basicThread;
+		this->serverThread->running = false;
+		this->serverThread->join();
+		delete this->serverThread;
 	}
 
 	bool Server::isRunning()
@@ -54,9 +54,9 @@ namespace sakit
 			return false;
 		}
 		this->state = RUNNING;
-		this->basicThread->result = RUNNING;
+		this->serverThread->result = RUNNING;
 		this->mutexState.unlock();
-		this->basicThread->start();
+		this->serverThread->start();
 		return true;
 	}
 
@@ -69,38 +69,33 @@ namespace sakit
 			this->mutexState.unlock();
 			return false;
 		}
-		this->basicThread->running = false;
+		this->serverThread->running = false;
 		this->mutexState.unlock();
 		return true;
 	}
 
 	void Server::update(float timeSinceLastFrame)
 	{
-		// TODOsock
 		Binder::_update(timeSinceLastFrame);
 		this->mutexState.lock();
-		this->basicThread->mutex.lock();
+		this->serverThread->mutex.lock();
 		State state = this->state;
-		State result = this->basicThread->result;
+		State result = this->serverThread->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->basicThread->mutex.unlock();
+			this->serverThread->mutex.unlock();
 			this->mutexState.unlock();
 			return;
 		}
-		this->basicThread->result = IDLE;
+		this->serverThread->result = IDLE;
 		this->state = BOUND;
-		this->basicThread->mutex.unlock();
+		this->serverThread->mutex.unlock();
 		this->mutexState.unlock();
 		// delegate calls
 		switch (result)
 		{
-		case FINISHED:
-			this->basicDelegate->onStopped(this);
-			break;
-		case FAILED:
-			this->basicDelegate->onStartFailed(this);
-			break;
+		case FINISHED:	this->serverDelegate->onStopped(this);		break;
+		case FAILED:	this->serverDelegate->onStartFailed(this);	break;
 		}
 	}
 

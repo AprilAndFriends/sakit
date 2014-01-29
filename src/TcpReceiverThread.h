@@ -19,14 +19,14 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "WorkerThread.h"
+#include "ReceiverThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class TcpSocket;
 
-	class TcpReceiverThread : public WorkerThread
+	class TcpReceiverThread : public ReceiverThread
 	{
 	public:
 		friend class TcpSocket;
@@ -36,7 +36,6 @@ namespace sakit
 
 	protected:
 		hstream* stream;
-		int maxBytes;
 
 		void _updateProcess();
 

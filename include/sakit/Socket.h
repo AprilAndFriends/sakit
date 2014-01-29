@@ -26,9 +26,9 @@
 
 namespace sakit
 {
+	class ReceiverThread;
 	class SenderThread;
 	class SocketDelegate;
-	class WorkerThread;
 
 	class sakitExport Socket : public SocketBase
 	{
@@ -38,30 +38,36 @@ namespace sakit
 		bool isSending();
 		bool isReceiving();
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeSinceLastFrame);
 
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);
+
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
+		bool startReceiveAsync(int maxBytes = 0);
 		bool stopReceiveAsync();
 
 	protected:
 		SocketDelegate* socketDelegate;
 		SenderThread* sender;
-		WorkerThread* receiver;
+		ReceiverThread* receiver;
+		State idleState;
 
-		Socket(SocketDelegate* socketDelegate);
+		Socket(SocketDelegate* socketDelegate, State idleState);
 
-		virtual bool _sendAsync(hstream* stream, int count) = 0;
-		virtual bool _sendAsync(chstr data);
+		int _send(hstream* stream, int count);
 
 		void _updateSending();
 		virtual void _updateReceiving() = 0;
 
-		bool _checkSendStatus(State senderState);
 		bool _checkStartReceiveStatus(State receiverState);
-		bool _checkStopReceiveStatus(State receiverState);
+
+		bool _canSend(State state);
+		bool _canReceive(State state);
+		bool _canStopReceive(State state);
+		bool _checkSendParameters(hstream* stream, int count);
+		bool _checkReceiveParameters(hstream* stream);
 
 	};
 

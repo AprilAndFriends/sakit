@@ -126,36 +126,6 @@ namespace sakit
 		return stream->size();
 	}
 
-	bool Base::_canSend(hstream* stream, int count)
-	{
-		if (stream == NULL)
-		{
-			hlog::warn(sakit::logTag, "Cannot send, stream is NULL!");
-			return false;
-		}
-		if (stream->size() == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot send, no data to send!");
-			return false;
-		}
-		if (count == 0)
-		{
-			hlog::warn(sakit::logTag, "Cannot send, count is 0!");
-			return false;
-		}
-		return true;
-	}
-
-	bool Base::_canReceive(hstream* stream)
-	{
-		if (stream == NULL)
-		{
-			hlog::warn(sakit::logTag, "Cannot receive, stream is NULL!");
-			return false;
-		}
-		return true;
-	}
-
 	void Base::_activateConnection(Host host, unsigned short port)
 	{
 		this->host = host;

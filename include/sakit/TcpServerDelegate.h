@@ -28,7 +28,7 @@ namespace sakit
 		TcpServerDelegate();
 		~TcpServerDelegate();
 
-		virtual void onAccepted(TcpServer* server, TcpSocket* socket) = 0;
+		virtual void onAccepted(TcpServer* server, TcpSocket* socket);
 
 	};
 

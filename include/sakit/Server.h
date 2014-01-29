@@ -40,13 +40,15 @@ namespace sakit
 		bool stopAsync();
 
 	protected:
-		ServerDelegate* basicDelegate;
-		WorkerThread* basicThread;
+		WorkerThread* serverThread;
 
 		Server(ServerDelegate* serverDelegate);
 
 		bool _canStart(State state);
 		bool _canStop(State state);
+
+	private:
+		ServerDelegate* serverDelegate;
 
 	};
 
