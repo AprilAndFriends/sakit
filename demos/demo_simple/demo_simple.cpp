@@ -37,6 +37,9 @@
 #define UDP_PORT_ASYNC_SERVER_ANSWER 51222
 #define UDP_PORT_SYNC_CLIENT 51311
 #define UDP_PORT_ASYNC_CLIENT 51312
+#define UDP_PORT_MULTICAST_CLIENT_1 51411
+#define UDP_PORT_MULTICAST_CLIENT_2 51412
+#define UDP_MULTICAST_ADDRESS "226.2.3.4"
 
 void _printReceived(hstream* stream)
 {
@@ -574,6 +577,90 @@ void _testAsyncUdpClient()
 	delete server;
 }
 
+void _testUdpMulticast()
+{
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: UDP multicast");
+	hlog::debug(LOG_TAG, "");
+	int sent = 0;
+	int received = 0;
+	sakit::UdpSocket* s1 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
+	if (s1->bind(UDP_PORT_MULTICAST_CLIENT_1))
+	{
+		hlog::writef(LOG_TAG, "UDP-1 bound to '%s:%d'", s1->getLocalHost().toString().c_str(), s1->getLocalPort());
+		if (s1->joinMulticastGroup(s1->getLocalHost(), sakit::Host(UDP_MULTICAST_ADDRESS)))
+		{
+			hlog::writef(LOG_TAG, "UDP-1 joined multicast group '%s'", UDP_MULTICAST_ADDRESS);
+			sakit::UdpSocket* s2 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
+			if (s2->bind(UDP_PORT_MULTICAST_CLIENT_2))
+			{
+				hlog::writef(LOG_TAG, "UDP-2 bound to '%s:%d'", s2->getLocalHost().toString().c_str(), s2->getLocalPort());
+				if (s2->setDestination(sakit::Host(UDP_MULTICAST_ADDRESS), UDP_PORT_MULTICAST_CLIENT_1))
+				{
+					hlog::writef(LOG_TAG, "UDP-2 set destination to '%s:%d'", s2->getRemoteHost().toString().c_str(), s2->getRemotePort());
+					sent = s2->send("Hello.");
+					hlog::writef(LOG_TAG, "UDP-2 sent (to '%s:%d'): %d", UDP_MULTICAST_ADDRESS, UDP_PORT_MULTICAST_CLIENT_1, sent);
+					hstream stream;
+					sakit::Host remoteHost;
+					unsigned short remotePort = 0;
+					for_iter (i, 0, 10)
+					{
+						if (s1->receive(&stream, remoteHost, remotePort) > 0)
+						{
+							break;
+						}
+						sakit::update();
+						hthread::sleep(100.0f);
+					}
+					stream.rewind();
+					hlog::writef(LOG_TAG, "UDP-1 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+					if (stream.size() > 0)
+					{
+						_printReceived(&stream);
+						s1->setDestination(remoteHost, remotePort);
+						sent = s1->send("Hi.");
+						hlog::writef(LOG_TAG, "UDP-1 sent (to '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, sent);
+						stream.clear();
+						for_iter (i, 0, 10)
+						{
+							if (s2->receive(&stream, remoteHost, remotePort) > 0)
+							{
+								break;
+							}
+							sakit::update();
+							hthread::sleep(100.0f);
+						}
+						stream.rewind();
+						hlog::writef(LOG_TAG, "UDP-2 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+						if (stream.size() > 0)
+						{
+							_printReceived(&stream);
+						}
+					}
+				}
+				else
+				{
+					hlog::error(LOG_TAG, "Could not set destination!");
+				}
+			}
+			else
+			{
+				hlog::error(LOG_TAG, "Could not bind UDP socket!");
+			}
+			delete s2;
+		}
+		else
+		{
+			hlog::error(LOG_TAG, "Could not join multicast group!");
+		}
+	}
+	else
+	{
+		hlog::error(LOG_TAG, "Could not bind UDP socket!");
+	}
+	delete s1;
+}
+
 void _testHttpSocket()
 {
 	hlog::debug(LOG_TAG, "");
@@ -639,6 +726,7 @@ int main(Platform::Array<Platform::String^>^ args)
 	// UDP tests
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
+	_testUdpMulticast();
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
 	// HTTP tests
@@ -646,19 +734,6 @@ int main(Platform::Array<Platform::String^>^ args)
 	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
 	_testHttpSocket();
 	_testAsyncHttpSocket();
-
-	/*
-	sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
-	client->setDestination(sakit::Host("192.168.1.109"), 5005);
-	//client->joinMulticastGroup(sakit::Host("192.168.1.133"), 5015, sakit::Host("226.2.3.4"));
-	//client->
-	client->send("Hi.");
-	hthread::sleep(5000);
-	hstream stream;
-	client->receive(&stream);
-	hlog::debug(LOG_TAG, "R: " + stream.read());
-	delete client;
-	//*/
 	// done
 	hlog::debug(LOG_TAG, "Done.");
 	sakit::destroy();

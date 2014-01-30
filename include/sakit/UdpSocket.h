@@ -43,6 +43,7 @@ namespace sakit
 
 		void update(float timeSinceLastFrame = 0.0f);
 
+		// TODOsock - needs async variant
 		bool setDestination(Host remoteHost, unsigned short remotePort);
 
 		/// @note Keep in mind that only one datagram is received at the time.
@@ -52,6 +53,7 @@ namespace sakit
 		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
 		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
 
+		// TODOsock - make this a non-static member
 		static bool broadcast(unsigned short remotePort, hstream* stream, int count = INT_MAX);
 		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);
 		static bool broadcast(unsigned short remotePort, chstr data);
