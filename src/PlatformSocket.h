@@ -48,25 +48,27 @@ namespace sakit
 		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
 
 		bool createSocket();
-		bool resolve(Host host, unsigned short port);
-		bool connect(Host host, unsigned short port);
-		bool bind(Host host, unsigned short port);
-		bool bind(unsigned short port);
+		bool setRemoteAddress(Host remoteHost, unsigned short remotePort);
+		bool setLocalAddress(Host localHost, unsigned short localPort);
+		bool connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort);
+		/// @note Since binding can be done on "any IP" and "any port", the set values are returned.
+		bool bind(Host localHost, unsigned short& localPort);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
 		bool receive(hstream* stream, hmutex& mutex, int& maxBytes);
 		bool receive(HttpResponse* response, hmutex& mutex);
-		bool receiveFrom(hstream* stream, Host& host, unsigned short& port);
+		bool receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 		bool listen();
 		bool accept(Socket* socket);
 
-		bool joinMulticastGroup(Host host, unsigned short port, Host groupAddress);
-		bool setMulticastInterface(Host address);
+		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
+		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
+		bool setMulticastInterface(Host interfaceHost);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
 		bool setNagleAlgorithmActive(bool value);
 
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count);
 		static hstr resolveHost(chstr domain);
 		static hstr resolveIp(chstr ip);
 		static harray<NetworkAdapter> getNetworkAdapters();
@@ -82,12 +84,15 @@ namespace sakit
 
 #if !defined(_WIN32) || !defined(_WINRT)
 		unsigned int sock;
-		struct addrinfo* info;
+		struct addrinfo* socketInfo;
+		struct addrinfo* localInfo;
+		struct addrinfo* remoteInfo;
 		struct sockaddr_storage* address;
-		struct sockaddr_in* multicastGroupAddress;
 
+		bool _setAddress(Host& host, unsigned short& port, addrinfo** info);
 		bool _checkReceivedBytes(unsigned long* received);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
+		void _getLocalHostPort(Host& host, unsigned short& port);
 #else
 		// there is no other way to make this work
 		[Windows::Foundation::Metadata::WebHostHidden]

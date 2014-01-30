@@ -27,8 +27,10 @@ namespace sakit
 		this->_thread = new ConnectorThread(this->_socket);
 		this->_state = NULL;
 		this->_mutexState = NULL;
-		this->_host = NULL;
-		this->_port = NULL;
+		this->_remoteHost = NULL;
+		this->_remotePort = NULL;
+		this->_localHost = NULL;
+		this->_localPort = NULL;
 	}
 
 	Connector::~Connector()
@@ -38,12 +40,14 @@ namespace sakit
 		delete this->_thread;
 	}
 
-	void Connector::_integrate(State* stateValue, hmutex* mutexStateValue, Host* host, unsigned short* port)
+	void Connector::_integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort)
 	{
 		this->_state = stateValue;
 		this->_mutexState = mutexStateValue;
-		this->_host = host;
-		this->_port = port;
+		this->_remoteHost = remoteHost;
+		this->_remotePort = remotePort;
+		this->_localHost = localHost;
+		this->_localPort = localPort;
 	}
 
 	bool Connector::isConnecting()
@@ -76,8 +80,10 @@ namespace sakit
 		this->_thread->mutex.lock();
 		State state = *this->_state;
 		State result = this->_thread->result;
-		Host host = this->_thread->host;
-		unsigned short port = this->_thread->port;
+		Host remoteHost = this->_thread->host;
+		unsigned short remotePort = this->_thread->port;
+		Host localHost = this->_thread->localHost;
+		unsigned short localPort = this->_thread->localPort;
 		if (result == RUNNING || result == IDLE)
 		{
 			this->_thread->mutex.unlock();
@@ -93,15 +99,19 @@ namespace sakit
 			{
 			case CONNECTING:
 				*this->_state = CONNECTED;
-				*this->_host = host;
-				*this->_port = port;
+				*this->_remoteHost = remoteHost;
+				*this->_remotePort = remotePort;
+				*this->_localHost = localHost;
+				*this->_localPort = localPort;
 				break;
 			case DISCONNECTING:
 				*this->_state = IDLE;
-				host = *this->_host;
-				port = *this->_port;
-				*this->_host = Host();
-				*this->_port = 0;
+				remoteHost = *this->_remoteHost;
+				remotePort = *this->_remotePort;
+				*this->_remoteHost = Host();
+				*this->_remotePort = 0;
+				*this->_localHost = Host();
+				*this->_localPort = 0;
 				break;
 			}
 			break;
@@ -125,21 +135,21 @@ namespace sakit
 		case FINISHED:
 			switch (state)
 			{
-			case CONNECTING:	this->_connectorDelegate->onConnected(this, host, port);		break;
-			case DISCONNECTING:	this->_connectorDelegate->onDisconnected(this, host, port);		break;
+			case CONNECTING:	this->_connectorDelegate->onConnected(this, remoteHost, remotePort);		break;
+			case DISCONNECTING:	this->_connectorDelegate->onDisconnected(this, remoteHost, remotePort);		break;
 			}
 			break;
 		case FAILED:
 			switch (state)
 			{
-			case CONNECTING:	this->_connectorDelegate->onConnectFailed(this, host, port);	break;
-			case DISCONNECTING:	this->_connectorDelegate->onDisconnectFailed(this, host, port);	break;
+			case CONNECTING:	this->_connectorDelegate->onConnectFailed(this, remoteHost, remotePort);	break;
+			case DISCONNECTING:	this->_connectorDelegate->onDisconnectFailed(this, remoteHost, remotePort);	break;
 			}
 			break;
 		}
 	}
 
-	bool Connector::connect(Host host, unsigned short port)
+	bool Connector::connect(Host remoteHost, unsigned short remotePort)
 	{
 		this->_mutexState->lock();
 		State state = *this->_state;
@@ -150,12 +160,16 @@ namespace sakit
 		}
 		*this->_state = CONNECTING;
 		this->_mutexState->unlock();
-		bool result = this->_socket->connect(host, port);
+		Host localHost;
+		unsigned short localPort = 0;
+		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort);
 		this->_mutexState->lock();
 		if (result)
 		{
-			*this->_host = host;
-			*this->_port = port;
+			*this->_remoteHost = remoteHost;
+			*this->_remotePort = remotePort;
+			*this->_localHost = localHost;
+			*this->_localPort = localPort;
 			*this->_state = CONNECTED;
 		}
 		else
@@ -181,8 +195,10 @@ namespace sakit
 		this->_mutexState->lock();
 		if (result)
 		{
-			*this->_host = Host();
-			*this->_port = 0;
+			*this->_remoteHost = Host();
+			*this->_remotePort = 0;
+			*this->_localHost = Host();
+			*this->_localPort = 0;
 			*this->_state = IDLE;
 		}
 		else
@@ -193,7 +209,7 @@ namespace sakit
 		return result;
 	}
 
-	bool Connector::connectAsync(Host host, unsigned short port)
+	bool Connector::connectAsync(Host remoteHost, unsigned short remotePort)
 	{
 		this->_mutexState->lock();
 		State state = *this->_state;
@@ -205,8 +221,8 @@ namespace sakit
 		*this->_state = CONNECTING;
 		this->_thread->state = CONNECTING;
 		this->_thread->result = RUNNING;
-		this->_thread->host = host;
-		this->_thread->port = port;
+		this->_thread->host = remoteHost;
+		this->_thread->port = remotePort;
 		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;

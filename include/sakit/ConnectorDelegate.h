@@ -30,10 +30,10 @@ namespace sakit
 		ConnectorDelegate();
 		virtual ~ConnectorDelegate();
 
-		virtual void onConnected(Connector* connector, Host host, unsigned short port);
-		virtual void onDisconnected(Connector* connector, Host host, unsigned short port);
-		virtual void onConnectFailed(Connector* connector, Host host, unsigned short port);
-		virtual void onDisconnectFailed(Connector* connector, Host host, unsigned short port);
+		virtual void onConnected(Connector* connector, Host remoteHost, unsigned short remotePort);
+		virtual void onDisconnected(Connector* connector, Host remoteHost, unsigned short remotePort);
+		virtual void onConnectFailed(Connector* connector, Host remoteHost, unsigned short remotePort);
+		virtual void onDisconnectFailed(Connector* connector, Host remoteHost, unsigned short remotePort);
 
 	};
 

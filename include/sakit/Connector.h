@@ -36,17 +36,17 @@ namespace sakit
 		bool isDisconnecting();
 
 		// TODOsock - make it work with chstr port as well
-		bool connect(Host host, unsigned short port);
+		bool connect(Host remoteHost, unsigned short remotePort);
 		bool disconnect();
 
 		// TODOsock - make it work with chstr port as well
-		bool connectAsync(Host host, unsigned short port);
+		bool connectAsync(Host remoteHost, unsigned short remotePort);
 		bool disconnectAsync();
 
 	protected:
 		Connector(PlatformSocket* socket, ConnectorDelegate* connectorDelegate);
 
-		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* host, unsigned short* port);
+		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort);
 		void _update(float timeSinceLastFrame = 0.0f);
 
 		bool _canConnect(State state);
@@ -56,8 +56,10 @@ namespace sakit
 		PlatformSocket* _socket;
 		State* _state;
 		hmutex* _mutexState;
-		Host* _host;
-		unsigned short* _port;
+		Host* _remoteHost;
+		unsigned short* _remotePort;
+		Host* _localHost;
+		unsigned short* _localPort;
 		ConnectorThread* _thread;
 		ConnectorDelegate* _connectorDelegate;
 

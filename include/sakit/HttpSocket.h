@@ -55,7 +55,7 @@ namespace sakit
 
 		HL_DEFINE_ISSET(keepAlive, KeepAlive);
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
-		HL_DEFINE_SET(unsigned short, port, Port);
+		HL_DEFINE_SET(unsigned short, remotePort, RemotePort);
 		/// @note This is due to keepAlive which has to be set beforehand
 		bool isConnected();
 		bool isExecuting();

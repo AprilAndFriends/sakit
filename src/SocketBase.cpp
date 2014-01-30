@@ -15,7 +15,7 @@
 
 namespace sakit
 {
-	SocketBase::SocketBase() : Base()
+	SocketBase::SocketBase() : Base(), remotePort(0)
 	{
 	}
 
@@ -29,6 +29,14 @@ namespace sakit
 		stream.write(data);
 		stream.rewind();
 		return this->_send(&stream, stream.size());
+	}
+
+	void SocketBase::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)
+	{
+		this->remoteHost = remoteHost;
+		this->remotePort = remotePort;
+		this->localHost = localHost;
+		this->localPort = localPort;
 	}
 
 }

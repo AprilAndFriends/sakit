@@ -28,8 +28,8 @@ namespace sakit
 		{
 			delete (*it);
 		}
-		this->hosts.clear();
-		this->ports.clear();
+		this->remoteHosts.clear();
+		this->remotePorts.clear();
 		this->streams.clear();
 		this->mutex.lock();
 	}
@@ -46,8 +46,8 @@ namespace sakit
 			{
 				stream->rewind();
 				this->mutex.lock();
-				this->hosts += host;
-				this->ports += port;
+				this->remoteHosts += host;
+				this->remotePorts += port;
 				this->streams += stream;
 				this->mutex.unlock();
 				host = Host();

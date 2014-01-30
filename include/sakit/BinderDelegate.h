@@ -27,10 +27,10 @@ namespace sakit
 		BinderDelegate();
 		virtual ~BinderDelegate();
 
-		virtual void onBound(Binder* binder, Host host, unsigned short port);
-		virtual void onBindFailed(Binder* binder, Host host, unsigned short port);
-		virtual void onUnbound(Binder* binder, Host host, unsigned short port);
-		virtual void onUnbindFailed(Binder* binder, Host host, unsigned short port);
+		virtual void onBound(Binder* binder, Host localHost, unsigned short localPort);
+		virtual void onBindFailed(Binder* binder, Host localHost, unsigned short localPort);
+		virtual void onUnbound(Binder* binder, Host localHost, unsigned short localPort);
+		virtual void onUnbindFailed(Binder* binder, Host localHost, unsigned short localPort);
 
 	};
 

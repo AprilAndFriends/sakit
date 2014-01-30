@@ -18,8 +18,8 @@
 #include <hltypes/hmutex.h>
 #include <hltypes/hstream.h>
 
-#include "Server.h"
-#include "Socket.h"
+#include "Host.h"
+#include "State.h"
 #include "WorkerThread.h"
 
 namespace sakit
@@ -37,6 +37,8 @@ namespace sakit
 
 	protected:
 		State state;
+		Host localHost;
+		unsigned short localPort;
 
 		void _updateConnecting();
 		void _updateDisconnecting();

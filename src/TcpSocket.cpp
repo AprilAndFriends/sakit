@@ -29,7 +29,7 @@ namespace sakit
 		this->tcpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(false);
 		this->receiver = this->tcpReceiver = new TcpReceiverThread(this->socket);
-		Connector::_integrate(&this->state, &this->mutexState, &this->host, &this->port);
+		Connector::_integrate(&this->state, &this->mutexState, &this->remoteHost, &this->remotePort, &this->localHost, &this->localPort);
 		this->__register();
 	}
 
@@ -104,9 +104,9 @@ namespace sakit
 		return this->_startReceiveAsync(maxBytes);
 	}
 
-	void TcpSocket::_activateConnection(Host host, unsigned short port)
+	void TcpSocket::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)
 	{
-		Base::_activateConnection(host, port);
+		SocketBase::_activateConnection(remoteHost, remotePort, localHost, localPort);
 		this->mutexState.lock();
 		this->state = CONNECTED;
 		this->mutexState.unlock();

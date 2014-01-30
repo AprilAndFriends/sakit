@@ -32,7 +32,7 @@ namespace sakit
 
 		void update(float timeSinceLastFrame = 0.0f);
 
-		bool receive(hstream* stream, Host& host, unsigned short& port, float timeout = 0.0f);
+		bool receive(hstream* stream, Host& remoteHost, unsigned short& remotePort, float timeout = 0.0f);
 
 	protected:
 		UdpServerThread* udpServerThread;

@@ -106,12 +106,13 @@ namespace sakit
 	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false)
 	{
 		this->sock = -1;
-		this->info = NULL;
+		this->socketInfo = NULL;
+		this->localInfo = NULL;
+		this->remoteInfo = NULL;
 		this->address = NULL;
 		this->bufferSize = sakit::bufferSize;
 		this->receiveBuffer = new char[this->bufferSize];
 		memset(this->receiveBuffer, 0, this->bufferSize);
-		this->multicastGroupAddress = NULL;
 	}
 
 	bool PlatformSocket::_setNonBlocking(bool value)
@@ -124,22 +125,7 @@ namespace sakit
 	bool PlatformSocket::createSocket()
 	{
 		this->connected = true;
-		if (this->info != NULL)
-		{
-			this->sock = socket(this->info->ai_family, this->info->ai_socktype, this->info->ai_protocol);
-		}
-		else
-		{
-			addrinfo hints;
-#ifndef _ANDROID
-			hints.ai_family = AF_INET;
-#else
-			hints.ai_family = PF_INET;
-#endif
-			hints.ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
-			hints.ai_protocol = IPPROTO_IP;
-			this->sock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
-		}
+		this->sock = socket(this->socketInfo->ai_family, this->socketInfo->ai_socktype, this->socketInfo->ai_protocol);
 		if (!this->_checkResult(this->sock, "socket()"))
 		{
 			this->disconnect();
@@ -148,80 +134,108 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::resolve(Host host, unsigned short port)
+	bool PlatformSocket::setRemoteAddress(Host remoteHost, unsigned short remotePort)
 	{
-		int result = 0;
-		// create host info
-		addrinfo hints;
-		memset(&hints, 0, sizeof(hints));
+		return this->_setAddress(remoteHost, remotePort, &this->remoteInfo);
+	}
+
+	bool PlatformSocket::setLocalAddress(Host localHost, unsigned short localPort)
+	{
+		return this->_setAddress(localHost, localPort, &this->localInfo);
+	}
+
+	bool PlatformSocket::_setAddress(Host& host, unsigned short& port, addrinfo** info)
+	{
+		if (this->socketInfo == NULL)
+		{
+			this->socketInfo = (addrinfo*)malloc(sizeof(addrinfo));
+			memset(this->socketInfo, 0, sizeof(addrinfo));
+		}
+		if (*info != NULL)
+		{
+			freeaddrinfo(*info);
+			*info = NULL;
+		}
 #ifndef _ANDROID
-		hints.ai_family = AF_INET;
+		this->socketInfo->ai_family = AF_INET;
 #else
-		hints.ai_family = PF_INET;
+		this->socketInfo->ai_family = PF_INET;
 #endif
-		hints.ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
-		hints.ai_protocol = IPPROTO_IP;
-		result = getaddrinfo(host.toString().split("/", 1).first().c_str(), hstr(port).c_str(), &hints, &this->info);
+		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
+		this->socketInfo->ai_protocol = IPPROTO_IP;
+		int result = getaddrinfo(host.toString().c_str(), hstr(port).c_str(), this->socketInfo, info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
 			this->disconnect();
 			return false;
 		}
+		this->socketInfo->ai_family = (*info)->ai_family;
+		this->socketInfo->ai_socktype = (*info)->ai_socktype;
+		this->socketInfo->ai_protocol = (*info)->ai_protocol;
 		return true;
 	}
 
-	bool PlatformSocket::connect(Host host, unsigned short port)
+	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort)
 	{
+		if (!this->setRemoteAddress(remoteHost, remotePort))
+		{
+			return false;
+		}
 		if (!this->createSocket())
 		{
 			return false;
 		}
-		if (!this->resolve(host, port))
+		if (this->connectionLess)
 		{
-			return false;
+			return true;
 		}
 		if (!this->setNagleAlgorithmActive(false))
 		{
 			return false;
 		}
 		// open connection
-		return this->_checkResult(::connect(this->sock, this->info->ai_addr, this->info->ai_addrlen), "connect()");
-	}
-
-	bool PlatformSocket::bind(Host host, unsigned short port)
-	{
-		if (host == Host::Any)
-		{
-			return this->bind(port);
-		}
-		if (!this->createSocket())
+		if (!this->_checkResult(::connect(this->sock, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen), "connect()"))
 		{
 			return false;
 		}
-		if (!this->resolve(host, port))
+		this->_getLocalHostPort(localHost, localPort);
+		return true;
+	}
+
+	bool PlatformSocket::bind(Host localHost, unsigned short& localPort)
+	{
+		if (!this->setLocalAddress(localHost, localPort))
+		{
+			return false;
+		}
+		if (!this->createSocket())
 		{
 			return false;
 		}
 		// bind to host:port
-		return this->_checkResult(::bind(this->sock, this->info->ai_addr, this->info->ai_addrlen), "bind()");
-	}
-
-	bool PlatformSocket::bind(unsigned short port)
-	{
-		if (!this->createSocket())
+		if (!this->_checkResult(::bind(this->sock, this->localInfo->ai_addr, this->localInfo->ai_addrlen), "bind()"))
 		{
 			return false;
 		}
-		sockaddr_in local;
-#ifndef _ANDROID
-		local.sin_family = AF_INET;
-#else
-		local.sin_family = PF_INET;
-#endif
-		local.sin_port = htons(port);
-		local.sin_addr.s_addr = htonl(INADDR_ANY);
-		return this->_checkResult(::bind(this->sock, (sockaddr*)&local, sizeof(sockaddr_in)), "bind()");
+		if (localPort == 0)
+		{
+			this->_getLocalHostPort(localHost, localPort);
+		}
+		return true;
+	}
+
+	void PlatformSocket::_getLocalHostPort(Host& host, unsigned short& port)
+	{
+		sockaddr_in address;
+		socklen_t addressSize = (socklen_t)sizeof(sockaddr_in);
+		memset(&address, 0, addressSize);
+		address.sin_family = AF_INET;
+		address.sin_addr.s_addr = inet_addr(host.toString().c_str());
+		address.sin_port = htons(port);
+		getsockname(this->sock, (sockaddr*)&address, &addressSize);
+		host = Host(inet_ntoa(address.sin_addr));
+		port = ntohs(address.sin_port);
 	}
 
 	bool PlatformSocket::setNagleAlgorithmActive(bool value)
@@ -230,49 +244,26 @@ namespace sakit
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_TCP, TCP_NODELAY, (char*)&noDelay, sizeof(int)), "setsockopt()");
 	}
 
-	bool PlatformSocket::joinMulticastGroup(Host host, unsigned short port, Host groupAddress)
+	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
-		this->connected = true;
-#ifndef _ANDROID
-		int ai_family = AF_INET;
-#else
-		int ai_family = PF_INET;
-#endif
-		this->sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
-		if (!this->_checkResult(this->sock, "socket()"))
-		{
-			return false;
-		}
-		sockaddr_in local;
-		local.sin_family = ai_family;
-		local.sin_port = htons(port);
-		local.sin_addr.s_addr = htonl(INADDR_ANY);
-		if (!this->_checkResult(::bind(this->sock, (sockaddr*)&local, sizeof(sockaddr_in)), "bind()"))
-		{
-			return false;
-		}
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(host.toString().c_str());
+		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().c_str());
 		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
-		if (!this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()"))
-		{
-			return false;
-		}
-		if (this->multicastGroupAddress == NULL)
-		{
-			socklen_t size = (socklen_t)sizeof(sockaddr_in);
-			this->multicastGroupAddress = (sockaddr_in*)malloc(size);
-		}
-		this->multicastGroupAddress->sin_family = ai_family;
-		this->multicastGroupAddress->sin_addr.s_addr = inet_addr(groupAddress.toString().c_str());
-		this->multicastGroupAddress->sin_port = htons(port);
-		return this->setMulticastTtl(32);
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
-	bool PlatformSocket::setMulticastInterface(Host address)
+	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
+	{
+		ip_mreq group;
+		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().c_str());
+		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
+	}
+
+	bool PlatformSocket::setMulticastInterface(Host interfaceHost)
 	{
 		in_addr local;
-		local.s_addr = inet_addr(address.toString().c_str());
+		local.s_addr = inet_addr(interfaceHost.toString().c_str());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
 	}
 
@@ -290,20 +281,25 @@ namespace sakit
 
 	bool PlatformSocket::disconnect()
 	{
-		if (this->info != NULL)
+		if (this->socketInfo != NULL)
 		{
-			freeaddrinfo(this->info);
-			this->info = NULL;
+			free(this->socketInfo);
+			this->socketInfo = NULL;
+		}
+		if (this->localInfo != NULL)
+		{
+			freeaddrinfo(this->localInfo);
+			this->localInfo = NULL;
+		}
+		if (this->remoteInfo != NULL)
+		{
+			freeaddrinfo(this->remoteInfo);
+			this->remoteInfo = NULL;
 		}
 		if (this->address != NULL)
 		{
 			free(this->address);
 			this->address = NULL;
-		}
-		if (this->multicastGroupAddress != NULL)
-		{
-			free(this->multicastGroupAddress);
-			this->multicastGroupAddress = NULL;
 		}
 		if (this->sock != -1)
 		{
@@ -324,9 +320,9 @@ namespace sakit
 		{
 			result = ::send(this->sock, data, size, 0);
 		}
-		else if (this->info != NULL)
+		else if (this->remoteInfo != NULL)
 		{
-			result = ::sendto(this->sock, data, size, 0, this->info->ai_addr, this->info->ai_addrlen);
+			result = ::sendto(this->sock, data, size, 0, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen);
 		}
 		else if (this->address != NULL)
 		{
@@ -334,7 +330,7 @@ namespace sakit
 		}
 		else
 		{
-			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->multicastGroupAddress, sizeof(*this->multicastGroupAddress));
+			hlog::warn(sakit::logTag, "Trying to send without a remote host!");
 		}
 		if (result >= 0)
 		{
@@ -377,7 +373,7 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::receiveFrom(hstream* stream, Host& host, unsigned short& port)
+	bool PlatformSocket::receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort)
 	{
 		unsigned long received = 0;
 		if (!this->_checkReceivedBytes(&received))
@@ -406,8 +402,8 @@ namespace sakit
 			char hostString[CHAR_BUFFER] = {'\0'};
 			char portString[CHAR_BUFFER] = {'\0'};
 			getnameinfo((sockaddr*)&address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-			host = Host(hostString);
-			port = (unsigned short)(int)hstr(portString);
+			remoteHost = Host(hostString);
+			remotePort = (unsigned short)(int)hstr(portString);
 		}
 		return true;
 	}
@@ -451,7 +447,10 @@ namespace sakit
 		char hostString[CHAR_BUFFER] = {'\0'};
 		char portString[CHAR_BUFFER] = {'\0'};
 		getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
-		((Base*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString));
+		Host localHost;
+		unsigned short localPort = 0;
+		this->_getLocalHostPort(localHost, localPort);
+		((SocketBase*)socket)->_activateConnection(Host(hostString), (unsigned short)(int)hstr(portString), localHost, localPort);
 		other->connected = true;
 		return true;
 	}
@@ -686,6 +685,32 @@ namespace sakit
 		freeifaddrs(ifaddr);
 		exit(EXIT_SUCCESS);
 		*/
+		// TODOsock - or this one
+		/*
+   struct ifaddrs * ifAddrStruct=NULL;
+    struct ifaddrs * ifa=NULL;
+    void * tmpAddrPtr=NULL;
+
+    getifaddrs(&ifAddrStruct);
+
+    for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa ->ifa_addr->sa_family==AF_INET) { // check it is IP4
+            // is a valid IP4 Address
+            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+            char addressBuffer[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+        } else if (ifa->ifa_addr->sa_family==AF_INET6) { // check it is IP6
+            // is a valid IP6 Address
+            tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+            char addressBuffer[INET6_ADDRSTRLEN];
+            inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+        } 
+    }
+    if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
+    return 0;
+	*/
 #endif
 		return result;
 	}

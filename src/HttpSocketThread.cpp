@@ -35,7 +35,9 @@ namespace sakit
 
 	void HttpSocketThread::_updateConnect()
 	{
-		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port))
+		Host localHost;
+		unsigned short localPort = 0;
+		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort))
 		{
 			this->mutex.lock();
 			this->result = FAILED;

@@ -36,19 +36,19 @@ namespace sakit
 		bool isUnbinding();
 
 		// TODOsock - make it work with chstr port as well
-		bool bind(Host host, unsigned short port);
-		bool bind(unsigned short port);
+		bool bind(Host localHost, unsigned short localPort = 0);
+		bool bind(unsigned short localPort = 0);
 		bool unbind();
 
 		// TODOsock - make it work with chstr port as well
-		bool bindAsync(Host host, unsigned short port);
-		bool bindAsync(unsigned short port);
+		bool bindAsync(Host localHost, unsigned short localPort);
+		bool bindAsync(unsigned short localPort);
 		bool unbindAsync();
 
 	protected:
 		Binder(PlatformSocket* socket, BinderDelegate* binderDelegate);
 
-		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* host, unsigned short* port);
+		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* localHost, unsigned short* localPort);
 		void _update(float timeSinceLastFrame = 0.0f);
 
 		bool _canBind(State state);
@@ -58,8 +58,8 @@ namespace sakit
 		PlatformSocket* _socket;
 		State* _state;
 		hmutex* _mutexState;
-		Host* _host;
-		unsigned short* _port;
+		Host* _localHost;
+		unsigned short* _localPort;
 		BinderThread* _thread;
 		BinderDelegate* _binderDelegate;
 

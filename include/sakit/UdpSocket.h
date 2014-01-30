@@ -34,41 +34,37 @@ namespace sakit
 		UdpSocket(UdpSocketDelegate* socketDelegate);
 		~UdpSocket();
 
-		HL_DEFINE_GET(Host, localHost, LocalHost);
-		HL_DEFINE_GET(unsigned short, localPort, LocalPort);
-		bool hasMulticastGroup() { return this->multicastGroup; }
+		HL_DEFINE_GET2(harray<std::pair, Host, Host>, multicastHosts, MulticastHosts);
 		bool hasDestination();
 
-		bool setMulticastInterface(Host address);
+		bool setMulticastInterface(Host interfaceHost);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
 
 		void update(float timeSinceLastFrame = 0.0f);
 
-		bool setDestination(Host host, unsigned short port);
-		bool clearDestination();
+		bool setDestination(Host remoteHost, unsigned short remotePort);
 
 		/// @note Keep in mind that only one datagram is received at the time.
-		int receive(hstream* stream, Host& host, unsigned short& port);
+		int receive(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 		bool startReceiveAsync(int maxPackages = 0);
 
-		bool joinMulticastGroup(Host address, unsigned short port, Host groupAddress);
+		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
+		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
 
-		static bool broadcast(unsigned short port, hstream* stream, int count = INT_MAX);
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count = INT_MAX);
-		static bool broadcast(unsigned short port, chstr data);
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data);
+		static bool broadcast(unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		static bool broadcast(unsigned short remotePort, chstr data);
+		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, chstr data);
 
 	protected:
-		Host localHost;
-		unsigned short localPort;
 		UdpSocketDelegate* udpSocketDelegate;
 		UdpReceiverThread* udpReceiver;
-		bool multicastGroup;
+		harray<std::pair<Host, Host> > multicastHosts;
 
 		void _updateReceiving();
-
-		void _activateConnection(Host host, unsigned short port);
+		void _clear();
+		void _activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort);
 
 	};
 

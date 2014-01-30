@@ -30,13 +30,10 @@ namespace sakit
 	class sakitExport Base
 	{
 	public:
-		friend class PlatformSocket;
-
 		virtual ~Base();
 
-		HL_DEFINE_GET(Host, host, Host);
-		HL_DEFINE_GET(unsigned short, port, Port);
-		virtual hstr getFullHost();
+		HL_DEFINE_GET(Host, localHost, LocalHost);
+		HL_DEFINE_GET(unsigned short, localPort, LocalPort);
 
 		virtual void update(float timeSinceLastFrame = 0.0f) = 0;
 
@@ -44,16 +41,14 @@ namespace sakit
 		PlatformSocket* socket;
 		State state;
 		hmutex mutexState;
-		Host host;
-		unsigned short port;
+		Host localHost;
+		unsigned short localPort;
 
 		Base();
 
 		int _sendDirect(hstream* stream, int count);
 		int _receiveDirect(hstream* stream, int maxBytes);
-		int _receiveFromDirect(hstream* stream, Host& host, unsigned short& port);
-
-		virtual void _activateConnection(Host host, unsigned short port);
+		int _receiveFromDirect(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 
 		void __register();
 		void __unregister();

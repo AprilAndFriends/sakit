@@ -30,31 +30,31 @@ namespace sakit
 		{
 			delete (*it);
 		}
-		this->hosts.clear();
-		this->ports.clear();
+		this->remoteHosts.clear();
+		this->remotePorts.clear();
 		this->streams.clear();
 		this->mutex.lock();
 	}
 
 	void UdpServerThread::_updateProcess()
 	{
-		Host host;
-		unsigned short port = 0;
+		Host remoteHost;
+		unsigned short remotePort = 0;
 		hstream* stream = new hstream();
 		while (this->running)
 		{
-			if (this->socket->receiveFrom(stream, host, port))
+			if (this->socket->receiveFrom(stream, remoteHost, remotePort))
 			{
 				if (stream->size() > 0)
 				{
 					stream->rewind();
 					this->mutex.lock();
-					this->hosts += host;
-					this->ports += port;
+					this->remoteHosts += remoteHost;
+					this->remotePorts += remotePort;
 					this->streams += stream;
 					this->mutex.unlock();
-					host = Host();
-					port = 0;
+					remoteHost = Host();
+					remotePort = 0;
 					stream = new hstream();
 				}
 			}

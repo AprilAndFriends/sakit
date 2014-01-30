@@ -34,8 +34,8 @@ namespace sakit
 		~UdpServerThread();
 
 	protected:
-		harray<Host> hosts;
-		harray<unsigned short> ports;
+		harray<Host> remoteHosts;
+		harray<unsigned short> remotePorts;
 		harray<hstream*> streams;
 
 		void _updateProcess();

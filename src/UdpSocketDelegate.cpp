@@ -19,7 +19,7 @@ namespace sakit
 	{
 	}
 
-	void UdpSocketDelegate::onReceived(Socket* socket, Host host, unsigned short port, hstream* stream)
+	void UdpSocketDelegate::onReceived(Socket* socket, Host remoteHost, unsigned short remotePort, hstream* stream)
 	{
 	}
 

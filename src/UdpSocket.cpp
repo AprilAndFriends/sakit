@@ -22,7 +22,7 @@
 namespace sakit
 {
 	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND),
-		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate)), multicastGroup(false)
+		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate))
 	{
 		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
@@ -33,6 +33,7 @@ namespace sakit
 
 	UdpSocket::~UdpSocket()
 	{
+		this->_clear();
 		this->__unregister();
 	}
 
@@ -41,59 +42,67 @@ namespace sakit
 		return this->socket->isConnected();
 	}
 
-	bool UdpSocket::setDestination(Host host, unsigned short port)
+	bool UdpSocket::setDestination(Host remoteHost, unsigned short remotePort)
 	{
-		if (this->hasDestination())
+		if (!this->isBound() && !this->bind())
 		{
-			this->clearDestination();
-		}
-		// TODOsock - refactor if possible
-#ifndef _WINRT
-		if (!this->socket->createSocket())
-		{
-			this->clearDestination();
 			return false;
 		}
-		if (!this->socket->resolve(host, port))
-#else // WinRT is a special kid and UDP requires a "connection"
-		if (!this->socket->connect(host, port))
-#endif
+		// this is not a real connect on UDP, it just does its job of setting a proper remote host
+		if (!this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort))
 		{
-			this->clearDestination();
+			this->_clear();
 			return false;
 		}
-		this->host = host;
-		this->port = port;
+		this->remoteHost = remoteHost;
+		this->remotePort = remotePort;
 		return true;
 	}
 
-	bool UdpSocket::clearDestination()
+	void UdpSocket::_clear()
 	{
-		this->host = Host();
-		this->port = 0;
-		this->multicastGroup = false;
-		return this->socket->disconnect();
+		this->remoteHost = Host();
+		this->remotePort = 0;
+		this->localHost = Host();
+		this->localPort = 0;
+		this->multicastHosts.clear();
+		this->socket->disconnect();
 	}
 
-	bool UdpSocket::joinMulticastGroup(Host address, unsigned short port, Host groupAddress)
+	bool UdpSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
-		if (this->hasDestination())
+		if (!this->isBound() && !this->bind())
 		{
-			this->clearDestination();
+			this->_clear();
+			return false;
 		}
-		bool result = this->socket->joinMulticastGroup(address, port, groupAddress);
-		if (result)
+		if (!this->socket->joinMulticastGroup(interfaceHost, groupAddress))
 		{
-			this->host = host;
-			this->port = port;
-			this->multicastGroup = true;
+			return false;
 		}
-		return result;
+		this->multicastHosts += std::pair<Host, Host>(interfaceHost, groupAddress);
+		return true;
 	}
 
-	bool UdpSocket::setMulticastInterface(Host address)
+	bool UdpSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
-		return this->socket->setMulticastInterface(address);
+		std::pair<Host, Host> pair(interfaceHost, groupAddress);
+		if (!this->multicastHosts.contains(pair))
+		{
+			hlog::warnf(sakit::logTag, "Cannot leave multicast group, interface %s not in group %s!", interfaceHost.toString().c_str(), groupAddress.toString().c_str());
+			return false;
+		}
+		if (!this->socket->leaveMulticastGroup(interfaceHost, groupAddress))
+		{
+			return false;
+		}
+		this->multicastHosts -= pair;
+		return true;
+	}
+
+	bool UdpSocket::setMulticastInterface(Host interfaceHost)
+	{
+		return this->socket->setMulticastInterface(interfaceHost);
 	}
 
 	bool UdpSocket::setMulticastTtl(int value)
@@ -103,7 +112,7 @@ namespace sakit
 
 	bool UdpSocket::setMulticastLoopback(bool value)
 	{
-		return this->socket->setMulticastTtl(value);
+		return this->socket->setMulticastLoopback(value);
 	}
 
 	void UdpSocket::update(float timeSinceLastFrame)
@@ -114,18 +123,18 @@ namespace sakit
 
 	void UdpSocket::_updateReceiving()
 	{
-		harray<Host> hosts;
-		harray<unsigned short> ports;
+		harray<Host> remoteHosts;
+		harray<unsigned short> remotePorts;
 		harray<hstream*> streams;
 		this->mutexState.lock();
 		this->receiver->mutex.lock();
 		if (this->udpReceiver->streams.size() > 0)
 		{
-			hosts = this->udpReceiver->hosts;
-			ports = this->udpReceiver->ports;
+			remoteHosts = this->udpReceiver->remoteHosts;
+			remotePorts = this->udpReceiver->remotePorts;
 			streams = this->udpReceiver->streams;
-			this->udpReceiver->hosts.clear();
-			this->udpReceiver->ports.clear();
+			this->udpReceiver->remoteHosts.clear();
+			this->udpReceiver->remotePorts.clear();
 			this->udpReceiver->streams.clear();
 		}
 		State result = this->receiver->result;
@@ -135,7 +144,7 @@ namespace sakit
 			this->mutexState.unlock();
 			for_iter (i, 0, streams.size())
 			{
-				this->udpSocketDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+				this->udpSocketDelegate->onReceived(this, remoteHosts[i], remotePorts[i], streams[i]);
 				delete streams[i];
 			}
 			return;
@@ -146,7 +155,7 @@ namespace sakit
 		this->mutexState.unlock();
 		for_iter (i, 0, streams.size())
 		{
-			this->udpSocketDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
+			this->udpSocketDelegate->onReceived(this, remoteHosts[i], remotePorts[i], streams[i]);
 			delete streams[i];
 		}
 		// delegate calls
@@ -156,13 +165,13 @@ namespace sakit
 		}
 	}
 
-	int UdpSocket::receive(hstream* stream, Host& host, unsigned short& port)
+	int UdpSocket::receive(hstream* stream, Host& remoteHost, unsigned short& remotePort)
 	{
 		if (!this->_prepareReceive(stream))
 		{
 			return 0;
 		}
-		return this->_finishReceive(this->_receiveFromDirect(stream, host, port));
+		return this->_finishReceive(this->_receiveFromDirect(stream, remoteHost, remotePort));
 	}
 
 	bool UdpSocket::startReceiveAsync(int maxPackages)
@@ -170,36 +179,36 @@ namespace sakit
 		return this->_startReceiveAsync(maxPackages);
 	}
 
-	void UdpSocket::_activateConnection(Host host, unsigned short port)
+	void UdpSocket::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)
 	{
-		Base::_activateConnection(host, port);
-		this->setDestination(host, port);
+		SocketBase::_activateConnection(remoteHost, remotePort, localHost, localPort);
+		this->socket->setRemoteAddress(remoteHost, remotePort);
 	}
 
-	bool UdpSocket::broadcast(unsigned short port, hstream* stream, int count)
+	bool UdpSocket::broadcast(unsigned short remotePort, hstream* stream, int count)
 	{
-		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, stream, count);
+		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), remotePort, stream, count);
 	}
 
-	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
+	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count)
 	{
-		return PlatformSocket::broadcast(adapters, port, stream, count);
+		return PlatformSocket::broadcast(adapters, remotePort, stream, count);
 	}
 
-	bool UdpSocket::broadcast(unsigned short port, chstr data)
+	bool UdpSocket::broadcast(unsigned short remotePort, chstr data)
 	{
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), port, &stream, INT_MAX);
+		return PlatformSocket::broadcast(PlatformSocket::getNetworkAdapters(), remotePort, &stream, stream.size());
 	}
 
-	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, chstr data)
+	bool UdpSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, chstr data)
 	{
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return PlatformSocket::broadcast(adapters, port, &stream, INT_MAX);
+		return PlatformSocket::broadcast(adapters, remotePort, &stream, stream.size());
 	}
 
 }

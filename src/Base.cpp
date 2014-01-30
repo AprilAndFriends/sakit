@@ -39,7 +39,7 @@ namespace sakit
 		connectionsMutex.unlock();
 	}
 
-	Base::Base() : port(0), state(IDLE)
+	Base::Base() : localPort(0), state(IDLE)
 	{
 		this->socket = new PlatformSocket();
 	}
@@ -47,11 +47,6 @@ namespace sakit
 	Base::~Base()
 	{
 		delete this->socket;
-	}
-
-	hstr Base::getFullHost()
-	{
-		return (this->socket->isConnected() ? hsprintf("%s:%d", this->host.toString().c_str(), this->port) : "");
 	}
 
 	int Base::_sendDirect(hstream* stream, int count)
@@ -124,12 +119,6 @@ namespace sakit
 			hthread::sleep(retryTimeout);
 		}
 		return stream->size();
-	}
-
-	void Base::_activateConnection(Host host, unsigned short port)
-	{
-		this->host = host;
-		this->port = port;
 	}
 
 }

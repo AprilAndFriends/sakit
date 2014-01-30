@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket)
+	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket), localPort(0)
 	{
 	}
 
@@ -29,7 +29,9 @@ namespace sakit
 
 	void ConnectorThread::_updateConnecting()
 	{
-		if (!this->socket->connect(this->host, this->port))
+		Host localHost;
+		unsigned short localPort = 0;
+		if (!this->socket->connect(this->host, this->port, localHost, localPort))
 		{
 			this->mutex.lock();
 			this->result = FAILED;
@@ -38,6 +40,8 @@ namespace sakit
 		}
 		this->mutex.lock();
 		this->result = FINISHED;
+		this->localHost = localHost;
+		this->localPort = localPort;
 		this->mutex.unlock();
 	}
 

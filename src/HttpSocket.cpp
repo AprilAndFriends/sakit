@@ -49,7 +49,7 @@ namespace sakit
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
-		this->port = HttpSocket::DefaultPort;
+		this->remotePort = HttpSocket::DefaultPort;
 		this->socket->setConnectionLess(false);
 		this->thread = new HttpSocketThread(this->socket);
 		this->__register();
@@ -169,7 +169,7 @@ namespace sakit
 		this->state = RUNNING;
 		this->mutexState.unlock();
 		hstr request = this->_processRequest(method, url, customHeaders);
-		bool result = this->socket->connect(this->host, (this->url.getPort() == 0 ? this->port : this->url.getPort()));
+		bool result = this->socket->connect(this->remoteHost, (this->url.getPort() == 0 ? this->remotePort : this->url.getPort()), this->localHost, this->localPort);
 		if (!result)
 		{
 			this->_terminateConnection();
@@ -253,8 +253,8 @@ namespace sakit
 		this->thread->stream->clear();
 		this->thread->stream->write_raw((void*)request.c_str(), request.size());
 		this->thread->stream->rewind();
-		this->thread->host = this->host;
-		this->thread->port = (this->url.getPort() == 0 ? this->port : this->url.getPort());
+		this->thread->host = this->remoteHost;
+		this->thread->port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
 		this->state = RUNNING;
 		this->thread->mutex.unlock();
 		this->mutexState.unlock();
@@ -347,8 +347,8 @@ namespace sakit
 	hstr HttpSocket::_processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
 	{
 		this->url = url;
-		this->host = Host(this->url.getHost());
-		customHeaders["Host"] = this->host.toString();
+		this->remoteHost = Host(this->url.getHost());
+		customHeaders["Host"] = this->remoteHost.toString();
 		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
 		if (!customHeaders.has_key("Accept-Encoding"))
 		{

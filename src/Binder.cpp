@@ -27,8 +27,8 @@ namespace sakit
 		this->_thread = new BinderThread(this->_socket);
 		this->_state = NULL;
 		this->_mutexState = NULL;
-		this->_host = NULL;
-		this->_port = NULL;
+		this->_localHost = NULL;
+		this->_localPort = NULL;
 	}
 
 	Binder::~Binder()
@@ -38,12 +38,12 @@ namespace sakit
 		delete this->_thread;
 	}
 
-	void Binder::_integrate(State* stateValue, hmutex* mutexStateValue, Host* host, unsigned short* port)
+	void Binder::_integrate(State* stateValue, hmutex* mutexStateValue, Host* localHost, unsigned short* localPort)
 	{
 		this->_state = stateValue;
 		this->_mutexState = mutexStateValue;
-		this->_host = host;
-		this->_port = port;
+		this->_localHost = localHost;
+		this->_localPort = localPort;
 	}
 
 	bool Binder::isBinding()
@@ -76,8 +76,8 @@ namespace sakit
 		this->_thread->mutex.lock();
 		State state = *this->_state;
 		State result = this->_thread->result;
-		Host host = this->_thread->host;
-		unsigned short port = this->_thread->port;
+		Host localHost = this->_thread->host;
+		unsigned short localPort = this->_thread->port;
 		if (result == RUNNING || result == IDLE)
 		{
 			this->_thread->mutex.unlock();
@@ -93,15 +93,15 @@ namespace sakit
 			{
 			case BINDING:
 				*this->_state = BOUND;
-				*this->_host = host;
-				*this->_port = port;
+				*this->_localHost = localHost;
+				*this->_localPort = localPort;
 				break;
 			case UNBINDING:
 				*this->_state = IDLE;
-				host = *this->_host;
-				port = *this->_port;
-				*this->_host = Host();
-				*this->_port = 0;
+				localHost = *this->_localHost;
+				localPort = *this->_localPort;
+				*this->_localHost = Host();
+				*this->_localPort = 0;
 				break;
 			}
 			break;
@@ -125,21 +125,21 @@ namespace sakit
 		case FINISHED:
 			switch (state)
 			{
-			case BINDING:	this->_binderDelegate->onBound(this, host, port);		break;
-			case UNBINDING:	this->_binderDelegate->onUnbound(this, host, port);		break;
+			case BINDING:	this->_binderDelegate->onBound(this, localHost, localPort);		break;
+			case UNBINDING:	this->_binderDelegate->onUnbound(this, localHost, localPort);	break;
 			}
 			break;
 		case FAILED:
 			switch (state)
 			{
-			case BINDING:	this->_binderDelegate->onBindFailed(this, host, port);	break;
-			case UNBINDING:	this->_binderDelegate->onUnbindFailed(this, host, port);	break;
+			case BINDING:	this->_binderDelegate->onBindFailed(this, localHost, localPort);	break;
+			case UNBINDING:	this->_binderDelegate->onUnbindFailed(this, localHost, localPort);	break;
 			}
 			break;
 		}
 	}
 
-	bool Binder::bind(Host host, unsigned short port)
+	bool Binder::bind(Host localHost, unsigned short localPort)
 	{
 		this->_mutexState->lock();
 		State state = *this->_state;
@@ -150,12 +150,12 @@ namespace sakit
 		}
 		*this->_state = BINDING;
 		this->_mutexState->unlock();
-		bool result = this->_socket->bind(host, port);
+		bool result = this->_socket->bind(localHost, localPort);
 		this->_mutexState->lock();
 		if (result)
 		{
-			*this->_host = host;
-			*this->_port = port;
+			*this->_localHost = localHost;
+			*this->_localPort = localPort;
 			*this->_state = BOUND;
 		}
 		else
@@ -166,9 +166,9 @@ namespace sakit
 		return result;
 	}
 	
-	bool Binder::bind(unsigned short port)
+	bool Binder::bind(unsigned short localPort)
 	{
-		return this->bind(Host::Any, port);
+		return this->bind(Host::Any, localPort);
 	}
 	
 	bool Binder::unbind()
@@ -186,8 +186,8 @@ namespace sakit
 		this->_mutexState->lock();
 		if (result)
 		{
-			*this->_host = Host();
-			*this->_port = 0;
+			*this->_localHost = Host();
+			*this->_localPort = 0;
 			*this->_state = IDLE;
 		}
 		else
@@ -198,7 +198,7 @@ namespace sakit
 		return result;
 	}
 
-	bool Binder::bindAsync(Host host, unsigned short port)
+	bool Binder::bindAsync(Host localHost, unsigned short localPort)
 	{
 		this->_mutexState->lock();
 		State state = *this->_state;
@@ -210,16 +210,16 @@ namespace sakit
 		*this->_state = BINDING;
 		this->_thread->state = BINDING;
 		this->_thread->result = RUNNING;
-		this->_thread->host = host;
-		this->_thread->port = port;
+		this->_thread->host = localHost;
+		this->_thread->port = localPort;
 		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
 	}
 	
-	bool Binder::bindAsync(unsigned short port)
+	bool Binder::bindAsync(unsigned short localPort)
 	{
-		return this->bindAsync(Host::Any, port);
+		return this->bindAsync(Host::Any, localPort);
 	}
 	
 	bool Binder::unbindAsync()

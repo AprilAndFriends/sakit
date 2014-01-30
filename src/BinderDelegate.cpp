@@ -19,19 +19,19 @@ namespace sakit
 	{
 	}
 
-	void BinderDelegate::onBound(Binder* binder, Host host, unsigned short port)
+	void BinderDelegate::onBound(Binder* binder, Host localHost, unsigned short localPort)
 	{
 	}
 
-	void BinderDelegate::onBindFailed(Binder* binder, Host host, unsigned short port)
+	void BinderDelegate::onBindFailed(Binder* binder, Host localHost, unsigned short localPort)
 	{
 	}
 
-	void BinderDelegate::onUnbound(Binder* binder, Host host, unsigned short port)
+	void BinderDelegate::onUnbound(Binder* binder, Host localHost, unsigned short localPort)
 	{
 	}
 
-	void BinderDelegate::onUnbindFailed(Binder* binder, Host host, unsigned short port)
+	void BinderDelegate::onUnbindFailed(Binder* binder, Host localHost, unsigned short localPort)
 	{
 	}
 

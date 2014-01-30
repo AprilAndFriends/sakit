@@ -45,11 +45,11 @@ namespace sakit
 		this->udpServerThread->mutex.lock();
 		if (this->udpServerThread->streams.size() > 0)
 		{
-			hosts = this->udpServerThread->hosts;
-			ports = this->udpServerThread->ports;
+			hosts = this->udpServerThread->remoteHosts;
+			ports = this->udpServerThread->remotePorts;
 			streams = this->udpServerThread->streams;
-			this->udpServerThread->hosts.clear();
-			this->udpServerThread->ports.clear();
+			this->udpServerThread->remoteHosts.clear();
+			this->udpServerThread->remotePorts.clear();
 			this->udpServerThread->streams.clear();
 		}
 		this->udpServerThread->mutex.unlock();

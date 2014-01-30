@@ -48,7 +48,7 @@ namespace sakit
 
 		void _updateReceiving();
 
-		void _activateConnection(Host host, unsigned short port);
+		void _activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort);
 
 	};
 

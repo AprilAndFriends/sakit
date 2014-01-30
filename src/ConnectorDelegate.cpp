@@ -19,19 +19,19 @@ namespace sakit
 	{
 	}
 
-	void ConnectorDelegate::onConnected(Connector* connector, Host host, unsigned short port)
+	void ConnectorDelegate::onConnected(Connector* connector, Host remoteHost, unsigned short remotePort)
 	{
 	}
 
-	void ConnectorDelegate::onDisconnected(Connector* connector, Host host, unsigned short port)
+	void ConnectorDelegate::onDisconnected(Connector* connector, Host remoteHost, unsigned short remotePort)
 	{
 	}
 
-	void ConnectorDelegate::onConnectFailed(Connector* connector, Host host, unsigned short port)
+	void ConnectorDelegate::onConnectFailed(Connector* connector, Host remoteHost, unsigned short remotePort)
 	{
 	}
 
-	void ConnectorDelegate::onDisconnectFailed(Connector* connector, Host host, unsigned short port)
+	void ConnectorDelegate::onDisconnectFailed(Connector* connector, Host remoteHost, unsigned short remotePort)
 	{
 	}
 

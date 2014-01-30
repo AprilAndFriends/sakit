@@ -26,7 +26,7 @@ namespace sakit
 	{
 		this->serverDelegate = serverDelegate;
 		this->serverThread = NULL;
-		Binder::_integrate(&this->state, &this->mutexState, &this->host, &this->port);
+		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
 	}
 
 	Server::~Server()
