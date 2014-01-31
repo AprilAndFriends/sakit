@@ -419,33 +419,6 @@ namespace sakit
 		{
 			return this->_readStream(stream, mutex, count, this->sSock->InputStream);
 		}
-		if (this->dSock != nullptr)
-		{
-			/*
-			UdpSocket* socket = new UdpSocket(NULL);
-			connectionsMutex.lock();
-			connections -= socket;
-			connectionsMutex.unlock();
-			unsigned long position = stream->position();
-			if (!this->receiveFrom(stream, socket))
-			{
-				delete socket;
-				return false;
-			}
-			if (stream->position() > position)
-			{
-				delete socket;
-				return false;
-			}
-
-			delete socket;
-			socket = NULL;
-
-
-
-			return this->receiveFrom
-			*/
-		}
 		return false;
 	}
 
@@ -496,7 +469,7 @@ namespace sakit
 	bool PlatformSocket::receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort)
 	{
 		this->udpReceiver->dataMutex.lock();
-		if (this->udpReceiver->hosts.size() == 0)
+		if (this->udpReceiver->streams.size() == 0)
 		{
 			this->udpReceiver->dataMutex.unlock();
 			return false;
