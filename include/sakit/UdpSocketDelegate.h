@@ -24,7 +24,7 @@
 
 namespace sakit
 {
-	class Socket;
+	class UdpSocket;
 
 	class sakitExport UdpSocketDelegate : public SocketDelegate, public BinderDelegate
 	{
@@ -32,7 +32,10 @@ namespace sakit
 		UdpSocketDelegate();
 		virtual ~UdpSocketDelegate();
 
-		virtual void onReceived(Socket* socket, Host remoteHost, unsigned short remotePort, hstream* stream);
+		virtual void onReceived(UdpSocket* socket, Host remoteHost, unsigned short remotePort, hstream* stream);
+
+		virtual void onBroadcastFinished(UdpSocket* socket);
+		virtual void onBroadcastFailed(UdpSocket* socket);
 
 	};
 

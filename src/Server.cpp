@@ -47,8 +47,7 @@ namespace sakit
 	bool Server::startAsync()
 	{
 		this->mutexState.lock();
-		State state = this->state;
-		if (!this->_canStart(state))
+		if (!this->_canStart(this->state))
 		{
 			this->mutexState.unlock();
 			return false;
@@ -63,8 +62,7 @@ namespace sakit
 	bool Server::stopAsync()
 	{
 		this->mutexState.lock();
-		State state = this->state;
-		if (!this->_canStop(state))
+		if (!this->_canStop(this->state))
 		{
 			this->mutexState.unlock();
 			return false;

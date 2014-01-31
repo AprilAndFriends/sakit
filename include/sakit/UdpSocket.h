@@ -24,7 +24,7 @@
 
 namespace sakit
 {
-	class ConnectorThread;
+	class BroadcasterThread;
 	class UdpReceiverThread;
 	class UdpSocketDelegate;
 
@@ -43,30 +43,37 @@ namespace sakit
 
 		void update(float timeSinceLastFrame = 0.0f);
 
-		// TODOsock - needs async variant
 		bool setDestination(Host remoteHost, unsigned short remotePort);
 
 		/// @note Keep in mind that only one datagram is received at the time.
 		int receive(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 		bool startReceiveAsync(int maxPackages = 0);
 
+		bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		bool broadcast(unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, chstr data);
+		bool broadcast(unsigned short remotePort, chstr data);
+		bool broadcastAsync(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		bool broadcastAsync(unsigned short remotePort, hstream* stream, int count = INT_MAX);
+		bool broadcastAsync(harray<NetworkAdapter> adapters, unsigned short remotePort, chstr data);
+		bool broadcastAsync(unsigned short remotePort, chstr data);
+		
 		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
 		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
-
-		// TODOsock - make this a non-static member
-		static bool broadcast(unsigned short remotePort, hstream* stream, int count = INT_MAX);
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);
-		static bool broadcast(unsigned short remotePort, chstr data);
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, chstr data);
 
 	protected:
 		UdpSocketDelegate* udpSocketDelegate;
 		UdpReceiverThread* udpReceiver;
+		BroadcasterThread* broadcaster;
 		harray<std::pair<Host, Host> > multicastHosts;
 
 		void _updateReceiving();
 		void _clear();
 		void _activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort);
+
+		bool _canSetDestination(State state);
+		bool _canJoinMulticastGroup(State state);
+		bool _canLeaveMulticastGroup(State state);
 
 	};
 

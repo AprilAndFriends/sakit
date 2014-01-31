@@ -17,6 +17,7 @@
 #include <hltypes/harray.h>
 #include <hltypes/hstring.h>
 
+#include "Host.h"
 #include "NetworkAdapter.h"
 #include "sakitExport.h"
 
@@ -33,6 +34,12 @@ namespace sakit
 	sakitFnExport int getRetryAttempts();
 	sakitFnExport void setRetryAttempts(int value);
 	sakitFnExport harray<NetworkAdapter> getNetworkAdapters();
+	/// @return The IP of the domain/host.
+	sakitFnExport Host resolveHost(Host domain);
+	/// @return The domain/host associated with this IP address.
+	sakitFnExport Host resolveIp(Host ip);
+	/// @return The port for the given service name.
+	sakitFnExport unsigned short resolveServiceName(chstr serviceName);
 	/// @note Encodes e.g. " into &quot;
 	sakitFnExport hstr encodeHtmlEntities(chstr string);
 	/// @note Decodes e.g. &quot; into "

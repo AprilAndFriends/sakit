@@ -40,13 +40,6 @@ namespace sakit
 		static const Host Localhost;
 		static const Host Any;
 
-		/// @return The IP of the domain/host.
-		static hstr resolveHost(chstr domain);
-		/// @return The domain/host associated with this IP address.
-		static hstr resolveIp(chstr ip);
-		/// @return The domain/host associated with this IP address.
-		static hstr resolveIp(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
-
 	protected:
 		hstr address;
 

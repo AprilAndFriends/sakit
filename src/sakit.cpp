@@ -356,6 +356,21 @@ namespace sakit
 		return PlatformSocket::getNetworkAdapters();
 	}
 
+	Host resolveHost(Host domain)
+	{
+		return PlatformSocket::resolveHost(domain);
+	}
+
+	Host resolveIp(Host ip)
+	{
+		return PlatformSocket::resolveIp(ip);
+	}
+
+	unsigned short resolveServiceName(chstr serviceName)
+	{
+		return PlatformSocket::resolveServiceName(serviceName);
+	}
+
 	hstr encodeHtmlEntities(chstr string)
 	{
 		harray<hstr> result; // adding stuff to an array is much faster than concatenating strings

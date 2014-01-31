@@ -35,14 +35,12 @@ namespace sakit
 		bool isBound();
 		bool isUnbinding();
 
-		// TODOsock - make it work with chstr port as well
 		bool bind(Host localHost, unsigned short localPort = 0);
 		bool bind(unsigned short localPort = 0);
 		bool unbind();
 
-		// TODOsock - make it work with chstr port as well
-		bool bindAsync(Host localHost, unsigned short localPort);
-		bool bindAsync(unsigned short localPort);
+		bool bindAsync(Host localHost, unsigned short localPort = 0);
+		bool bindAsync(unsigned short localPort = 0);
 		bool unbindAsync();
 
 	protected:

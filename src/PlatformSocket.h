@@ -61,6 +61,7 @@ namespace sakit
 		bool listen();
 		bool accept(Socket* socket);
 
+		bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count);
 		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
 		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
 		bool setMulticastInterface(Host interfaceHost);
@@ -68,9 +69,9 @@ namespace sakit
 		bool setMulticastLoopback(bool value);
 		bool setNagleAlgorithmActive(bool value);
 
-		static bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count);
-		static hstr resolveHost(chstr domain);
-		static hstr resolveIp(chstr ip);
+		static Host resolveHost(Host domain);
+		static Host resolveIp(Host ip);
+		static unsigned short resolveServiceName(chstr serviceName);
 		static harray<NetworkAdapter> getNetworkAdapters();
 		
 		static void platformInit();

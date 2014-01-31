@@ -166,6 +166,9 @@
     <ClInclude Include="src\ReceiverThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
+    <ClInclude Include="src\BroadcasterThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -283,6 +286,9 @@
       <Filter>Source Files\Fragments</Filter>
     </ClCompile>
     <ClCompile Include="src\ReceiverThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BroadcasterThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
   </ItemGroup>

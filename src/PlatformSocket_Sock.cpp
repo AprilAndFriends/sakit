@@ -64,8 +64,6 @@ extern int h_errno;
 #include "Server.h"
 #include "Socket.h"
 
-#define CHAR_BUFFER 256
-
 #ifdef _WIN32
 	#define __gai_strerror(x) hstr::from_unicode(gai_strerrorW(x))
 #else
@@ -163,6 +161,7 @@ namespace sakit
 #endif
 		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		this->socketInfo->ai_protocol = IPPROTO_IP;
+		this->socketInfo->ai_flags = AI_NUMERICSERV;
 		int result = getaddrinfo(host.toString().c_str(), hstr(port).c_str(), this->socketInfo, info);
 		if (result != 0)
 		{
@@ -399,9 +398,9 @@ namespace sakit
 		{
 			stream->write_raw(this->receiveBuffer, read);
 			// get the IP and port of the connected client
-			char hostString[CHAR_BUFFER] = {'\0'};
-			char portString[CHAR_BUFFER] = {'\0'};
-			getnameinfo((sockaddr*)&address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+			char hostString[NI_MAXHOST] = {'\0'};
+			char portString[NI_MAXSERV] = {'\0'};
+			getnameinfo((sockaddr*)&address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST);
 			remoteHost = Host(hostString);
 			remotePort = (unsigned short)(int)hstr(portString);
 		}
@@ -444,9 +443,9 @@ namespace sakit
 		}
 		this->_setNonBlocking(false);
 		// get the IP and port of the connected client
-		char hostString[CHAR_BUFFER] = {'\0'};
-		char portString[CHAR_BUFFER] = {'\0'};
-		getnameinfo((sockaddr*)other->address, size, hostString, CHAR_BUFFER, portString, CHAR_BUFFER, NI_NUMERICHOST);
+		char hostString[NI_MAXHOST] = {'\0'};
+		char portString[NI_MAXSERV] = {'\0'};
+		getnameinfo((sockaddr*)other->address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST);
 		Host localHost;
 		unsigned short localPort = 0;
 		this->_getLocalHostPort(localHost, localPort);
@@ -473,54 +472,44 @@ namespace sakit
 	{
 		const char* data = (const char*)&(*stream)[stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
-		int result = 0;
-#ifndef _ANDROID
-		int ai_family = AF_INET;
-#else
-		int ai_family = PF_INET;
-#endif
-		SOCKET sock = socket(ai_family, SOCK_DGRAM, IPPROTO_IP);
-		if (sock == SOCKET_ERROR)
-		{
-			PlatformSocket::_printLastError("socket()");
-			closesocket(sock);
-			return false;
-		}
 		int broadcast = 1;
-		result = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast));
-		if (result == SOCKET_ERROR)
+		if (!this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)), "setsockopt", false))
 		{
-			PlatformSocket::_printLastError("setsockopt()");
-			closesocket(sock);
-			return false;
-		}
-		int reuseaddress = 1;
-		result = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseaddress, sizeof(reuseaddress));
-		if (result == SOCKET_ERROR)
-		{
-			PlatformSocket::_printLastError("setsockopt()");
-			closesocket(sock);
 			return false;
 		}
 		sockaddr_in address;
 		memset(&address, 0, sizeof(sockaddr_in));
-		address.sin_family = ai_family;
+#ifndef _ANDROID
+		address.sin_family = AF_INET;
+#else
+		address.sin_family = PF_INET;
+#endif
 		address.sin_port = htons(port);
+		int result = 0;
 		int maxResult = 0;
+		socklen_t addrSize = sizeof(sockaddr_in);
+		Host broadcastIp;
+		harray<Host> ips;
 		foreach (NetworkAdapter, it, adapters)
 		{
-			address.sin_addr.s_addr = inet_addr((*it).getBroadcastIp().toString().c_str());
-			result = sendto(sock, data, size, 0, (sockaddr*)&address, sizeof(sockaddr_in));
-			if (result == SOCKET_ERROR)
-			{
-				PlatformSocket::_printLastError("sendto()");
-			}
-			else if (result > 0)
+			ips += (*it).getBroadcastIp();
+		}
+		ips.remove_duplicates(); // to avoid broadcasting on the same IP twice, just to be sure
+		foreach (Host, it, ips)
+		{
+			address.sin_addr.s_addr = inet_addr((*it).toString().c_str());
+			result = sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
+			if (this->_checkResult(result, "sendto", false) && result > 0)
 			{
 				maxResult = hmax(result, maxResult);
 			}
 		}
-		closesocket(sock);
+		broadcast = 0;
+		// this one must not fail or the socket will be in an unconsistent state
+		if (!this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)), "setsockopt"))
+		{
+			return false;
+		}
 		if (maxResult > 0)
 		{
 			stream->seek(maxResult);
@@ -529,37 +518,66 @@ namespace sakit
 		return false;
 	}
 
-	hstr PlatformSocket::resolveHost(chstr domain)
+	Host PlatformSocket::resolveHost(Host domain)
 	{
 		addrinfo hints;
 		addrinfo* info;
 		memset(&hints, 0, sizeof(hints));
+#ifndef _ANDROID
 		hints.ai_family = AF_INET;
-		int result = getaddrinfo(domain.c_str(), NULL, &hints, &info);
+#else
+		hints.ai_family = PF_INET;
+#endif
+		int result = getaddrinfo(domain.toString().c_str(), NULL, &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
-			return "";
+			return Host();
 		}
 		in_addr address;
 		address.s_addr = ((sockaddr_in*)(info->ai_addr))->sin_addr.s_addr;
 		freeaddrinfo(info);
-		return inet_ntoa(address);
+		return Host(inet_ntoa(address));
 	}
 
-	hstr PlatformSocket::resolveIp(chstr ip)
+	Host PlatformSocket::resolveIp(Host ip)
 	{
 		sockaddr_in address;
+#ifndef _ANDROID
 		address.sin_family = AF_INET;
-		inet_pton(AF_INET, ip.c_str(), &address.sin_addr);
+#else
+		address.sin_family = PF_INET;
+#endif
+		inet_pton(address.sin_family, ip.toString().c_str(), &address.sin_addr);
 		char hostName[NI_MAXHOST] = {'\0'};
-		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, 0);
+		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, NI_NUMERICHOST);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
-			return "";
+			return Host();
 		}
-		return hstr(hostName);
+		return Host(hostName);
+	}
+
+	unsigned short PlatformSocket::resolveServiceName(chstr serviceName)
+	{
+		addrinfo hints;
+		addrinfo* info;
+		memset(&hints, 0, sizeof(hints));
+#ifndef _ANDROID
+		hints.ai_family = AF_INET;
+#else
+		hints.ai_family = PF_INET;
+#endif
+		int result = getaddrinfo(NULL, serviceName.c_str(), &hints, &info);
+		if (result != 0)
+		{
+			hlog::error(sakit::logTag, __gai_strerror(result));
+			return 0;
+		}
+		unsigned short port = ((sockaddr_in*)(info->ai_addr))->sin_port;
+		freeaddrinfo(info);
+		return port;
 	}
 
 	harray<NetworkAdapter> PlatformSocket::getNetworkAdapters()
@@ -645,72 +663,66 @@ namespace sakit
         int family;
 		int s;
 		char host[NI_MAXHOST];
+		if (getifaddrs(&ifaddr) != -1)
+		{
+			for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+			{
+				if (ifa->ifa_addr != NULL)
+				{
+					family = ifa->ifa_addr->sa_family;
 
-		if (getifaddrs(&ifaddr) == -1) {
-			perror("getifaddrs");
-			exit(EXIT_FAILURE);
-		}
+					// Display interface name and family (including symbolic form of the latter for the common families)
 
-		// Walk through linked list, maintaining head pointer so we can free list later
+					printf("%s  address family: %d%s\n",
+							ifa->ifa_name, family,
+							(family == AF_PACKET) ? " (AF_PACKET)" :
+							(family == AF_INET) ?   " (AF_INET)" :
+							(family == AF_INET6) ?  " (AF_INET6)" : "");
 
-		for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr == NULL)
-				continue;
+					// For an AF_INET* interface address, display the address
 
-			family = ifa->ifa_addr->sa_family;
-
-			// Display interface name and family (including symbolic form of the latter for the common families)
-
-			printf("%s  address family: %d%s\n",
-					ifa->ifa_name, family,
-					(family == AF_PACKET) ? " (AF_PACKET)" :
-					(family == AF_INET) ?   " (AF_INET)" :
-					(family == AF_INET6) ?  " (AF_INET6)" : "");
-
-			// For an AF_INET* interface address, display the address
-
-			if (family == AF_INET || family == AF_INET6) {
-				s = getnameinfo(ifa->ifa_addr,
-						(family == AF_INET) ? sizeof(struct sockaddr_in) :
-												sizeof(struct sockaddr_in6),
-						host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-				if (s != 0) {
-					printf("getnameinfo() failed: %s\n", gai_strerror(s));
-					exit(EXIT_FAILURE);
+					if (family == AF_INET || family == AF_INET6)
+					{
+						s = getnameinfo(ifa->ifa_addr, (family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+						if (s == 0)
+						{
+							//printf("\taddress: <%s>\n", host);
+						}
+					}
 				}
-				printf("\taddress: <%s>\n", host);
 			}
+			freeifaddrs(ifaddr);
 		}
-
-		freeifaddrs(ifaddr);
-		exit(EXIT_SUCCESS);
 		*/
 		// TODOsock - or this one
 		/*
-   struct ifaddrs * ifAddrStruct=NULL;
-    struct ifaddrs * ifa=NULL;
-    void * tmpAddrPtr=NULL;
-
-    getifaddrs(&ifAddrStruct);
-
-    for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa ->ifa_addr->sa_family==AF_INET) { // check it is IP4
-            // is a valid IP4 Address
-            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-            char addressBuffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
-        } else if (ifa->ifa_addr->sa_family==AF_INET6) { // check it is IP6
-            // is a valid IP6 Address
-            tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-            char addressBuffer[INET6_ADDRSTRLEN];
-            inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
-        } 
-    }
-    if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
-    return 0;
-	*/
+		struct ifaddrs* ifAddrStruct = NULL;
+		struct ifaddrs* ifa = NULL;
+		void* tmpAddrPtr = NULL;
+		if (getifaddrs(&ifAddrStruct) != -1)
+		{
+			for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
+			{
+				if (ifa ->ifa_addr->sa_family == AF_INET)
+				{ // check it is IP4
+					// is a valid IP4 Address
+					tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+					char addressBuffer[INET_ADDRSTRLEN] = {'\0'};
+					inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+					//printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
+				}
+				else if (ifa->ifa_addr->sa_family == AF_INET6)
+				{ // check it is IP6
+					// is a valid IP6 Address
+					tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+					char addressBuffer[INET6_ADDRSTRLEN];
+					inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+					//printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
+				}
+			}
+			freeifaddrs(ifAddrStruct);
+		}
+		*/
 #endif
 		return result;
 	}

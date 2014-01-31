@@ -123,8 +123,7 @@ namespace sakit
 			return false;
 		}
 		this->mutexState.lock();
-		State state = this->state;
-		if (!this->_canSend(state))
+		if (!this->_canSend(this->state))
 		{
 			this->mutexState.unlock();
 			return false;
@@ -146,8 +145,7 @@ namespace sakit
 		}
 		this->mutexState.lock();
 		this->sender->mutex.lock();
-		State state = this->state;
-		if (!this->_canSend(state))
+		if (!this->_canSend(this->state))
 		{
 			this->sender->mutex.unlock();
 			this->mutexState.unlock();
@@ -170,8 +168,7 @@ namespace sakit
 		if (this->_checkReceiveParameters(stream))
 		{
 			this->mutexState.lock();
-			State state = this->state;
-			result = this->_canReceive(state);
+			result = this->_canReceive(this->state);
 			if (result)
 			{
 				this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
@@ -193,8 +190,7 @@ namespace sakit
 	{
 		this->mutexState.lock();
 		this->receiver->mutex.lock();
-		State state = this->state;
-		if (!this->_canReceive(state))
+		if (!this->_canReceive(this->state))
 		{
 			this->receiver->mutex.unlock();
 			this->mutexState.unlock();
@@ -212,8 +208,7 @@ namespace sakit
 	bool Socket::stopReceiveAsync()
 	{
 		this->mutexState.lock();
-		State state = this->state;
-		if (!this->_canStopReceive(state))
+		if (!this->_canStopReceive(this->state))
 		{
 			this->mutexState.unlock();
 			return false;

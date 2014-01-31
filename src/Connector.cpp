@@ -212,8 +212,7 @@ namespace sakit
 	bool Connector::connectAsync(Host remoteHost, unsigned short remotePort)
 	{
 		this->_mutexState->lock();
-		State state = *this->_state;
-		if (!this->_canConnect(state))
+		if (!this->_canConnect(*this->_state))
 		{
 			this->_mutexState->unlock();
 			return false;
@@ -231,8 +230,7 @@ namespace sakit
 	bool Connector::disconnectAsync()
 	{
 		this->_mutexState->lock();
-		State state = *this->_state;
-		if (!this->_canDisconnect(state))
+		if (!this->_canDisconnect(*this->_state))
 		{
 			this->_mutexState->unlock();
 			return false;

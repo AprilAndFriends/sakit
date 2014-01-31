@@ -77,7 +77,7 @@ namespace sakit
 		State state = *this->_state;
 		State result = this->_thread->result;
 		Host localHost = this->_thread->host;
-		unsigned short localPort = this->_thread->port;
+		unsigned short localPort = (unsigned short)(int)this->_thread->port;
 		if (result == RUNNING || result == IDLE)
 		{
 			this->_thread->mutex.unlock();
@@ -201,8 +201,7 @@ namespace sakit
 	bool Binder::bindAsync(Host localHost, unsigned short localPort)
 	{
 		this->_mutexState->lock();
-		State state = *this->_state;
-		if (!this->_canBind(state))
+		if (!this->_canBind(*this->_state))
 		{
 			this->_mutexState->unlock();
 			return false;
@@ -225,8 +224,7 @@ namespace sakit
 	bool Binder::unbindAsync()
 	{
 		this->_mutexState->lock();
-		State state = *this->_state;
-		if (!this->_canUnbind(state))
+		if (!this->_canUnbind(*this->_state))
 		{
 			this->_mutexState->unlock();
 			return false;

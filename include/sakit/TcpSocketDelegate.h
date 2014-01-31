@@ -24,7 +24,7 @@
 
 namespace sakit
 {
-	class Socket;
+	class TcpSocket;
 
 	class sakitExport TcpSocketDelegate : public SocketDelegate, public ConnectorDelegate
 	{
@@ -32,8 +32,8 @@ namespace sakit
 		TcpSocketDelegate();
 		~TcpSocketDelegate();
 
-		virtual void onReceived(Socket* socket, hstream* stream);
-		virtual void onReceiveFailed(Socket* socket);
+		virtual void onReceived(TcpSocket* socket, hstream* stream);
+		virtual void onReceiveFailed(TcpSocket* socket);
 
 	};
 

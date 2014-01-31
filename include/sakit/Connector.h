@@ -35,11 +35,9 @@ namespace sakit
 		bool isConnected();
 		bool isDisconnecting();
 
-		// TODOsock - make it work with chstr port as well
 		bool connect(Host remoteHost, unsigned short remotePort);
 		bool disconnect();
 
-		// TODOsock - make it work with chstr port as well
 		bool connectAsync(Host remoteHost, unsigned short remotePort);
 		bool disconnectAsync();
 

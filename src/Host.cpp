@@ -71,19 +71,4 @@ namespace sakit
 		return (this->address !=  other.address);
 	}
 
-	hstr Host::resolveHost(chstr domain)
-	{
-		return PlatformSocket::resolveHost(domain);
-	}
-
-	hstr Host::resolveIp(chstr ip)
-	{
-		return PlatformSocket::resolveIp(ip);
-	}
-
-	hstr Host::resolveIp(unsigned char a, unsigned char b, unsigned char c, unsigned char d)
-	{
-		return PlatformSocket::resolveIp(hsprintf("%d.%d.%d.%d", a, b, c, d));
-	}
-
 }

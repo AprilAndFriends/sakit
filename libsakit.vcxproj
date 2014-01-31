@@ -154,6 +154,7 @@
     <ClInclude Include="include\sakit\UdpSocketDelegate.h" />
     <ClInclude Include="include\sakit\Url.h" />
     <ClInclude Include="src\BinderThread.h" />
+    <ClInclude Include="src\BroadcasterThread.h" />
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\HttpSocketThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="src\Binder.cpp" />
     <ClCompile Include="src\BinderDelegate.cpp" />
     <ClCompile Include="src\BinderThread.cpp" />
+    <ClCompile Include="src\BroadcasterThread.cpp" />
     <ClCompile Include="src\Connector.cpp" />
     <ClCompile Include="src\ConnectorDelegate.cpp" />
     <ClCompile Include="src\ConnectorThread.cpp" />

@@ -105,12 +105,12 @@ public:
 		_printReceived(stream);
 	}
 
-	void onReceiveFinished(sakit::Socket* socket)
+	void onReceiveFinished(sakit::TcpSocket* socket)
 	{
 		hlog::writef(LOG_TAG, "- %s receive finished", this->name.c_str());
 	}
 
-	void onReceiveFailed(sakit::Socket* socket)
+	void onReceiveFailed(sakit::TcpSocket* socket)
 	{
 		hlog::writef(LOG_TAG, "- %s receive failed", this->name.c_str());
 	}
@@ -143,7 +143,7 @@ public:
 		hlog::writef(LOG_TAG, "- %s send failed", this->name.c_str());
 	}
 
-	void onReceived(sakit::Socket* socket, sakit::Host remoteHost, unsigned short port, hstream* stream)
+	void onReceived(sakit::UdpSocket* socket, sakit::Host remoteHost, unsigned short port, hstream* stream)
 	{
 		hlog::writef(LOG_TAG, "- %s received %d bytes (from '%s:%d'): %d", this->name.c_str(), stream->size(), remoteHost.toString().c_str(), port, stream->size());
 		_printReceived(stream);
@@ -152,6 +152,16 @@ public:
 	void onReceiveFinished(sakit::Socket* socket)
 	{
 		hlog::writef(LOG_TAG, "- %s receive finished", this->name.c_str());
+	}
+
+	void onBroadcastFinished(sakit::UdpSocket* socket)
+	{
+		hlog::writef(LOG_TAG, "- %s broadcast finished", this->name.c_str());
+	}
+
+	void onBroadcastFailed(sakit::UdpSocket* socket)
+	{
+		hlog::writef(LOG_TAG, "- %s broadcast failed", this->name.c_str());
 	}
 
 protected:
