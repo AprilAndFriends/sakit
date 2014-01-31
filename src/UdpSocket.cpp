@@ -36,11 +36,11 @@ namespace sakit
 
 	UdpSocket::~UdpSocket()
 	{
+		this->__unregister();
 		this->broadcaster->running = false;
 		this->broadcaster->join();
 		delete this->broadcaster;
 		this->_clear();
-		this->__unregister();
 	}
 
 	bool UdpSocket::hasDestination()

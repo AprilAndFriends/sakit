@@ -45,6 +45,7 @@ namespace sakit
 
 		bool sendAsync(hstream* stream, int count = INT_MAX);
 		bool sendAsync(chstr data);
+		bool stopReceive();
 		bool stopReceiveAsync();
 
 	protected:

@@ -205,6 +205,20 @@ namespace sakit
 		return true;
 	}
 
+	bool Socket::stopReceive()
+	{
+		this->mutexState.lock();
+		if (!this->_canStopReceive(this->state))
+		{
+			this->mutexState.unlock();
+			return false;
+		}
+		this->receiver->running = false;
+		this->mutexState.unlock();
+		this->receiver->join();
+		return true;
+	}
+	
 	bool Socket::stopReceiveAsync()
 	{
 		this->mutexState.lock();
