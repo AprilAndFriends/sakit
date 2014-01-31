@@ -10,6 +10,7 @@
 #if !defined(_WIN32) || !defined(_WINRT)
 #ifdef __APPLE__
 #include <TargetConditionals.h>
+#include <netinet/tcp.h>
 #endif
 #define _NO_WIN_H
 #include <hltypes/hplatform.h>
