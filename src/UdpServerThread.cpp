@@ -33,7 +33,7 @@ namespace sakit
 		this->remoteHosts.clear();
 		this->remotePorts.clear();
 		this->streams.clear();
-		this->mutex.lock();
+		this->mutex.unlock();
 	}
 
 	void UdpServerThread::_updateProcess()
