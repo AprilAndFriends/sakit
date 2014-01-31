@@ -121,14 +121,17 @@ namespace sakit
 		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue), "ioctlsocket()");
 	}
 
-	bool PlatformSocket::createSocket()
+	bool PlatformSocket::tryCreateSocket()
 	{
-		this->connected = true;
-		this->sock = socket(this->socketInfo->ai_family, this->socketInfo->ai_socktype, this->socketInfo->ai_protocol);
-		if (!this->_checkResult(this->sock, "socket()"))
+		if (this->sock == -1)
 		{
-			this->disconnect();
-			return false;
+			this->connected = true;
+			this->sock = socket(this->socketInfo->ai_family, this->socketInfo->ai_socktype, this->socketInfo->ai_protocol);
+			if (!this->_checkResult(this->sock, "socket()"))
+			{
+				this->disconnect();
+				return false;
+			}
 		}
 		return true;
 	}
@@ -182,7 +185,7 @@ namespace sakit
 		{
 			return false;
 		}
-		if (!this->createSocket())
+		if (!this->tryCreateSocket())
 		{
 			return false;
 		}
@@ -209,7 +212,7 @@ namespace sakit
 		{
 			return false;
 		}
-		if (!this->createSocket())
+		if (!this->tryCreateSocket())
 		{
 			return false;
 		}
@@ -238,12 +241,6 @@ namespace sakit
 		port = ntohs(address.sin_port);
 	}
 
-	bool PlatformSocket::setNagleAlgorithmActive(bool value)
-	{
-		int noDelay = (value ? 0 : 1);
-		return this->_checkResult(setsockopt(this->sock, IPPROTO_TCP, TCP_NODELAY, (char*)&noDelay, sizeof(int)), "setsockopt()");
-	}
-
 	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
@@ -258,6 +255,12 @@ namespace sakit
 		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().c_str());
 		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
+	}
+
+	bool PlatformSocket::setNagleAlgorithmActive(bool value)
+	{
+		int noDelay = (value ? 0 : 1);
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_TCP, TCP_NODELAY, (char*)&noDelay, sizeof(int)), "setsockopt()");
 	}
 
 	bool PlatformSocket::setMulticastInterface(Host interfaceHost)

@@ -26,6 +26,7 @@ namespace sakit
 	{
 		this->serverDelegate = serverDelegate;
 		this->serverThread = NULL;
+		this->socket->setServerMode(true);
 		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
 	}
 

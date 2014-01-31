@@ -24,6 +24,7 @@
 
 #include "Host.h"
 #include "NetworkAdapter.h"
+#include "State.h"
 
 #ifdef __APPLE__
 #include <netinet/in.h>
@@ -46,8 +47,9 @@ namespace sakit
 
 		HL_DEFINE_IS(connected, Connected);
 		HL_DEFINE_ISSET(connectionLess, ConnectionLess);
+		HL_DEFINE_ISSET(serverMode, ServerMode); // actually used only in WinRT
 
-		bool createSocket();
+		bool tryCreateSocket();
 		bool setRemoteAddress(Host remoteHost, unsigned short remotePort);
 		bool setLocalAddress(Host localHost, unsigned short localPort);
 		bool connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort);
@@ -64,10 +66,11 @@ namespace sakit
 		bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count);
 		bool joinMulticastGroup(Host interfaceHost, Host groupAddress);
 		bool leaveMulticastGroup(Host interfaceHost, Host groupAddress);
+
+		bool setNagleAlgorithmActive(bool value);
 		bool setMulticastInterface(Host interfaceHost);
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
-		bool setNagleAlgorithmActive(bool value);
 
 		static Host resolveHost(Host domain);
 		static Host resolveIp(Host ip);
@@ -82,6 +85,7 @@ namespace sakit
 		bool connectionLess;
 		char* receiveBuffer;
 		int bufferSize;
+		bool serverMode;
 
 #if !defined(_WIN32) || !defined(_WINRT)
 		unsigned int sock;
@@ -149,19 +153,18 @@ namespace sakit
 		StreamSocket^ sSock;
 		DatagramSocket^ dSock;
 		StreamSocketListener^ sServer;
-		bool _server;
 		bool _asyncConnected;
-		Result _asyncConnectionResult;
+		State _asyncConnectionResult;
 		hmutex _mutexConnection;
 		bool _asyncBound;
-		Result _asyncBindingResult;
+		State _asyncBindingResult;
 		hmutex _mutexBinder;
 		bool _asyncSent;
-		Result _asyncSendingResult;
+		State _asyncSendingResult;
 		int _asyncSentSize;
 		hmutex _mutexSender;
 		bool _asyncReceived;
-		Result _asyncReceivingResult;
+		State _asyncReceivingResult;
 		int _asyncReceivedSize;
 		hmutex _mutexReceiver;
 		harray<StreamSocket^> _acceptedSockets;
@@ -170,10 +173,10 @@ namespace sakit
 		UdpReceiver^ udpReceiver;
 
 		static Windows::Networking::HostName^ _makeHostName(Host host);
-		static hstr _resolve(chstr host, bool wantIp);
+		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);
 		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
 
-		static bool _awaitAsync(Result& result, hmutex& mutex);
+		static bool _awaitAsync(State& result, hmutex& mutex);
 #endif
 
 		bool _setNonBlocking(bool value);

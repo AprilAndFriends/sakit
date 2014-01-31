@@ -56,7 +56,7 @@ namespace sakit
 		return true;
 	}
 
-	hstr Host::toString()
+	hstr Host::toString() const
 	{
 		return this->address;
 	}

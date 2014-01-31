@@ -40,7 +40,7 @@ namespace sakit
 	{
 	}
 
-	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false)
+	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false), serverMode(false)
 	{
 		this->sSock = nullptr;
 		this->dSock = nullptr;
@@ -48,10 +48,9 @@ namespace sakit
 		this->bufferSize = sakit::bufferSize;
 		this->receiveBuffer = new char[this->bufferSize];
 		memset(this->receiveBuffer, 0, this->bufferSize);
-		this->_server = false;
 	}
 
-	bool PlatformSocket::_awaitAsync(Result& result, hmutex& mutex)
+	bool PlatformSocket::_awaitAsync(State& result, hmutex& mutex)
 	{
 		// TODOsock - add timeouts from settings?
 		int i = 0;
@@ -92,87 +91,56 @@ namespace sakit
 		return hostName;
 	}
 
-	bool PlatformSocket::createSocket(Host host, unsigned short port)
+	bool PlatformSocket::setRemoteAddress(Host remoteHost, unsigned short remotePort)
 	{
-		this->connected = true;
-		// create host info
-		HostName^ hostName = PlatformSocket::_makeHostName(host);
-		if (hostName == nullptr)
+		return true;
+	}
+
+	bool PlatformSocket::setLocalAddress(Host localHost, unsigned short localPort)
+	{
+		return true;
+	}
+
+	bool PlatformSocket::tryCreateSocket()
+	{
+		if (this->sServer == nullptr && this->sSock == nullptr && this->dSock == nullptr)
 		{
-			this->disconnect();
-			return false;
-		}
-		// create socket
-		if (this->_server)
-		{
-			this->sServer = ref new StreamSocketListener();
-			this->sServer->Control->QualityOfService = SocketQualityOfService::LowLatency;
-		}
-		else if (!this->connectionLess)
-		{
-			this->sSock = ref new StreamSocket();
-			this->sSock->Control->KeepAlive = false;
-			this->sSock->Control->NoDelay = true;
-		}
-		else
-		{
-			this->dSock = ref new DatagramSocket();
-			this->dSock->Control->QualityOfService = SocketQualityOfService::LowLatency;
-			this->udpReceiver = ref new UdpReceiver();
-			this->udpReceiver->socket = this;
-			this->dSock->MessageReceived += ref new TypedEventHandler<DatagramSocket^, DatagramSocketMessageReceivedEventArgs^>(
-				this->udpReceiver, &PlatformSocket::UdpReceiver::onReceivedDatagram);
+			this->connected = true;
+			// create socket
 			/*
-			this->_asyncBound = false;
-			this->_asyncBindingResult = RUNNING;
-			try
+			if (this->serverMode)
 			{
-				IAsyncAction^ action = this->dSock->BindServiceNameAsync(_HL_HSTR_TO_PSTR(hstr(port)));
-				action->Completed = ref new AsyncActionCompletedHandler([this](IAsyncAction^ action, AsyncStatus status)
-				{
-					this->_mutexBinder.lock();
-					if (this->_asyncBindingResult == RUNNING)
-					{
-						if (status == AsyncStatus::Completed)
-						{
-							this->_asyncBound = true;
-						}
-						this->_asyncBindingResult = FINISHED;
-					}
-					this->_mutexBinder.unlock();
-				});
-				if (!PlatformSocket::_awaitAsync(this->_asyncBindingResult, this->_mutexBinder))
-				{
-					action->Cancel();
-					this->disconnect();
-					return false;
-				}
+				this->sServer = ref new StreamSocketListener();
+				this->sServer->Control->QualityOfService = SocketQualityOfService::LowLatency;
 			}
-			catch (Platform::Exception^ e)
+			else*/ if (!this->connectionLess)
 			{
-				PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-				this->_mutexBinder.unlock();
-				return false;
+				this->sSock = ref new StreamSocket();
+				this->sSock->Control->KeepAlive = false;
+				this->sSock->Control->NoDelay = true;
 			}
-			if (!this->_asyncBound)
+			else
 			{
-				this->disconnect();
+				this->dSock = ref new DatagramSocket();
+				this->dSock->Control->QualityOfService = SocketQualityOfService::LowLatency;
+				this->udpReceiver = ref new UdpReceiver();
+				this->udpReceiver->socket = this;
+				this->dSock->MessageReceived += ref new TypedEventHandler<DatagramSocket^, DatagramSocketMessageReceivedEventArgs^>(
+					this->udpReceiver, &PlatformSocket::UdpReceiver::onReceivedDatagram);
 			}
-			return this->_asyncBound;
-			*/
 		}
 		return true;
 	}
 
-	bool PlatformSocket::connect(Host host, unsigned short port)
+	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort)
 	{
-		this->_server = false;
-		if (!this->createSocket(host, port))
+		// TODOsock - assign local host/port
+		if (!this->tryCreateSocket())
 		{
 			return false;
 		}
 		// create host info
-		HostName^ hostName = PlatformSocket::_makeHostName(host);
+		HostName^ hostName = PlatformSocket::_makeHostName(remoteHost);
 		if (hostName == nullptr)
 		{
 			this->disconnect();
@@ -186,11 +154,11 @@ namespace sakit
 		{
 			if (this->sSock != nullptr)
 			{
-				action = this->sSock->ConnectAsync(hostName, _HL_HSTR_TO_PSTR(hstr(port)), SocketProtectionLevel::PlainSocket);
+				action = this->sSock->ConnectAsync(hostName, _HL_HSTR_TO_PSTR(hstr(remotePort)), SocketProtectionLevel::PlainSocket);
 			}
 			if (this->dSock != nullptr)
 			{
-				action = this->dSock->ConnectAsync(hostName, _HL_HSTR_TO_PSTR(hstr(port)));
+				action = this->dSock->ConnectAsync(hostName, _HL_HSTR_TO_PSTR(hstr(remotePort)));
 			}
 			action->Completed = ref new AsyncActionCompletedHandler([this](IAsyncAction^ action, AsyncStatus status)
 			{
@@ -225,32 +193,51 @@ namespace sakit
 		return this->_asyncConnected;
 	}
 
-	bool PlatformSocket::bind(Host host, unsigned short port)
+	bool PlatformSocket::bind(Host localHost, unsigned short& localPort)
 	{
-		hlog::error(sakit::logTag, "Server calls are not supported on WinRT due to the problematic threading and data-sharing model of WinRT.");
-		return false;
-		/*
-		this->_server = true;
-		if (!this->createSocket(host, port))
+		if (!this->tryCreateSocket())
 		{
 			return false;
 		}
 		// create host info
-		HostName^ hostName = PlatformSocket::_makeHostName(host);
-		if (hostName == nullptr)
+		HostName^ hostName = nullptr;
+		if (localHost != Host::Any)
 		{
-			this->disconnect();
-			return false;
+			hostName = PlatformSocket::_makeHostName(localHost);
+			if (hostName == nullptr)
+			{
+				this->disconnect();
+				return false;
+			}
 		}
-		this->connectionAccepter = ref new ConnectionAccepter();
-		this->connectionAccepter->socket = this;
-		this->sServer->ConnectionReceived += ref new TypedEventHandler<StreamSocketListener^, StreamSocketListenerConnectionReceivedEventArgs^>(
-			this->connectionAccepter, &PlatformSocket::ConnectionAccepter::onConnectedStream);
+		/*
+		if (this->sServer != nullptr)
+		{
+			// thsi isn't actually supported on WinRT
+			this->connectionAccepter = ref new ConnectionAccepter();
+			this->connectionAccepter->socket = this;
+			this->sServer->ConnectionReceived += ref new TypedEventHandler<StreamSocketListener^, StreamSocketListenerConnectionReceivedEventArgs^>(
+				this->connectionAccepter, &PlatformSocket::ConnectionAccepter::onConnectedStream);
+		}
+		*/
 		this->_asyncBound = false;
 		this->_asyncBindingResult = RUNNING;
 		try
 		{
-			IAsyncAction^ action = this->sServer->BindEndpointAsync(hostName, _HL_HSTR_TO_PSTR(hstr(port)));
+			IAsyncAction^ action = nullptr;
+			/*
+			if (this->sServer != nullptr)
+			{
+				action = this->sServer->BindEndpointAsync(hostName, _HL_HSTR_TO_PSTR(hstr(localPort)));
+			}
+			else*/ if (hostName != nullptr)
+			{
+				action = this->dSock->BindEndpointAsync(hostName, _HL_HSTR_TO_PSTR(hstr(localPort)));
+			}
+			else
+			{
+				action = this->dSock->BindServiceNameAsync(_HL_HSTR_TO_PSTR(hstr(localPort)));
+			}
 			action->Completed = ref new AsyncActionCompletedHandler([this](IAsyncAction^ action, AsyncStatus status)
 			{
 				this->_mutexBinder.lock();
@@ -282,7 +269,25 @@ namespace sakit
 			this->disconnect();
 		}
 		return this->_asyncBound;
-		*/
+	}
+
+	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
+	{
+		// create host info
+		HostName^ groupAddressName = PlatformSocket::_makeHostName(groupAddress);
+		if (groupAddressName == nullptr)
+		{
+			this->disconnect();
+			return false;
+		}
+		this->dSock->JoinMulticastGroup(groupAddressName);
+		return true;
+	}
+
+	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
+	{
+		hlog::error(sakit::logTag, "It is not possible to leave multicast groups on WinRT!");
+		return false;
 	}
 
 	bool PlatformSocket::setNagleAlgorithmActive(bool value)
@@ -293,97 +298,6 @@ namespace sakit
 			return true;
 		}
 		return false;
-	}
-
-	bool PlatformSocket::joinMulticastGroup(Host host, unsigned short port, Host groupAddress)
-	{
-		this->_server = false;
-		this->connected = true;
-		// create host info
-		HostName^ hostName = PlatformSocket::_makeHostName(host);
-		if (hostName == nullptr)
-		{
-			this->disconnect();
-			return false;
-		}
-		HostName^ groupAddressName = PlatformSocket::_makeHostName(groupAddress);
-		if (groupAddressName == nullptr)
-		{
-			this->disconnect();
-			return false;
-		}
-		this->dSock = ref new DatagramSocket();
-		this->dSock->Control->QualityOfService = SocketQualityOfService::LowLatency;
-		this->_asyncBound = false;
-		this->_asyncBindingResult = RUNNING;
-		try
-		{
-			IAsyncAction^ action = this->dSock->BindEndpointAsync(hostName, _HL_HSTR_TO_PSTR(hstr(port)));
-			action->Completed = ref new AsyncActionCompletedHandler([this](IAsyncAction^ action, AsyncStatus status)
-			{
-				this->_mutexBinder.lock();
-				if (this->_asyncBindingResult == RUNNING)
-				{
-					if (status == AsyncStatus::Completed)
-					{
-						this->_asyncBound = true;
-					}
-					this->_asyncBindingResult = FINISHED;
-				}
-				this->_mutexBinder.unlock();
-			});
-			if (!PlatformSocket::_awaitAsync(this->_asyncBindingResult, this->_mutexBinder))
-			{
-				action->Cancel();
-				this->disconnect();
-				return false;
-			}
-		}
-		catch (Platform::Exception^ e)
-		{
-			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			this->_mutexBinder.unlock();
-			return false;
-		}
-		if (!this->_asyncBound)
-		{
-			this->disconnect();
-			return false;
-		}
-		this->dSock->JoinMulticastGroup(groupAddressName);
-		return true;
-		/*
-		this->connected = true;
-#ifndef _ANDROID
-		int ai_family = AF_INET;
-#else
-		int ai_family = PF_INET;
-#endif
-		this->sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
-		if (!this->_checkResult(this->sock, "socket()"))
-		{
-			return false;
-		}
-		sockaddr_in local;
-		local.sin_family = ai_family;
-		local.sin_port = htons(port);
-		local.sin_addr.s_addr = htonl(INADDR_ANY);
-		if (!this->_checkResult(::bind(this->sock, (sockaddr*)&local, sizeof(sockaddr_in)), "bind()"))
-		{
-			return false;
-		}
-		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(host.toString().c_str());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
-		if (!this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()"))
-		{
-			return false;
-		}
-		this->multicastGroupAddress.sin_family = ai_family;
-		this->multicastGroupAddress.sin_addr.s_addr = inet_addr(groupAddress.toString().c_str());
-		this->multicastGroupAddress.sin_port = htons(port);
-		return this->setMulticastTtl(32);
-		*/
 	}
 
 	bool PlatformSocket::setMulticastInterface(Host address)
@@ -435,7 +349,6 @@ namespace sakit
 			delete (*it);
 		}
 		this->_acceptedSockets.clear();
-		this->_server = false;
 		this->connectionAccepter = nullptr;
 		this->udpReceiver = nullptr;
 		bool previouslyConnected = this->connected;
@@ -580,7 +493,7 @@ namespace sakit
 		*/
 	}
 
-	bool PlatformSocket::receiveFrom(hstream* stream, Socket* socket)
+	bool PlatformSocket::receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort)
 	{
 		this->udpReceiver->dataMutex.lock();
 		if (this->udpReceiver->hosts.size() == 0)
@@ -588,8 +501,8 @@ namespace sakit
 			this->udpReceiver->dataMutex.unlock();
 			return false;
 		}
-		Host host = this->udpReceiver->hosts.remove_first();
-		unsigned short port = this->udpReceiver->ports.remove_first();
+		remoteHost = this->udpReceiver->hosts.remove_first();
+		remotePort = this->udpReceiver->ports.remove_first();
 		hstream* data = this->udpReceiver->streams.remove_first();
 		this->udpReceiver->dataMutex.unlock();
 		if (data->size() == 0)
@@ -598,7 +511,6 @@ namespace sakit
 			return false;
 		}
 		stream->write_raw(*data);
-		((Base*)socket)->_activateConnection(host, port);
 		delete data;
 		return true;
 	}
@@ -746,39 +658,47 @@ namespace sakit
 		*/
 	}
 
-	hstr PlatformSocket::resolveHost(chstr domain)
+	Host PlatformSocket::resolveHost(Host domain)
 	{
-		return PlatformSocket::_resolve(domain, true);
+		return Host(PlatformSocket::_resolve(domain.toString(), "0", true, false));
 	}
 
-	hstr PlatformSocket::resolveIp(chstr ip)
+	Host PlatformSocket::resolveIp(Host ip)
 	{
 		// wow, Microsoft, just wow
 		hlog::warn(sakit::logTag, "WinRT does not support resolving an IP address to a host name. Attempting anyway, but don't count on it.");
-		return PlatformSocket::_resolve(ip, false);
+		return Host(PlatformSocket::_resolve(ip.toString(), "0", false, false));
 	}
 
-	hstr PlatformSocket::_resolve(chstr host, bool wantIp)
+	unsigned short PlatformSocket::resolveServiceName(chstr serviceName)
+	{
+		return (unsigned short)(int)PlatformSocket::_resolve(Host::Any.toString(), serviceName, false, true);
+	}
+
+	hstr PlatformSocket::_resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort)
 	{
 		Windows::Networking::HostName^ hostName = nullptr;
 		// create host info
-		try
+		if (!wantPort)
 		{
-			hostName = ref new HostName(_HL_HSTR_TO_PSTR(host));
-		}
-		catch (Platform::Exception^ e)
-		{
-			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			return "";
+			try
+			{
+				hostName = ref new HostName(_HL_HSTR_TO_PSTR(host));
+			}
+			catch (Platform::Exception^ e)
+			{
+				PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
+				return "";
+			}
 		}
 		hstr result;
 		hmutex mutex;
-		Result _asyncFinished = RUNNING;
+		State _asyncFinished = RUNNING;
 		try
 		{
-			IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation = DatagramSocket::GetEndpointPairsAsync(hostName, "0");
+			IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation = DatagramSocket::GetEndpointPairsAsync(hostName, _HL_HSTR_TO_PSTR(serviceName));
 			operation->Completed = ref new AsyncOperationCompletedHandler<Collections::IVectorView<EndpointPair^>^>(
-				[wantIp, &mutex, &_asyncFinished, &result](IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation, AsyncStatus status)
+				[wantIp, wantPort, &mutex, &_asyncFinished, &result](IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation, AsyncStatus status)
 			{
 				mutex.lock();
 				if (_asyncFinished == RUNNING)
@@ -788,13 +708,27 @@ namespace sakit
 						Collections::IVectorView<EndpointPair^>^ endpointPairs = operation->GetResults();
 						if (endpointPairs != nullptr && endpointPairs->Size > 0)
 						{
-							HostNameType type = (wantIp ? HostNameType::Ipv4 : HostNameType::DomainName);
 							for (Collections::IIterator<EndpointPair^>^ it = endpointPairs->First(); it->HasCurrent; it->MoveNext())
 							{
-								if (it->Current->RemoteHostName != nullptr && it->Current->RemoteHostName->Type == type)
+								if (it->Current->RemoteHostName != nullptr)
 								{
-									result = _HL_PSTR_TO_HSTR(it->Current->RemoteHostName->DisplayName);
-									break;
+									if (!wantPort)
+									{
+										if (it->Current->RemoteHostName->Type == (wantIp ? HostNameType::Ipv4 : HostNameType::DomainName))
+										{
+											result = _HL_PSTR_TO_HSTR(it->Current->RemoteHostName->DisplayName);
+											break;
+										}
+									}
+									else if (it->Current->RemoteHostName->Type == HostNameType::Ipv4 || it->Current->RemoteHostName->Type == HostNameType::DomainName)
+									{
+										result = _HL_PSTR_TO_HSTR(it->Current->RemoteServiceName);
+										if (result.is_number())
+										{
+											break;
+										}
+										result = "";
+									}
 								}
 							}
 						}

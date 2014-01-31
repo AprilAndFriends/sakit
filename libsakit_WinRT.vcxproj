@@ -92,6 +92,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="src\Base.cpp" />
+    <ClCompile Include="src\Binder.cpp" />
+    <ClCompile Include="src\BinderDelegate.cpp" />
+    <ClCompile Include="src\BinderThread.cpp" />
+    <ClCompile Include="src\BroadcasterThread.cpp" />
+    <ClCompile Include="src\Connector.cpp" />
+    <ClCompile Include="src\ConnectorDelegate.cpp" />
     <ClCompile Include="src\ConnectorThread.cpp" />
     <ClCompile Include="src\Host.cpp" />
     <ClCompile Include="src\HttpResponse.cpp" />
@@ -104,26 +110,34 @@
     <ClCompile Include="src\PlatformSocket_WinRT.cpp" />
     <ClCompile Include="src\ReceiverThread.cpp" />
     <ClCompile Include="src\sakit.cpp" />
+    <ClCompile Include="src\sakitUtil.cpp" />
     <ClCompile Include="src\SenderThread.cpp" />
     <ClCompile Include="src\Server.cpp" />
     <ClCompile Include="src\ServerDelegate.cpp" />
-    <ClCompile Include="src\ServerThread.cpp" />
     <ClCompile Include="src\Socket.cpp" />
     <ClCompile Include="src\SocketBase.cpp" />
     <ClCompile Include="src\SocketDelegate.cpp" />
+    <ClCompile Include="src\TcpReceiverThread.cpp" />
     <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="src\TcpServerDelegate.cpp" />
     <ClCompile Include="src\TcpServerThread.cpp" />
     <ClCompile Include="src\TcpSocket.cpp" />
+    <ClCompile Include="src\TcpSocketDelegate.cpp" />
+    <ClCompile Include="src\UdpReceiverThread.cpp" />
     <ClCompile Include="src\UdpServer.cpp" />
     <ClCompile Include="src\UdpServerDelegate.cpp" />
     <ClCompile Include="src\UdpServerThread.cpp" />
     <ClCompile Include="src\UdpSocket.cpp" />
+    <ClCompile Include="src\UdpSocketDelegate.cpp" />
     <ClCompile Include="src\Url.cpp" />
     <ClCompile Include="src\WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sakit\Base.h" />
+    <ClInclude Include="include\sakit\Binder.h" />
+    <ClInclude Include="include\sakit\BinderDelegate.h" />
+    <ClInclude Include="include\sakit\Connector.h" />
+    <ClInclude Include="include\sakit\ConnectorDelegate.h" />
     <ClInclude Include="include\sakit\Host.h" />
     <ClInclude Include="include\sakit\HttpResponse.h" />
     <ClInclude Include="include\sakit\HttpSocket.h" />
@@ -136,20 +150,27 @@
     <ClInclude Include="include\sakit\Socket.h" />
     <ClInclude Include="include\sakit\SocketBase.h" />
     <ClInclude Include="include\sakit\SocketDelegate.h" />
+    <ClInclude Include="include\sakit\State.h" />
     <ClInclude Include="include\sakit\TcpServer.h" />
     <ClInclude Include="include\sakit\TcpServerDelegate.h" />
     <ClInclude Include="include\sakit\TcpSocket.h" />
+    <ClInclude Include="include\sakit\TcpSocketDelegate.h" />
     <ClInclude Include="include\sakit\UdpServer.h" />
     <ClInclude Include="include\sakit\UdpServerDelegate.h" />
     <ClInclude Include="include\sakit\UdpSocket.h" />
+    <ClInclude Include="include\sakit\UdpSocketDelegate.h" />
     <ClInclude Include="include\sakit\Url.h" />
+    <ClInclude Include="src\BinderThread.h" />
+    <ClInclude Include="src\BroadcasterThread.h" />
     <ClInclude Include="src\ConnectorThread.h" />
     <ClInclude Include="src\HttpSocketThread.h" />
     <ClInclude Include="src\PlatformSocket.h" />
     <ClInclude Include="src\ReceiverThread.h" />
+    <ClInclude Include="src\sakitUtil.h" />
     <ClInclude Include="src\SenderThread.h" />
-    <ClInclude Include="src\ServerThread.h" />
+    <ClInclude Include="src\TcpReceiverThread.h" />
     <ClInclude Include="src\TcpServerThread.h" />
+    <ClInclude Include="src\UdpReceiverThread.h" />
     <ClInclude Include="src\UdpServerThread.h" />
     <ClInclude Include="src\WorkerThread.h" />
   </ItemGroup>

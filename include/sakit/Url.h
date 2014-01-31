@@ -39,11 +39,11 @@ namespace sakit
 		HL_DEFINE_GET(hstr, fragment, Fragment);
 
 		/// @note The returned value is fully encoded.
-		hstr getAbsolutePath(bool withPort = false);
+		hstr getAbsolutePath(bool withPort = false) const;
 		/// @note The returned value is fully encoded.
-		hstr getBody();
+		hstr getBody() const;
 		/// @note The returned value is fully encoded.
-		hstr toString(bool withPort = true);
+		hstr toString(bool withPort = true) const;
 
 		static hstr encodeWwwForm(hmap<hstr, hstr> query, char delimiter = '&');
 		static hmap<hstr, hstr> decodeWwwForm(chstr string, char* usedDelimiter = NULL);

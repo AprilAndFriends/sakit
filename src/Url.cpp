@@ -159,7 +159,7 @@ namespace sakit
 	{
 	}
 
-	hstr Url::getAbsolutePath(bool withPort)
+	hstr Url::getAbsolutePath(bool withPort) const
 	{
 		hstr result;
 		result += HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
@@ -175,7 +175,7 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::getBody()
+	hstr Url::getBody() const
 	{
 		hstr result;
 		hstr query = Url::encodeWwwForm(this->query, this->queryDelimiter);
@@ -190,7 +190,7 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::toString(bool withPort)
+	hstr Url::toString(bool withPort) const
 	{
 		hstr result = this->getAbsolutePath(withPort);
 		hstr body = this->getBody();

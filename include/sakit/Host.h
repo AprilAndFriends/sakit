@@ -32,7 +32,7 @@ namespace sakit
 
 		bool isIp();
 
-		hstr toString();
+		hstr toString() const;
 
 		bool operator==(const Host& other) const;
 		bool operator!=(const Host& other) const;
