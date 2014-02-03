@@ -31,10 +31,8 @@ namespace sakit
 
 	Socket::~Socket()
 	{
-		this->sender->running = false;
 		this->sender->join();
 		delete this->sender;
-		this->receiver->running = false;
 		this->receiver->join();
 		delete this->receiver;
 	}
@@ -213,7 +211,6 @@ namespace sakit
 			this->mutexState.unlock();
 			return false;
 		}
-		this->receiver->running = false;
 		this->mutexState.unlock();
 		this->receiver->join();
 		return true;

@@ -58,7 +58,6 @@ namespace sakit
 	HttpSocket::~HttpSocket()
 	{
 		this->__unregister();
-		this->thread->running = false;
 		this->thread->join();
 		delete this->thread;
 	}

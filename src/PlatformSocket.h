@@ -30,6 +30,7 @@
 #include <netinet/in.h>
 #endif
 #ifdef _WINRT
+using namespace Windows::Networking;
 using namespace Windows::Networking::Sockets;
 using namespace Windows::Storage::Streams;
 #endif
@@ -153,30 +154,19 @@ namespace sakit
 		StreamSocket^ sSock;
 		DatagramSocket^ dSock;
 		StreamSocketListener^ sServer;
-		bool _asyncConnected;
-		State _asyncConnectionResult;
-		hmutex _mutexConnection;
-		bool _asyncBound;
-		State _asyncBindingResult;
-		hmutex _mutexBinder;
-		bool _asyncSent;
-		State _asyncSendingResult;
-		int _asyncSentSize;
-		hmutex _mutexSender;
-		bool _asyncReceived;
-		State _asyncReceivingResult;
-		int _asyncReceivedSize;
-		hmutex _mutexReceiver;
 		harray<StreamSocket^> _acceptedSockets;
 		hmutex _mutexAcceptedSockets;
 		ConnectionAccepter^ connectionAccepter;
 		UdpReceiver^ udpReceiver;
+		IOutputStream^ udpStream;
 
-		static Windows::Networking::HostName^ _makeHostName(Host host);
+		static HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);
+
+		bool _setUdpHost(HostName^ hostName, unsigned short remotePort);
 		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
 
-		static bool _awaitAsync(State& result, hmutex& mutex);
+		static bool _awaitAsync(State& state, hmutex& mutex);
 #endif
 
 		bool _setNonBlocking(bool value);

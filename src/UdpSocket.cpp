@@ -26,8 +26,8 @@ namespace sakit
 	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND),
 		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate))
 	{
-		this->udpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(true);
+		this->udpSocketDelegate = socketDelegate;
 		this->receiver = this->udpReceiver = new UdpReceiverThread(this->socket);
 		this->broadcaster = new BroadcasterThread(this->socket);
 		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
@@ -37,10 +37,8 @@ namespace sakit
 	UdpSocket::~UdpSocket()
 	{
 		this->__unregister();
-		this->broadcaster->running = false;
 		this->broadcaster->join();
 		delete this->broadcaster;
-		this->_clear();
 	}
 
 	bool UdpSocket::hasDestination()

@@ -17,23 +17,6 @@
 
 namespace sakit
 {
-	struct HtmlEntity
-	{
-		unsigned int unicode;
-		hstr utf8;
-
-		HtmlEntity(unsigned int unicode)
-		{
-			this->unicode = unicode;
-			this->utf8 = hstr::from_unicode(unicode);
-		}
-
-		~HtmlEntity()
-		{
-		}
-
-	};
-
 	hstr logTag = "sakit";
 	float retryTimeout = 0.01f;
 	int retryAttempts = 1000;
@@ -43,9 +26,13 @@ namespace sakit
 	hmap<unsigned int, hstr> mapping;
 	/// @note Used for optimization to avoid hstr::from_unicode() calls.
 	hmap<hstr, hstr> reverseMapping;
+	hthread* _updateThread;
 
-	void init(int bufferSize)
+	void _asyncUpdate(hthread* thread);
+
+	void init(bool threadedUpdate)
 	{
+		bufferSize = 65536;
 		hlog::write(sakit::logTag, "Initializing Socket Abstraction Kit.");
 		PlatformSocket::platformInit();
 		sakit::bufferSize = bufferSize;
@@ -308,11 +295,22 @@ namespace sakit
 		{
 			reverseMapping[it->second] = hstr::from_unicode(it->first);
 		}
+		if (threadedUpdate)
+		{
+			_updateThread = new hthread(&_asyncUpdate);
+			_updateThread->start();
+		}
 	}
 
 	void destroy()
 	{
 		hlog::write(sakit::logTag, "Destroying Socket Abstraction Kit.");
+		if (_updateThread != NULL)
+		{
+			_updateThread->join();
+			delete _updateThread;
+			_updateThread = NULL;
+		}
 		PlatformSocket::platformDestroy();
 		if (connections.size() > 0)
 		{
@@ -320,7 +318,7 @@ namespace sakit
 		}
 	}
 
-	void update(float timeSinceLastFrame)
+	void _update(float timeSinceLastFrame)
 	{
 		connectionsMutex.lock();
 		harray<Base*> _connections = sakit::connections;
@@ -329,6 +327,35 @@ namespace sakit
 		{
 			(*it)->update(timeSinceLastFrame);
 		}
+	}
+
+	void update(float timeSinceLastFrame)
+	{
+		if (_updateThread != NULL)
+		{
+			hlog::warn(sakit::logTag, "Calling update() does nothing when threaded update is active!");
+			return;
+		}
+		_update(timeSinceLastFrame);
+	}
+
+	void _asyncUpdate(hthread* thread)
+	{
+		while (thread->isRunning())
+		{
+			_update(0.001f);
+			hthread::sleep(1.0f);
+		}
+	}
+
+	int getBufferSize()
+	{
+		return bufferSize;
+	}
+
+	void setBufferSize(int value)
+	{
+		bufferSize = value;
 	}
 
 	float getRetryTimeout()

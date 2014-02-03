@@ -32,7 +32,6 @@ namespace sakit
 
 	Server::~Server()
 	{
-		this->serverThread->running = false;
 		this->serverThread->join();
 		delete this->serverThread;
 	}

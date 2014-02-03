@@ -272,8 +272,7 @@ namespace sakit
 
 	bool PlatformSocket::setMulticastTtl(int value)
 	{
-		int ttl = 20;
-		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(int)), "setsockopt()");
+		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&value, sizeof(int)), "setsockopt()");
 	}
 
 	bool PlatformSocket::setMulticastLoopback(bool value)

@@ -35,7 +35,6 @@ namespace sakit
 
 	Connector::~Connector()
 	{
-		this->_thread->running = false;
 		this->_thread->join();
 		delete this->_thread;
 	}

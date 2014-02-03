@@ -29,16 +29,17 @@
 #include <sakit/HttpSocket.h>
 #include <sakit/HttpSocketDelegate.h>
 
-#define TCP_PORT_SYNC_SERVER 51111
-#define TCP_PORT_ASYNC_SERVER 51112
-#define UDP_PORT_SYNC_SERVER 51211
-#define UDP_PORT_ASYNC_SERVER 51212
-#define UDP_PORT_SYNC_SERVER_ANSWER 51221
-#define UDP_PORT_ASYNC_SERVER_ANSWER 51222
-#define UDP_PORT_SYNC_CLIENT 51311
-#define UDP_PORT_ASYNC_CLIENT 51312
-#define UDP_PORT_MULTICAST_CLIENT_1 51411
-#define UDP_PORT_MULTICAST_CLIENT_2 51412
+#define TCP_PORT_SYNC_SERVER 50000
+#define TCP_PORT_ASYNC_SERVER 50001
+#define UDP_PORT_SYNC_SERVER 50100
+#define UDP_PORT_ASYNC_SERVER 50101
+#define UDP_PORT_SYNC_SERVER_ANSWER 50110
+#define UDP_PORT_ASYNC_SERVER_ANSWER 50111
+#define UDP_PORT_SYNC_CLIENT 50200
+#define UDP_PORT_ASYNC_CLIENT 50201
+#define UDP_PORT_MULTICAST_CLIENT_1 50300
+#define UDP_PORT_MULTICAST_CLIENT_2 50301
+#define UDP_PORT_BROADCAST 51000
 #define UDP_MULTICAST_ADDRESS "226.2.3.4"
 
 void _printReceived(hstream* stream)
@@ -252,16 +253,17 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 		hlog::error(LOG_TAG, "- SERVER running error");
 	}
 
-	void onReceived(sakit::UdpServer* server, sakit::Host remoteHost, unsigned short port, hstream* stream)
+	void onReceived(sakit::UdpServer* server, sakit::Host remoteHost, unsigned short remotePort, hstream* stream)
 	{
-		hlog::writef(LOG_TAG, "- SERVER '%s:%d' received data (from '%s:%d'): %d", server->getLocalHost().toString().c_str(), server->getLocalPort(), remoteHost.toString().c_str(), port, stream->size());
+		hlog::writef(LOG_TAG, "- SERVER '%s:%d' received data (from '%s:%d'): %d", server->getLocalHost().toString().c_str(), server->getLocalPort(), remoteHost.toString().c_str(), remotePort, stream->size());
 		_printReceived(stream);
 		sakit::UdpSocket* udpSocket = new sakit::UdpSocket(&udpClientDelegate);
 		if (udpSocket->bind(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER_ANSWER))
 		{
-			hlog::writef(LOG_TAG, "UDP-Spcket bound to '%s:%d'", udpSocket->getLocalHost().toString().c_str(), udpSocket->getLocalPort());
-			if (udpSocket->setDestination(remoteHost, port))
+			hlog::writef(LOG_TAG, "UDP-Socket bound to '%s:%d'", udpSocket->getLocalHost().toString().c_str(), udpSocket->getLocalPort());
+			if (udpSocket->setDestination(remoteHost, remotePort))
 			{
+				hlog::writef(LOG_TAG, "UDP-Socket connected to '%s:%d'", udpSocket->getRemoteHost().toString().c_str(), udpSocket->getRemotePort());
 				int sent = udpSocket->send("Hello.");
 				hlog::write(LOG_TAG, "UDP-SOCKET sent: " + hstr(sent));
 			}
@@ -452,28 +454,32 @@ void _testAsyncUdpServer()
 			if (server->startAsync())
 			{
 				sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
-				if (client->bind(sakit::Host::Localhost, UDP_PORT_SYNC_CLIENT) && client->setDestination(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER))
+				if (client->bind(sakit::Host::Localhost, UDP_PORT_SYNC_CLIENT))
 				{
-					hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
-					hstream stream;
-					char data[12] = "Hi there.\0g";
-					stream.write_raw(data, 12);
-					stream.rewind();
-					int sent = client->send(&stream);
-					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
-					for_iter (i, 0, 10)
+					hlog::writef(LOG_TAG, "Bound to '%s:%d'", client->getLocalHost().toString().c_str(), client->getLocalPort());
+					if (client->setDestination(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER))
 					{
-						sakit::update();
-						hthread::sleep(100.0f);
+						hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
+						hstream stream;
+						char data[12] = "Hi there.\0g";
+						stream.write_raw(data, 12);
+						stream.rewind();
+						int sent = client->send(&stream);
+						hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
+						for_iter (i, 0, 10)
+						{
+							sakit::update();
+							hthread::sleep(100.0f);
+						}
+						stream.clear();
+						sakit::Host remoteHost;
+						unsigned short remotePort = 0;
+						client->receive(&stream, remoteHost, remotePort); // receive all there is
+						stream.rewind();
+						hlog::writef(LOG_TAG, "Client received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+						_printReceived(&stream);
+						hlog::write(LOG_TAG, "Disconnected.");
 					}
-					stream.clear();
-					sakit::Host remoteHost;
-					unsigned short remotePort = 0;
-					client->receive(&stream, remoteHost, remotePort); // receive all there is
-					stream.rewind();
-					hlog::writef(LOG_TAG, "Client received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
-					_printReceived(&stream);
-					hlog::write(LOG_TAG, "Disconnected.");
 				}
 				server->stopAsync();
 				while (server->isRunning())
@@ -494,6 +500,7 @@ void _testAsyncUdpServer()
 		}
 	}
 	delete server;
+	//*/
 }
 
 void _testAsyncUdpClient()
@@ -587,6 +594,18 @@ void _testAsyncUdpClient()
 	delete server;
 }
 
+void _testUdpBroadcast()
+{
+	hlog::debug(LOG_TAG, "");
+	hlog::debug(LOG_TAG, "starting test: UDP multicast");
+	hlog::debug(LOG_TAG, "");
+	hlog::write(LOG_TAG, "Remember to run a server first where messages can be checked!");
+	sakit::UdpSocket* socket = new sakit::UdpSocket(&udpClientDelegate);
+	socket->bind();
+	socket->broadcast(UDP_PORT_BROADCAST, "Hello.");
+	delete socket;
+}
+
 void _testUdpMulticast()
 {
 	hlog::debug(LOG_TAG, "");
@@ -595,7 +614,7 @@ void _testUdpMulticast()
 	int sent = 0;
 	int received = 0;
 	sakit::UdpSocket* s1 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
-	if (s1->bind(UDP_PORT_MULTICAST_CLIENT_1))
+	if (s1->bind(sakit::Host("192.168.1.133"), UDP_PORT_MULTICAST_CLIENT_1))
 	{
 		hlog::writef(LOG_TAG, "UDP-1 bound to '%s:%d'", s1->getLocalHost().toString().c_str(), s1->getLocalPort());
 		if (s1->joinMulticastGroup(s1->getLocalHost(), sakit::Host(UDP_MULTICAST_ADDRESS)))
@@ -609,19 +628,11 @@ void _testUdpMulticast()
 				{
 					hlog::writef(LOG_TAG, "UDP-2 set destination to '%s:%d'", s2->getRemoteHost().toString().c_str(), s2->getRemotePort());
 					sent = s2->send("Hello.");
-					hlog::writef(LOG_TAG, "UDP-2 sent (to '%s:%d'): %d", UDP_MULTICAST_ADDRESS, UDP_PORT_MULTICAST_CLIENT_1, sent);
+					hlog::writef(LOG_TAG, "UDP-2 sent (to '%s:%d'): %d", s2->getRemoteHost().toString().c_str(), s2->getRemotePort(), sent);
 					hstream stream;
 					sakit::Host remoteHost;
 					unsigned short remotePort = 0;
-					for_iter (i, 0, 10)
-					{
-						if (s1->receive(&stream, remoteHost, remotePort) > 0)
-						{
-							break;
-						}
-						sakit::update();
-						hthread::sleep(100.0f);
-					}
+					s1->receive(&stream, remoteHost, remotePort);
 					stream.rewind();
 					hlog::writef(LOG_TAG, "UDP-1 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
 					if (stream.size() > 0)
@@ -631,15 +642,7 @@ void _testUdpMulticast()
 						sent = s1->send("Hi.");
 						hlog::writef(LOG_TAG, "UDP-1 sent (to '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, sent);
 						stream.clear();
-						for_iter (i, 0, 10)
-						{
-							if (s2->receive(&stream, remoteHost, remotePort) > 0)
-							{
-								break;
-							}
-							sakit::update();
-							hthread::sleep(100.0f);
-						}
+						s2->receive(&stream, remoteHost, remotePort) > 0);
 						stream.rewind();
 						hlog::writef(LOG_TAG, "UDP-2 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
 						if (stream.size() > 0)
@@ -729,16 +732,19 @@ int main(Platform::Array<Platform::String^>^ args)
 {
 	hlog::setLevelDebug(true); // for the nice colors
 	sakit::init();
-#ifndef _WINRT
+#ifndef _WINRT // because TCP servers are not supported on WinRT
 	// TCP tests
 	_testAsyncTcpServer();
 	_testAsyncTcpClient();
+#endif
 	// UDP tests
 	_testAsyncUdpServer();
 	_testAsyncUdpClient();
+	_testUdpBroadcast();
+#ifndef _WINRT // because loopbacks are disabled on WinRT, multicast messages will not arrive and render this test basically useless
 	_testUdpMulticast();
-	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 #endif
+	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	// HTTP tests
 	sakit::setRetryTimeout(0.01f);
 	sakit::setRetryAttempts(1000); // makes for a 10 second timeout

@@ -25,9 +25,9 @@ namespace sakit
 {
 	UdpServer::UdpServer(UdpServerDelegate* udpServerDelegate) : Server(dynamic_cast<ServerDelegate*>(udpServerDelegate))
 	{
+		this->socket->setConnectionLess(true);
 		this->udpServerDelegate = udpServerDelegate;
 		this->serverThread = this->udpServerThread = new UdpServerThread(this->socket);
-		this->socket->setConnectionLess(true);
 		this->__register();
 	}
 

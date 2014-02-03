@@ -25,7 +25,7 @@ namespace sakit
 {
 	extern hstr logTag;
 
-	sakitFnExport void init(int bufferSize = 65536);
+	sakitFnExport void init(bool threadedUpdate = false);
 	sakitFnExport void destroy();
 	/// @brief A call to this function will trigger delegate callbacks.
 	sakitFnExport void update(float timeSinceLastFrame = 0.0f);
