@@ -29,6 +29,7 @@ namespace sakit
 	hthread* _updateThread;
 
 	void _asyncUpdate(hthread* thread);
+	void _internalUpdate(float timeSinceLastFrame);
 
 	void init(bool threadedUpdate)
 	{
@@ -318,7 +319,7 @@ namespace sakit
 		}
 	}
 
-	void _update(float timeSinceLastFrame)
+	void _internalUpdate(float timeSinceLastFrame)
 	{
 		connectionsMutex.lock();
 		harray<Base*> _connections = sakit::connections;
@@ -336,14 +337,14 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Calling update() does nothing when threaded update is active!");
 			return;
 		}
-		_update(timeSinceLastFrame);
+		_internalUpdate(timeSinceLastFrame);
 	}
 
 	void _asyncUpdate(hthread* thread)
 	{
 		while (thread->isRunning())
 		{
-			_update(0.001f);
+			_internalUpdate(0.001f);
 			hthread::sleep(1.0f);
 		}
 	}
