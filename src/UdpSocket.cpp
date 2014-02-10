@@ -227,7 +227,6 @@ namespace sakit
 		p[size] = 0;
 		hstr result = p;
 		delete [] p;
-		
 		return result;
 	}
 
