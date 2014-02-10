@@ -105,7 +105,7 @@ namespace sakit
 	{
 		return SocketBase::_send(data);
 	}
-
+	
 	bool Socket::sendAsync(chstr data)
 	{
 		hstream stream;

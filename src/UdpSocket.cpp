@@ -216,6 +216,20 @@ namespace sakit
 		}
 		return this->_finishReceive(this->_receiveFromDirect(stream, remoteHost, remotePort));
 	}
+	
+	hstr UdpSocket::receive(Host& remoteHost, unsigned short& remotePort)
+	{
+		hstream stream;
+		int size = this->receive(&stream, remoteHost, remotePort);
+		stream.rewind();
+		char* p = new char[size + 1];
+		stream.read_raw(p, size);
+		p[size] = 0;
+		hstr result = p;
+		delete [] p;
+		
+		return result;
+	}
 
 	bool UdpSocket::startReceiveAsync(int maxPackages)
 	{

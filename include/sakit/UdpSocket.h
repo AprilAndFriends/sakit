@@ -47,6 +47,7 @@ namespace sakit
 
 		/// @note Keep in mind that only one datagram is received at the time.
 		int receive(hstream* stream, Host& remoteHost, unsigned short& remotePort);
+		hstr receive(Host& remoteHost, unsigned short& remotePort);
 		bool startReceiveAsync(int maxPackages = 0);
 
 		bool broadcast(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count = INT_MAX);

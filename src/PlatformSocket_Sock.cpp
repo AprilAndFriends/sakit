@@ -418,9 +418,13 @@ namespace sakit
 		FD_ZERO(&readSet);
 		FD_SET(this->sock, &readSet);
 		int result = select(this->sock + 1, &readSet, NULL, NULL, &interval);
-		if (!this->_checkResult(result, "select()") || result == 0)
+		if (!this->_checkResult(result, "select()"))
 		{
 			return false;
+		}
+		if (result == 0)
+		{
+			return true;
 		}
 #endif
 		// control socket IO

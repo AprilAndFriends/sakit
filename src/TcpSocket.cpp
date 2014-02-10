@@ -98,6 +98,20 @@ namespace sakit
 		}
 		return this->_finishReceive(this->_receiveDirect(stream, maxBytes));
 	}
+	
+	hstr TcpSocket::receive(int maxBytes)
+    {
+        hstream stream;
+        int size = this->receive(&stream, maxBytes);
+		stream.rewind();
+		char* p = new char[size + 1];
+		stream.read_raw(p, size);
+		p[size] = 0;
+		hstr result = p;
+		delete [] p;
+		
+        return result;
+    }
 
 	bool TcpSocket::startReceiveAsync(int maxBytes)
 	{

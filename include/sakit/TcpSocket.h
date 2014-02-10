@@ -40,6 +40,7 @@ namespace sakit
 
 		/// @note Keep in mind that only all queued stream data is received at once.
 		int receive(hstream* stream, int maxBytes = 0);
+		hstr receive(int maxBytes = 0);
 		bool startReceiveAsync(int maxBytes = 0);
 
 	protected:
