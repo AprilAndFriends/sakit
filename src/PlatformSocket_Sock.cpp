@@ -413,7 +413,7 @@ namespace sakit
 	bool PlatformSocket::_checkReceivedBytes(unsigned long* received)
 	{
 #ifndef _WIN32 // Unix requires a select() call before using ioctl/ioctlsocket
-		timeval interval = {1, 0};
+		timeval interval = {0, 1};
 		fd_set readSet;
 		FD_ZERO(&readSet);
 		FD_SET(this->sock, &readSet);
