@@ -107,7 +107,8 @@ namespace sakit
 		char* p = new char[size + 1];
 		stream.read_raw(p, size);
 		p[size] = 0;
-		hstr result = p;
+		hstr result;
+		result.insert(0, p, size);
 		delete [] p;
         return result;
     }

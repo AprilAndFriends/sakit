@@ -101,7 +101,11 @@ namespace sakit
 			}
 			retryAttempts--;
 			hthread::sleep(retryTimeout);
-			lastPosition = stream->position();
+		}
+		lastPosition = stream->position();
+		if (retryAttempts == 0)
+		{
+			hlog::warn(logTag, "Timed out while waiting for data.");
 		}
 		return (lastPosition - position);
 	}
