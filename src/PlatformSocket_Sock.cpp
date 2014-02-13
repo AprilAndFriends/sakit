@@ -223,20 +223,26 @@ namespace sakit
 			FD_ZERO(&writeSet);
 			FD_SET(this->sock, &writeSet);
 			result = select(this->sock + 1, NULL, &writeSet, NULL, &interval);
-			if (result == 0 || !this->_checkResult(result, "select()"))
+			if (result == 0)
+			{
+				hlog::error(logTag, "Unable to connect, timed out.");
+				this->disconnect();
+				return false;
+			}
+			if (!this->_checkResult(result, "select()"))
 			{
 				this->disconnect();
 				return false;
 			}
 			int error;
 			socklen_t size = sizeof(error);
-			result = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&error, &size);
+			result = getsockopt(this->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &size);
 			if (!this->_checkResult(result, "getsockopt()"))
 			{
 				this->disconnect();
 				return false;
 			}
-			if (!this->_checkResult(error, "getsockopt()"))
+			if (PlatformSocket::_printLastError("getsockopt()", error))
 			{
 				this->disconnect();
 				return false;

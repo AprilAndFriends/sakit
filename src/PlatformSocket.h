@@ -171,7 +171,7 @@ namespace sakit
 
 		bool _setNonBlocking(bool value);
 
-		static bool _printLastError(chstr basicMessage);
+		static bool _printLastError(chstr basicMessage, int code = 0);
 
 	};
 

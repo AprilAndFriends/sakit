@@ -41,15 +41,17 @@ namespace sakit
 		return result;
 	}
 
-	bool PlatformSocket::_printLastError(chstr basicMessage)
+	bool PlatformSocket::_printLastError(chstr basicMessage, int code)
 	{
-		int code = 0;
 		hstr message;
 		bool print = true;
 #ifdef _WIN32
 #ifndef _WINRT
 		wchar_t* buffer = L"Unknown error";
-		code = WSAGetLastError();
+		if (code == 0)
+		{
+			code = WSAGetLastError();
+		}
 		if (code != 0 && code != WSAEWOULDBLOCK)
 		{
 			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -65,7 +67,10 @@ namespace sakit
 		}
 #endif
 #else
-		code = errno;
+		if (code == 0)
+		{
+			code = errno;
+		}
 		print = (code != 0 && code != EINPROGRESS && code != EAGAIN && code != EWOULDBLOCK);
 		message = strerror(code);
 #endif
