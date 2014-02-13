@@ -53,7 +53,7 @@ namespace sakit
 		bool tryCreateSocket();
 		bool setRemoteAddress(Host remoteHost, unsigned short remotePort);
 		bool setLocalAddress(Host localHost, unsigned short localPort);
-		bool connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float retryTimeout, int retryAttempts);
+		bool connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float timeout, float retryFrequency);
 		/// @note Since binding can be done on "any IP" and "any port", the set values are returned.
 		bool bind(Host localHost, unsigned short& localPort);
 		bool disconnect();

@@ -34,7 +34,7 @@ namespace sakit
 
 		void update(float timeSinceLastFrame = 0.0f);
 
-		TcpSocket* accept(float timeout = 0.0f);
+		TcpSocket* accept();
 
 	protected:
 		harray<TcpSocket*> sockets;

@@ -42,6 +42,8 @@ namespace sakit
 	Base::Base() : localPort(0), state(IDLE)
 	{
 		this->socket = new PlatformSocket();
+		this->timeout = sakit::getGlobalTimeout();
+		this->retryFrequency = sakit::getGlobalRetryFrequency();
 	}
 
 	Base::~Base()
@@ -49,11 +51,16 @@ namespace sakit
 		delete this->socket;
 	}
 
+	void Base::setTimeout(float timeout, float retryFrequency)
+	{
+		this->timeout = timeout;
+		this->retryFrequency = hmin(retryFrequency, timeout); // frequency can't be larger than the timeout itself
+	}
+
 	int Base::_sendDirect(hstream* stream, int count)
 	{
 		int sent = 0;
 		long position = stream->position();
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
 		while (count > 0)
 		{
 			if (!this->socket->send(stream, count, sent))
@@ -64,7 +71,7 @@ namespace sakit
 			{
 				break;
 			}
-			hthread::sleep(retryTimeout);
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		stream->seek(position, hstream::START);
 		return sent;
@@ -73,12 +80,11 @@ namespace sakit
 	int Base::_receiveDirect(hstream* stream, int maxBytes)
 	{
 		hmutex mutex;
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int retryAttempts = sakit::getRetryAttempts();
+		float time = 0.0f;
 		int remaining = maxBytes;
 		int position = stream->position();
 		int lastPosition = position;
-		while (retryAttempts > 0)
+		while (true)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
 			{
@@ -92,18 +98,22 @@ namespace sakit
 			{
 				lastPosition = stream->position();
 				// retry attempts are reset after a successful read
-				retryAttempts = sakit::getRetryAttempts();
+				time = 0.0f;
 				continue;
 			}
 			if (remaining != maxBytes || lastPosition != position)
 			{
 				break;
 			}
-			retryAttempts--;
-			hthread::sleep(retryTimeout);
+			time += this->retryFrequency;
+			if (time >= this->timeout)
+			{
+				break;
+			}
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		lastPosition = stream->position();
-		if (retryAttempts == 0)
+		if (time >= this->timeout)
 		{
 			hlog::warn(logTag, "Timed out while waiting for data.");
 		}
@@ -112,16 +122,19 @@ namespace sakit
 
 	int Base::_receiveFromDirect(hstream* stream, Host& host, unsigned short& port)
 	{
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int retryAttempts = sakit::getRetryAttempts();
-		while (retryAttempts > 0)
+		float time = 0.0f;
+		while (true)
 		{
 			if (this->socket->receiveFrom(stream, host, port))
 			{
 				break;
 			}
-			retryAttempts--;
-			hthread::sleep(retryTimeout);
+			time += this->retryFrequency;
+			if (time >= this->timeout)
+			{
+				break;
+			}
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		return stream->size();
 	}

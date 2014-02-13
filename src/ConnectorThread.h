@@ -20,19 +20,19 @@
 
 #include "Host.h"
 #include "State.h"
-#include "WorkerThread.h"
+#include "TimedThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class Connector;
 
-	class ConnectorThread : public WorkerThread
+	class ConnectorThread : public TimedThread
 	{
 	public:
 		friend class Connector;
 
-		ConnectorThread(PlatformSocket* socket);
+		ConnectorThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~ConnectorThread();
 
 	protected:

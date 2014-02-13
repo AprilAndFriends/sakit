@@ -368,6 +368,7 @@ void _testAsyncTcpClient()
 	hlog::debug(LOG_TAG, "starting test: blocking TCP server, async TCP client");
 	hlog::debug(LOG_TAG, "");
 	sakit::TcpServer* server = new sakit::TcpServer(&tcpServerDelegate, &tcpAcceptedDelegate);
+	server->setTimeout(1.0f);
 	if (server->bind(sakit::Host::Localhost, TCP_PORT_SYNC_SERVER))
 	{
 		hlog::writef(LOG_TAG, "Server bound to '%s:%d'", server->getLocalHost().toString().c_str(), server->getLocalPort());
@@ -378,7 +379,7 @@ void _testAsyncTcpClient()
 			while (accepted == NULL)
 			{
 				sakit::update();
-				accepted = server->accept(0.1f);
+				accepted = server->accept();
 				hthread::sleep(100.0f);
 			}
 			do
@@ -747,8 +748,7 @@ int main(Platform::Array<Platform::String^>^ args)
 #endif
 	hlog::warn(LOG_TAG, "Notice how \\0 characters behave properly when sent over network, but are still problematic in strings.");
 	// HTTP tests
-	sakit::setRetryTimeout(0.01f);
-	sakit::setRetryAttempts(1000); // makes for a 10 second timeout
+	sakit::setGlobalTimeout(10.0f, 0.01f);
 	_testHttpSocket();
 	_testAsyncHttpSocket();
 	// done

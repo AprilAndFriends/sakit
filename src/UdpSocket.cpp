@@ -28,7 +28,7 @@ namespace sakit
 	{
 		this->socket->setConnectionLess(true);
 		this->udpSocketDelegate = socketDelegate;
-		this->receiver = this->udpReceiver = new UdpReceiverThread(this->socket);
+		this->receiver = this->udpReceiver = new UdpReceiverThread(this->socket, &this->timeout, &this->retryFrequency);
 		this->broadcaster = new BroadcasterThread(this->socket);
 		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
 		this->__register();
@@ -67,7 +67,7 @@ namespace sakit
 		this->state = CONNECTING; // just a precaution
 		this->mutexState.unlock();
 		// this is not a real connect on UDP, it just does its job of setting a proper remote host
-		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
+		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort, this->timeout, this->retryFrequency);
 		this->mutexState.lock();
 		if (result)
 		{

@@ -18,19 +18,19 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "WorkerThread.h"
+#include "TimedThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class Socket;
 
-	class SenderThread : public WorkerThread
+	class SenderThread : public TimedThread
 	{
 	public:
 		friend class Socket;
 
-		SenderThread(PlatformSocket* socket);
+		SenderThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~SenderThread();
 
 	protected:

@@ -23,7 +23,7 @@ namespace sakit
 
 	TcpServer::TcpServer(TcpServerDelegate* tcpServerDelegate, TcpSocketDelegate* acceptedDelegate) : Server(dynamic_cast<ServerDelegate*>(tcpServerDelegate))
 	{
-		this->serverThread = this->tcpServerThread = new TcpServerThread(this->socket, this->acceptedDelegate);
+		this->serverThread = this->tcpServerThread = new TcpServerThread(this->socket, this->acceptedDelegate, &this->timeout, &this->retryFrequency);
 		this->tcpServerDelegate = tcpServerDelegate;
 		this->acceptedDelegate = acceptedDelegate;
 		this->socket->setConnectionLess(false);
@@ -70,7 +70,7 @@ namespace sakit
 		Server::update(timeSinceLastFrame);
 	}
 
-	TcpSocket* TcpServer::accept(float timeout)
+	TcpSocket* TcpServer::accept()
 	{
 		this->mutexState.lock();
 		if (!this->_canStart(this->state))
@@ -84,8 +84,7 @@ namespace sakit
 		connectionsMutex.lock();
 		connections -= tcpSocket;
 		connectionsMutex.unlock();
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		timeout *= 1000.0f;
+		float time = 0.0f;
 		while (true)
 		{
 			if (!this->socket->listen())
@@ -99,14 +98,14 @@ namespace sakit
 				this->sockets += tcpSocket;
 				break;
 			}
-			timeout -= retryTimeout;
-			if (timeout <= 0.0f)
+			time += this->retryFrequency;
+			if (time >= this->timeout)
 			{
 				delete tcpSocket;
 				tcpSocket = NULL;
 				break;
 			}
-			hthread::sleep(retryTimeout);
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		this->mutexState.lock();
 		this->state = BOUND;

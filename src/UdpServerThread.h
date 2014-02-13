@@ -18,19 +18,19 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Server.h"
-#include "WorkerThread.h"
+#include "TimedThread.h"
 
 namespace sakit
 {
 	class PlatformSocket;
 	class UdpServer;
 
-	class UdpServerThread : public WorkerThread
+	class UdpServerThread : public TimedThread
 	{
 	public:
 		friend class UdpServer;
 
-		UdpServerThread(PlatformSocket* socket);
+		UdpServerThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~UdpServerThread();
 
 	protected:

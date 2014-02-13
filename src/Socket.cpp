@@ -26,7 +26,7 @@ namespace sakit
 	{
 		this->socketDelegate = socketDelegate;
 		this->idleState = idleState;
-		this->sender = new SenderThread(this->socket);
+		this->sender = new SenderThread(this->socket, &this->timeout, &this->retryFrequency);
 	}
 
 	Socket::~Socket()

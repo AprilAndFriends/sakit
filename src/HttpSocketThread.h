@@ -18,7 +18,7 @@
 #include <hltypes/hstream.h>
 
 #include "Socket.h"
-#include "WorkerThread.h"
+#include "TimedThread.h"
 
 namespace sakit
 {
@@ -26,12 +26,12 @@ namespace sakit
 	class HttpResponse;
 	class HttpSocket;
 
-	class HttpSocketThread : public WorkerThread
+	class HttpSocketThread : public TimedThread
 	{
 	public:
 		friend class HttpSocket;
 
-		HttpSocketThread(PlatformSocket* socket);
+		HttpSocketThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~HttpSocketThread();
 
 	protected:

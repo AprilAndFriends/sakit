@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	UdpServerThread::UdpServerThread(PlatformSocket* socket) : WorkerThread(socket)
+	UdpServerThread::UdpServerThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
 	{
 	}
 
@@ -58,7 +58,7 @@ namespace sakit
 					stream = new hstream();
 				}
 			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete stream;
 		this->mutex.lock();

@@ -183,7 +183,7 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float retryTimeout, int retryAttempts)
+	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float timeout, float retryFrequency)
 	{
 		if (!this->setRemoteAddress(remoteHost, remotePort))
 		{
@@ -212,7 +212,7 @@ namespace sakit
 				return false;
 			}
 			// non-blocking mode, use select to check when it finally worked
-			double sec = (double)retryTimeout * retryAttempts;
+			double sec = (double)timeout;
 			timeval interval = {0, 1};
 			interval.tv_sec = (long)sec;
 			if (sec != (int)sec)
@@ -242,7 +242,7 @@ namespace sakit
 				this->disconnect();
 				return false;
 			}
-			if (PlatformSocket::_printLastError("getsockopt()", error))
+			if (PlatformSocket::_printLastError("", error))
 			{
 				this->disconnect();
 				return false;

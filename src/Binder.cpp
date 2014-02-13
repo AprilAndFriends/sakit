@@ -24,7 +24,7 @@ namespace sakit
 	{
 		this->_socket = socket;
 		this->_binderDelegate = binderDelegate;
-		this->_thread = new BinderThread(this->_socket);
+		this->_thread = NULL;
 		this->_state = NULL;
 		this->_mutexState = NULL;
 		this->_localHost = NULL;
@@ -33,8 +33,11 @@ namespace sakit
 
 	Binder::~Binder()
 	{
-		this->_thread->join();
-		delete this->_thread;
+		if (this->_thread != NULL)
+		{
+			this->_thread->join();
+			delete this->_thread;
+		}
 	}
 
 	void Binder::_integrate(State* stateValue, hmutex* mutexStateValue, Host* localHost, unsigned short* localPort)
@@ -43,6 +46,7 @@ namespace sakit
 		this->_mutexState = mutexStateValue;
 		this->_localHost = localHost;
 		this->_localPort = localPort;
+		this->_thread = new BinderThread(this->_socket);
 	}
 
 	bool Binder::isBinding()

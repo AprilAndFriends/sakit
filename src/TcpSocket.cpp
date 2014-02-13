@@ -28,8 +28,8 @@ namespace sakit
 	{
 		this->tcpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(false);
-		this->receiver = this->tcpReceiver = new TcpReceiverThread(this->socket);
-		Connector::_integrate(&this->state, &this->mutexState, &this->remoteHost, &this->remotePort, &this->localHost, &this->localPort);
+		this->receiver = this->tcpReceiver = new TcpReceiverThread(this->socket, &this->timeout, &this->retryFrequency);
+		Connector::_integrate(&this->state, &this->mutexState, &this->remoteHost, &this->remotePort, &this->localHost, &this->localPort, &this->timeout, &this->retryFrequency);
 		this->__register();
 	}
 

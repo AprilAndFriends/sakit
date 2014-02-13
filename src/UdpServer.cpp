@@ -27,7 +27,7 @@ namespace sakit
 	{
 		this->socket->setConnectionLess(true);
 		this->udpServerDelegate = udpServerDelegate;
-		this->serverThread = this->udpServerThread = new UdpServerThread(this->socket);
+		this->serverThread = this->udpServerThread = new UdpServerThread(this->socket, &this->timeout, &this->retryFrequency);
 		this->__register();
 	}
 
@@ -62,7 +62,7 @@ namespace sakit
 		Server::update(timeSinceLastFrame);
 	}
 
-	bool UdpServer::receive(hstream* stream, Host& host, unsigned short& port, float timeout)
+	bool UdpServer::receive(hstream* stream, Host& host, unsigned short& port)
 	{
 		this->mutexState.lock();
 		if (!this->_canStart(this->state))
@@ -72,8 +72,7 @@ namespace sakit
 		}
 		this->state = RUNNING;
 		this->mutexState.unlock();
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		timeout *= 1000.0f;
+		float time = 0.0f;
 		bool result = false;
 		while (true)
 		{
@@ -85,12 +84,12 @@ namespace sakit
 				}
 				break;
 			}
-			timeout -= retryTimeout;
-			if (timeout <= 0.0f)
+			time += this->retryFrequency;
+			if (time >= this->timeout)
 			{
 				break;
 			}
-			hthread::sleep(retryTimeout);
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		this->mutexState.lock();
 		this->state = BOUND;

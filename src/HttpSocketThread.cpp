@@ -21,7 +21,7 @@
 
 namespace sakit
 {
-	HttpSocketThread::HttpSocketThread(PlatformSocket* socket) : WorkerThread(socket)
+	HttpSocketThread::HttpSocketThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
 	{
 		this->stream = new hstream();
 		this->response = new HttpResponse();
@@ -37,7 +37,7 @@ namespace sakit
 	{
 		Host localHost;
 		unsigned short localPort = 0;
-		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts()))
+		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
 		{
 			this->mutex.lock();
 			this->result = FAILED;
@@ -65,17 +65,17 @@ namespace sakit
 			{
 				break;
 			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		this->stream->clear();
 	}
 
 	void HttpSocketThread::_updateReceive()
 	{
-		int retryAttempts = sakit::getRetryAttempts();
+		float time = 0.0f;
 		int size = 0;
 		int lastSize = 0;
-		while (this->running && retryAttempts > 0)
+		while (this->running)
 		{
 			if (!this->socket->receive(this->response, this->mutex))
 			{
@@ -90,14 +90,18 @@ namespace sakit
 			{
 				lastSize = size;
 				// retry attempts are reset after a successful read
-				retryAttempts = sakit::getRetryAttempts();
+				time = 0.0f;
 				continue;
 			}
-			retryAttempts--;
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			time += *this->retryFrequency;
+			if (time >= *this->timeout)
+			{
+				break;
+			}
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (retryAttempts == 0 && !this->response->Headers.has_key("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
+		if (time >= *this->timeout && !this->response->Headers.has_key("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
 			this->response->BodyComplete = true;

@@ -25,22 +25,27 @@ namespace sakit
 	{
 		this->_socket = socket;
 		this->_connectorDelegate = connectorDelegate;
-		this->_thread = new ConnectorThread(this->_socket);
+		this->_thread = NULL;
 		this->_state = NULL;
 		this->_mutexState = NULL;
 		this->_remoteHost = NULL;
 		this->_remotePort = NULL;
 		this->_localHost = NULL;
 		this->_localPort = NULL;
+		this->_timeout = NULL;
+		this->_retryFrequency = NULL;
 	}
 
 	Connector::~Connector()
 	{
-		this->_thread->join();
-		delete this->_thread;
+		if (this->_thread != NULL)
+		{
+			this->_thread->join();
+			delete this->_thread;
+		}
 	}
 
-	void Connector::_integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort)
+	void Connector::_integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort, float* timeout, float* retryFrequency)
 	{
 		this->_state = stateValue;
 		this->_mutexState = mutexStateValue;
@@ -48,6 +53,9 @@ namespace sakit
 		this->_remotePort = remotePort;
 		this->_localHost = localHost;
 		this->_localPort = localPort;
+		this->_timeout = timeout;
+		this->_retryFrequency = retryFrequency;
+		this->_thread = new ConnectorThread(this->_socket, this->_timeout, this->_retryFrequency);
 	}
 
 	bool Connector::isConnecting()
@@ -162,7 +170,7 @@ namespace sakit
 		this->_mutexState->unlock();
 		Host localHost;
 		unsigned short localPort = 0;
-		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
+		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort, *this->_timeout, *this->_retryFrequency);
 		this->_mutexState->lock();
 		if (result)
 		{

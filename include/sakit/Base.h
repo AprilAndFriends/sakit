@@ -34,6 +34,10 @@ namespace sakit
 
 		HL_DEFINE_GET(Host, localHost, LocalHost);
 		HL_DEFINE_GET(unsigned short, localPort, LocalPort);
+		HL_DEFINE_GET(float, timeout, Timeout);
+		HL_DEFINE_GET(float, retryFrequency, RetryFrequency);
+
+		void setTimeout(float timeout, float retryFrequency = 0.01f);
 
 		virtual void update(float timeSinceLastFrame = 0.0f) = 0;
 
@@ -43,6 +47,8 @@ namespace sakit
 		hmutex mutexState;
 		Host localHost;
 		unsigned short localPort;
+		float timeout;
+		float retryFrequency;
 
 		Base();
 

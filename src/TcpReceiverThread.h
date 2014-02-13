@@ -31,7 +31,7 @@ namespace sakit
 	public:
 		friend class TcpSocket;
 
-		TcpReceiverThread(PlatformSocket* socket);
+		TcpReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~TcpReceiverThread();
 
 	protected:

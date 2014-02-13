@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	ConnectorThread::ConnectorThread(PlatformSocket* socket) : WorkerThread(socket), localPort(0)
+	ConnectorThread::ConnectorThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), localPort(0)
 	{
 	}
 
@@ -31,7 +31,7 @@ namespace sakit
 	{
 		Host localHost;
 		unsigned short localPort = 0;
-		if (!this->socket->connect(this->host, this->port, localHost, localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts()))
+		if (!this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
 		{
 			this->mutex.lock();
 			this->result = FAILED;

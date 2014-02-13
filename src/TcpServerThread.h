@@ -18,7 +18,7 @@
 #include <hltypes/hltypesUtil.h>
 
 #include "Server.h"
-#include "WorkerThread.h"
+#include "TimedThread.h"
 
 namespace sakit
 {
@@ -27,12 +27,12 @@ namespace sakit
 	class TcpSocket;
 	class TcpSocketDelegate;
 
-	class TcpServerThread : public WorkerThread
+	class TcpServerThread : public TimedThread
 	{
 	public:
 		friend class TcpServer;
 
-		TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate);
+		TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate, float* timeout, float* retryFrequency);
 		~TcpServerThread();
 
 	protected:

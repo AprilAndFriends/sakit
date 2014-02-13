@@ -169,6 +169,9 @@
     <ClInclude Include="src\BroadcasterThread.h">
       <Filter>Header Files\Threads</Filter>
     </ClInclude>
+    <ClInclude Include="src\TimedThread.h">
+      <Filter>Header Files\Threads</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sakit.cpp">
@@ -289,6 +292,9 @@
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
     <ClCompile Include="src\BroadcasterThread.cpp">
+      <Filter>Source Files\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TimedThread.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
   </ItemGroup>

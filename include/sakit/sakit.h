@@ -31,10 +31,9 @@ namespace sakit
 	sakitFnExport void update(float timeSinceLastFrame = 0.0f);
 	sakitFnExport int getBufferSize();
 	sakitFnExport void setBufferSize(int value);
-	sakitFnExport float getRetryTimeout();
-	sakitFnExport void setRetryTimeout(float value);
-	sakitFnExport int getRetryAttempts();
-	sakitFnExport void setRetryAttempts(int value);
+	sakitFnExport float getGlobalTimeout();
+	sakitFnExport float getGlobalRetryFrequency();
+	sakitFnExport void setGlobalTimeout(float globalTimeout, float globalRetryFrequency = 0.01f);
 	sakitFnExport harray<NetworkAdapter> getNetworkAdapters();
 	/// @return The IP of the domain/host.
 	sakitFnExport Host resolveHost(Host domain);

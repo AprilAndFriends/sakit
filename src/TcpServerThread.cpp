@@ -22,7 +22,7 @@ namespace sakit
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
 
-	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate) : WorkerThread(socket)
+	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
 	{
 		this->acceptedDelegate = acceptedDelegate;
 	}
@@ -57,7 +57,7 @@ namespace sakit
 				connections -= tcpSocket;
 				connectionsMutex.unlock();
 			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete tcpSocket;
 		this->mutex.lock();

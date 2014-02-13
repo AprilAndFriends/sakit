@@ -30,7 +30,7 @@ namespace sakit
 	public:
 		friend class UdpSocket;
 
-		UdpReceiverThread(PlatformSocket* socket);
+		UdpReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
 		~UdpReceiverThread();
 
 	protected:

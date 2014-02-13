@@ -44,7 +44,7 @@ namespace sakit
 	protected:
 		Connector(PlatformSocket* socket, ConnectorDelegate* connectorDelegate);
 
-		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort);
+		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* remoteHost, unsigned short* remotePort, Host* localHost, unsigned short* localPort, float* timeout, float* retryFrequency);
 		void _update(float timeSinceLastFrame = 0.0f);
 
 		bool _canConnect(State state);
@@ -58,6 +58,8 @@ namespace sakit
 		unsigned short* _remotePort;
 		Host* _localHost;
 		unsigned short* _localPort;
+		float* _timeout;
+		float* _retryFrequency;
 		ConnectorThread* _thread;
 		ConnectorDelegate* _connectorDelegate;
 

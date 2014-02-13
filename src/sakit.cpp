@@ -18,8 +18,8 @@
 namespace sakit
 {
 	hstr logTag = "sakit";
-	float retryTimeout = 0.01f;
-	int retryAttempts = 1000;
+	float timeout = 10.00f;
+	float retryFrequency = 0.01f;
 	int bufferSize = 65536;
 	harray<Base*> connections;
 	hmutex connectionsMutex;
@@ -359,24 +359,20 @@ namespace sakit
 		bufferSize = value;
 	}
 
-	float getRetryTimeout()
+	float getGlobalTimeout()
 	{
-		return retryTimeout;
+		return timeout;
 	}
 
-	void setRetryTimeout(float value)
+	float getGlobalRetryFrequency()
 	{
-		retryTimeout = value;
+		return retryFrequency;
 	}
 
-	int getRetryAttempts()
+	void setGlobalTimeout(float globalTimeout, float globalRetryFrequency)
 	{
-		return retryAttempts;
-	}
-
-	void setRetryAttempts(int value)
-	{
-		retryAttempts = value;
+		timeout = globalTimeout;
+		retryFrequency = hclamp(globalRetryFrequency, 0.000001f, globalTimeout); // frequency can't be larger than the timeout itself
 	}
 
 	harray<NetworkAdapter> getNetworkAdapters()

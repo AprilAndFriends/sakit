@@ -51,7 +51,7 @@ namespace sakit
 		this->protocol = protocol;
 		this->remotePort = HttpSocket::DefaultPort;
 		this->socket->setConnectionLess(false);
-		this->thread = new HttpSocketThread(this->socket);
+		this->thread = new HttpSocketThread(this->socket, &this->timeout, &this->retryFrequency);
 		this->__register();
 	}
 
@@ -169,7 +169,7 @@ namespace sakit
 		this->mutexState.unlock();
 		hstr request = this->_processRequest(method, url, customHeaders);
 		unsigned short port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
-		bool result = this->socket->connect(this->remoteHost, port, this->localHost, this->localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
+		bool result = this->socket->connect(this->remoteHost, port, this->localHost, this->localPort, this->timeout, this->retryFrequency);
 		if (!result)
 		{
 			this->_terminateConnection();
@@ -285,11 +285,10 @@ namespace sakit
 	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
 	{
 		hmutex mutex;
-		float retryTimeout = sakit::getRetryTimeout() * 1000.0f;
-		int retryAttempts = sakit::getRetryAttempts();
+		float time = 0.0f;
 		int size = 0;
 		int lastSize = 0;
-		while (retryAttempts > 0)
+		while (true)
 		{
 			if (!this->socket->receive(response, mutex))
 			{
@@ -304,14 +303,18 @@ namespace sakit
 			{
 				lastSize = size;
 				// retry attempts are reset after a successful read
-				retryAttempts = sakit::getRetryAttempts();
+				time = 0.0f;
 				continue;
 			}
-			retryAttempts--;
-			hthread::sleep(retryTimeout);
+			time += this->retryFrequency;
+			if (time >= this->timeout)
+			{
+				break;
+			}
+			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (retryAttempts == 0 && !response->Headers.has_key("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
+		if (time >= this->timeout && !response->Headers.has_key("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
 			response->BodyComplete = true;

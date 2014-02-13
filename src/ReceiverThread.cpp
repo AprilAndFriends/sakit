@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket) : WorkerThread(socket), maxValue(0)
+	ReceiverThread::ReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), maxValue(0)
 	{
 	}
 

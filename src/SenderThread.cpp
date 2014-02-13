@@ -19,7 +19,7 @@
 
 namespace sakit
 {
-	SenderThread::SenderThread(PlatformSocket* socket) : WorkerThread(socket), lastSent(0)
+	SenderThread::SenderThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), lastSent(0)
 	{
 		this->stream = new hstream();
 	}
@@ -51,7 +51,7 @@ namespace sakit
 			{
 				break;
 			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		this->mutex.lock();
 		this->result = FINISHED;

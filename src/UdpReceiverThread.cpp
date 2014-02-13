@@ -17,7 +17,7 @@
 
 namespace sakit
 {
-	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket) : ReceiverThread(socket)
+	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : ReceiverThread(socket, timeout, retryFrequency)
 	{
 	}
 
@@ -59,7 +59,7 @@ namespace sakit
 			{
 				break;
 			}
-			hthread::sleep(sakit::getRetryTimeout() * 1000.0f);
+			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete stream;
 		this->mutex.lock();
