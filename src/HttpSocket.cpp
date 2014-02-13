@@ -168,7 +168,8 @@ namespace sakit
 		this->state = RUNNING;
 		this->mutexState.unlock();
 		hstr request = this->_processRequest(method, url, customHeaders);
-		bool result = this->socket->connect(this->remoteHost, (this->url.getPort() == 0 ? this->remotePort : this->url.getPort()), this->localHost, this->localPort);
+		unsigned short port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
+		bool result = this->socket->connect(this->remoteHost, port, this->localHost, this->localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
 		if (!result)
 		{
 			this->_terminateConnection();

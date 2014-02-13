@@ -40,6 +40,7 @@
 #define UDP_PORT_MULTICAST_CLIENT_1 50300
 #define UDP_PORT_MULTICAST_CLIENT_2 50301
 #define UDP_PORT_BROADCAST 51000
+#define UDP_MULTICAST_HOST_ADDRESS "192.168.1.133" // this needs changing depending on the machine
 #define UDP_MULTICAST_ADDRESS "226.2.3.4"
 
 void _printReceived(hstream* stream)
@@ -614,7 +615,7 @@ void _testUdpMulticast()
 	int sent = 0;
 	int received = 0;
 	sakit::UdpSocket* s1 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
-	if (s1->bind(sakit::Host("192.168.1.133"), UDP_PORT_MULTICAST_CLIENT_1))
+	if (s1->bind(sakit::Host(UDP_MULTICAST_HOST_ADDRESS), UDP_PORT_MULTICAST_CLIENT_1))
 	{
 		hlog::writef(LOG_TAG, "UDP-1 bound to '%s:%d'", s1->getLocalHost().toString().c_str(), s1->getLocalPort());
 		if (s1->joinMulticastGroup(s1->getLocalHost(), sakit::Host(UDP_MULTICAST_ADDRESS)))
@@ -642,7 +643,7 @@ void _testUdpMulticast()
 						sent = s1->send("Hi.");
 						hlog::writef(LOG_TAG, "UDP-1 sent (to '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, sent);
 						stream.clear();
-						s2->receive(&stream, remoteHost, remotePort) > 0);
+						s2->receive(&stream, remoteHost, remotePort);
 						stream.rewind();
 						hlog::writef(LOG_TAG, "UDP-2 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
 						if (stream.size() > 0)

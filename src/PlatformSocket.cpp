@@ -41,7 +41,7 @@ namespace sakit
 		return result;
 	}
 
-	int PlatformSocket::_printLastError(chstr basicMessage)
+	bool PlatformSocket::_printLastError(chstr basicMessage)
 	{
 		int code = 0;
 		hstr message;
@@ -50,7 +50,7 @@ namespace sakit
 #ifndef _WINRT
 		wchar_t* buffer = L"Unknown error";
 		code = WSAGetLastError();
-		if (code != WSAEWOULDBLOCK)
+		if (code != 0 && code != WSAEWOULDBLOCK)
 		{
 			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 					NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, NULL))
@@ -66,7 +66,7 @@ namespace sakit
 #endif
 #else
 		code = errno;
-		print = (code != EAGAIN && code != EWOULDBLOCK);
+		print = (code != 0 && code != EINPROGRESS && code != EAGAIN && code != EWOULDBLOCK);
 		message = strerror(code);
 #endif
 		if (print)
@@ -84,7 +84,7 @@ namespace sakit
 #endif
 			hlog::error(sakit::logTag, printMessage + message);
 		}
-		return code;
+		return print;
 	}
 	
 }

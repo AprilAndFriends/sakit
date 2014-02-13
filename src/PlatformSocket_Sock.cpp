@@ -78,6 +78,7 @@ typedef u_long uint32_t;
 namespace sakit
 {
 	extern int bufferSize;
+	static hmutex getaddrinfoMutex; // on some platforms getaddrinfo apparently isn't thread-safe
 
 	void PlatformSocket::platformInit()
 	{
@@ -165,21 +166,24 @@ namespace sakit
 #endif
 		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		this->socketInfo->ai_protocol = IPPROTO_IP;
-		this->socketInfo->ai_flags = AI_NUMERICSERV;
+		this->socketInfo->ai_flags = 0;
+		getaddrinfoMutex.lock();
 		int result = getaddrinfo(host.toString().c_str(), hstr(port).c_str(), this->socketInfo, info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, __gai_strerror(result));
+			hlog::error(sakit::logTag, "getaddrinfo() " + __gai_strerror(result));
+			getaddrinfoMutex.unlock();
 			this->disconnect();
 			return false;
 		}
+		getaddrinfoMutex.unlock();
 		this->socketInfo->ai_family = (*info)->ai_family;
 		this->socketInfo->ai_socktype = (*info)->ai_socktype;
 		this->socketInfo->ai_protocol = (*info)->ai_protocol;
 		return true;
 	}
 
-	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort)
+	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float retryTimeout, int retryAttempts)
 	{
 		if (!this->setRemoteAddress(remoteHost, remotePort))
 		{
@@ -197,10 +201,46 @@ namespace sakit
 		{
 			return false;
 		}
-		// open connection
-		if (!this->_checkResult(::connect(this->sock, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen), "connect()"))
+		this->_setNonBlocking(true);
+		int result = ::connect(this->sock, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen);
+		this->_setNonBlocking(false);
+		if (result != 0) // uses non-blocking
 		{
-			return false;
+			if (PlatformSocket::_printLastError("connect()")) // failed and actual error
+			{
+				this->disconnect();
+				return false;
+			}
+			// non-blocking mode, use select to check when it finally worked
+			double sec = (double)retryTimeout * retryAttempts;
+			timeval interval = {0, 1};
+			interval.tv_sec = (long)sec;
+			if (sec != (int)sec)
+			{
+				interval.tv_usec = (long)((sec - (int)sec) * 1000000);
+			}
+			fd_set writeSet;
+			FD_ZERO(&writeSet);
+			FD_SET(this->sock, &writeSet);
+			result = select(this->sock + 1, NULL, &writeSet, NULL, &interval);
+			if (result == 0 || !this->_checkResult(result, "select()"))
+			{
+				this->disconnect();
+				return false;
+			}
+			int error;
+			socklen_t size = sizeof(error);
+			result = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&error, &size);
+			if (!this->_checkResult(result, "getsockopt()"))
+			{
+				this->disconnect();
+				return false;
+			}
+			if (!this->_checkResult(error, "getsockopt()"))
+			{
+				this->disconnect();
+				return false;
+			}
 		}
 		this->_getLocalHostPort(localHost, localPort);
 		return true;
@@ -463,7 +503,7 @@ namespace sakit
 
 	bool PlatformSocket::_checkResult(int result, chstr functionName, bool disconnectOnError)
 	{
-		if (result == SOCKET_ERROR)
+		if (result < 0)
 		{
 			PlatformSocket::_printLastError(functionName);
 			if (disconnectOnError)
@@ -535,12 +575,15 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
+		getaddrinfoMutex.lock();
 		int result = getaddrinfo(domain.toString().c_str(), NULL, &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
+			getaddrinfoMutex.unlock();
 			return Host();
 		}
+		getaddrinfoMutex.unlock();
 		in_addr address;
 		address.s_addr = ((sockaddr_in*)(info->ai_addr))->sin_addr.s_addr;
 		freeaddrinfo(info);
@@ -576,12 +619,15 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
+		getaddrinfoMutex.lock();
 		int result = getaddrinfo(NULL, serviceName.c_str(), &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
+			getaddrinfoMutex.unlock();
 			return 0;
 		}
+		getaddrinfoMutex.unlock();
 		unsigned short port = ((sockaddr_in*)(info->ai_addr))->sin_port;
 		freeaddrinfo(info);
 		return port;

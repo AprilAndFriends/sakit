@@ -16,6 +16,7 @@
 #include "ConnectorDelegate.h"
 #include "ConnectorThread.h"
 #include "PlatformSocket.h"
+#include "sakit.h"
 #include "sakitUtil.h"
 
 namespace sakit
@@ -161,7 +162,7 @@ namespace sakit
 		this->_mutexState->unlock();
 		Host localHost;
 		unsigned short localPort = 0;
-		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort);
+		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
 		this->_mutexState->lock();
 		if (result)
 		{

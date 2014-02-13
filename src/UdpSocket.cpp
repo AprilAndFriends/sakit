@@ -67,7 +67,7 @@ namespace sakit
 		this->state = CONNECTING; // just a precaution
 		this->mutexState.unlock();
 		// this is not a real connect on UDP, it just does its job of setting a proper remote host
-		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort);
+		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts());
 		this->mutexState.lock();
 		if (result)
 		{

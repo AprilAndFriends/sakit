@@ -37,7 +37,7 @@ namespace sakit
 	{
 		Host localHost;
 		unsigned short localPort = 0;
-		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort))
+		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, sakit::getRetryTimeout(), sakit::getRetryAttempts()))
 		{
 			this->mutex.lock();
 			this->result = FAILED;

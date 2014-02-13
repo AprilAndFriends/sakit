@@ -133,9 +133,10 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort)
+	bool PlatformSocket::connect(Host remoteHost, unsigned short remotePort, Host& localHost, unsigned short& localPort, float retryTimeout, int retryAttempts)
 	{
-		// TODOsock - assign local host/port
+		// TODOsock - assign local host/port if possible
+		// TODOsock - implement usage of retryTimeout and retryAttempts here
 		if (!this->tryCreateSocket())
 		{
 			return false;
