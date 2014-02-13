@@ -40,7 +40,7 @@
 #define UDP_PORT_MULTICAST_CLIENT_1 50300
 #define UDP_PORT_MULTICAST_CLIENT_2 50301
 #define UDP_PORT_BROADCAST 51000
-#define UDP_MULTICAST_HOST_ADDRESS "192.168.1.133" // this needs changing depending on the machine
+#define UDP_MULTICAST_HOST_ADDRESS "192.168.1.109" // this needs changing depending on the machine
 #define UDP_MULTICAST_ADDRESS "226.2.3.4"
 
 void _printReceived(hstream* stream)
@@ -599,7 +599,7 @@ void _testAsyncUdpClient()
 void _testUdpBroadcast()
 {
 	hlog::debug(LOG_TAG, "");
-	hlog::debug(LOG_TAG, "starting test: UDP multicast");
+	hlog::debug(LOG_TAG, "starting test: UDP broadcast");
 	hlog::debug(LOG_TAG, "");
 	hlog::write(LOG_TAG, "Remember to run a server first where messages can be checked!");
 	sakit::UdpSocket* socket = new sakit::UdpSocket(&udpClientDelegate);
