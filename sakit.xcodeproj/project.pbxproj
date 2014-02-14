@@ -138,6 +138,7 @@
 		A1FB29E4189526B300F3E2F4 /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07371885656100B2A00C /* UdpSocket.cpp */; };
 		A1FB29E5189526B300F3E2F4 /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D12D07391885656100B2A00C /* WorkerThread.cpp */; };
 		A1FB29E6189526B300F3E2F4 /* WorkerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D073A1885656100B2A00C /* WorkerThread.h */; };
+		D11B18D318AE64C600C078BA /* hltypes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D11B18D218AE64C600C078BA /* hltypes.framework */; };
 		D12D07061885654B00B2A00C /* Base.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D06F41885654B00B2A00C /* Base.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D12D07071885654B00B2A00C /* Host.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D06F51885654B00B2A00C /* Host.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D12D07081885654B00B2A00C /* HttpSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D12D06F61885654B00B2A00C /* HttpSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -256,6 +257,7 @@
 		A1773F9318951E24002810BD /* HttpSocketThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpSocketThread.h; path = src/HttpSocketThread.h; sourceTree = "<group>"; };
 		A1773F9418951E24002810BD /* SocketBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SocketBase.cpp; path = src/SocketBase.cpp; sourceTree = "<group>"; };
 		A1773F9518951E24002810BD /* Url.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Url.cpp; path = src/Url.cpp; sourceTree = "<group>"; };
+		D11B18D218AE64C600C078BA /* hltypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = hltypes.framework; path = ../__build__/products/Debug/hltypes.framework; sourceTree = "<group>"; };
 		D12D06F41885654B00B2A00C /* Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Base.h; path = include/sakit/Base.h; sourceTree = "<group>"; };
 		D12D06F51885654B00B2A00C /* Host.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Host.h; path = include/sakit/Host.h; sourceTree = "<group>"; };
 		D12D06F61885654B00B2A00C /* HttpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpSocket.h; path = include/sakit/HttpSocket.h; sourceTree = "<group>"; };
@@ -320,6 +322,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D11B18D318AE64C600C078BA /* hltypes.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,6 +368,7 @@
 				7F42F6E811EB0E0600B1C1DF /* include */,
 				7F42F6E711EB0E0200B1C1DF /* src */,
 				D1325260189BC34800847DE1 /* demos */,
+				D11B18D418AE64CF00C078BA /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
 			name = libsakit;
@@ -464,6 +468,14 @@
 				D12D07041885654B00B2A00C /* UdpSocket.h */,
 			);
 			name = include;
+			sourceTree = "<group>";
+		};
+		D11B18D418AE64CF00C078BA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D11B18D218AE64C600C078BA /* hltypes.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		D1325257189BC33C00847DE1 /* demo_simple */ = {
@@ -884,6 +896,10 @@
 				DSTROOT = /;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/kreso/projects/brawe/__build__/products/Debug,
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Info.plist;
@@ -929,6 +945,10 @@
 				DSTROOT = /;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/kreso/projects/brawe/__build__/products/Debug,
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -973,6 +993,10 @@
 				DSTROOT = /;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/kreso/projects/brawe/__build__/products/Debug,
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Info.plist;
