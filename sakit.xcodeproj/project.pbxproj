@@ -194,6 +194,12 @@
 		D132521F189BBA8300847DE1 /* BroadcasterThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D132521A189BBA8300847DE1 /* BroadcasterThread.h */; };
 		D1325220189BBA8300847DE1 /* BroadcasterThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D132521A189BBA8300847DE1 /* BroadcasterThread.h */; };
 		D1325262189BC35F00847DE1 /* demo_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1325261189BC35F00847DE1 /* demo_simple.cpp */; };
+		D1E5A84A18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
+		D1E5A84B18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
+		D1E5A84C18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
+		D1E5A84D18AE06B50052FD92 /* TimedThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D1E5A84918AE06B50052FD92 /* TimedThread.h */; };
+		D1E5A84E18AE06B50052FD92 /* TimedThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D1E5A84918AE06B50052FD92 /* TimedThread.h */; };
+		D1E5A84F18AE06B50052FD92 /* TimedThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D1E5A84918AE06B50052FD92 /* TimedThread.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -304,6 +310,8 @@
 		D1325256189BC33C00847DE1 /* demo_simple */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_simple; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1325261189BC35F00847DE1 /* demo_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = demo_simple.cpp; path = demos/demo_simple/demo_simple.cpp; sourceTree = SOURCE_ROOT; };
 		D1522F1C140F79500012F290 /* libsakit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsakit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1E5A84818AE06B50052FD92 /* TimedThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TimedThread.cpp; path = src/TimedThread.cpp; sourceTree = "<group>"; };
+		D1E5A84918AE06B50052FD92 /* TimedThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TimedThread.h; path = src/TimedThread.h; sourceTree = "<group>"; };
 		D1F27A89177A2CB600E5C131 /* libsakit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsakit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -365,6 +373,8 @@
 		7F42F6E711EB0E0200B1C1DF /* src */ = {
 			isa = PBXGroup;
 			children = (
+				D1E5A84818AE06B50052FD92 /* TimedThread.cpp */,
+				D1E5A84918AE06B50052FD92 /* TimedThread.h */,
 				D1325219189BBA8300847DE1 /* BroadcasterThread.cpp */,
 				D132521A189BBA8300847DE1 /* BroadcasterThread.h */,
 				A10A58301899934200C708FF /* Binder.cpp */,
@@ -513,6 +523,7 @@
 				D12D07411885656100B2A00C /* ConnectorThread.h in Headers */,
 				A10A5829189992FF00C708FF /* Binder.h in Headers */,
 				D12D07091885654B00B2A00C /* HttpSocketDelegate.h in Headers */,
+				D1E5A84D18AE06B50052FD92 /* TimedThread.h in Headers */,
 				A1773F8E18951E0C002810BD /* HttpResponse.h in Headers */,
 				D132521E189BBA8300847DE1 /* BroadcasterThread.h in Headers */,
 				A10A582E189992FF00C708FF /* TcpSocketDelegate.h in Headers */,
@@ -534,6 +545,7 @@
 				A10A584D1899934200C708FF /* sakitUtil.h in Headers */,
 				A1FB29CF189526B300F3E2F4 /* PlatformSocket.h in Headers */,
 				A1FB29C2189526B300F3E2F4 /* HttpSocketThread.h in Headers */,
+				D1E5A84F18AE06B50052FD92 /* TimedThread.h in Headers */,
 				A1FB29D1189526B300F3E2F4 /* ReceiverThread.h in Headers */,
 				A1FB29DE189526B300F3E2F4 /* TcpServerThread.h in Headers */,
 				A1FB29E3189526B300F3E2F4 /* UdpServerThread.h in Headers */,
@@ -554,6 +566,7 @@
 				A10A584C1899934200C708FF /* sakitUtil.h in Headers */,
 				A1FB29A3189526B100F3E2F4 /* PlatformSocket.h in Headers */,
 				A1FB2996189526B100F3E2F4 /* HttpSocketThread.h in Headers */,
+				D1E5A84E18AE06B50052FD92 /* TimedThread.h in Headers */,
 				A1FB29A5189526B100F3E2F4 /* ReceiverThread.h in Headers */,
 				A1FB29B2189526B100F3E2F4 /* TcpServerThread.h in Headers */,
 				A1FB29B7189526B100F3E2F4 /* UdpServerThread.h in Headers */,
@@ -686,6 +699,7 @@
 				A10A585A1899935A00C708FF /* Binder.cpp in Sources */,
 				D12D075C1885656100B2A00C /* ReceiverThread.cpp in Sources */,
 				D12D077A1885656100B2A00C /* SocketDelegate.cpp in Sources */,
+				D1E5A84A18AE06B50052FD92 /* TimedThread.cpp in Sources */,
 				A1773F9918951E24002810BD /* SocketBase.cpp in Sources */,
 				D12D07621885656100B2A00C /* sakit.cpp in Sources */,
 				D12D07981885656100B2A00C /* UdpSocket.cpp in Sources */,
@@ -741,6 +755,7 @@
 				A10A583F1899934200C708FF /* Binder.cpp in Sources */,
 				A1FB29C8189526B300F3E2F4 /* Host.cpp in Sources */,
 				A1FB29C3189526B300F3E2F4 /* SocketBase.cpp in Sources */,
+				D1E5A84C18AE06B50052FD92 /* TimedThread.cpp in Sources */,
 				A1FB29C1189526B300F3E2F4 /* HttpSocketThread.cpp in Sources */,
 				A1FB29D9189526B300F3E2F4 /* Socket.cpp in Sources */,
 				A1FB29D5189526B300F3E2F4 /* Server.cpp in Sources */,
@@ -788,6 +803,7 @@
 				A10A583E1899934200C708FF /* Binder.cpp in Sources */,
 				A1FB299C189526B100F3E2F4 /* Host.cpp in Sources */,
 				A1FB2997189526B100F3E2F4 /* SocketBase.cpp in Sources */,
+				D1E5A84B18AE06B50052FD92 /* TimedThread.cpp in Sources */,
 				A1FB2995189526B100F3E2F4 /* HttpSocketThread.cpp in Sources */,
 				A1FB29AD189526B100F3E2F4 /* Socket.cpp in Sources */,
 				A1FB29A9189526B100F3E2F4 /* Server.cpp in Sources */,
@@ -1191,6 +1207,7 @@
 				D132525E189BC33C00847DE1 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
 		D1522F2B140F79500012F290 /* Build configuration list for PBXNativeTarget "sakit (iOS)" */ = {
 			isa = XCConfigurationList;
