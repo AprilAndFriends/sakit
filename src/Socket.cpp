@@ -211,8 +211,10 @@ namespace sakit
 			this->mutexState.unlock();
 			return false;
 		}
+		this->receiver->running = false;
 		this->mutexState.unlock();
 		this->receiver->join();
+		this->_updateReceiving();
 		return true;
 	}
 	
