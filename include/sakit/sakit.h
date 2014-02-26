@@ -27,6 +27,7 @@ namespace sakit
 
 	sakitFnExport void init(bool threadedUpdate = false);
 	sakitFnExport void destroy();
+	sakitFnExport hstr getHostName();
 	/// @brief A call to this function will trigger delegate callbacks.
 	sakitFnExport void update(float timeSinceLastFrame = 0.0f);
 	sakitFnExport int getBufferSize();

@@ -302,6 +302,17 @@ namespace sakit
 			_updateThread->start();
 		}
 	}
+	
+	hstr getHostName()
+	{
+#ifdef _WINRT
+		return "";
+#else
+		char buff[65] = {0};
+		gethostname(buff, 64);
+		return buff;
+#endif
+	}
 
 	void destroy()
 	{
