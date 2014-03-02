@@ -15,6 +15,10 @@
 #include "sakit.h"
 #include "Socket.h"
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 namespace sakit
 {
 	hstr logTag = "sakit";
@@ -305,12 +309,13 @@ namespace sakit
 	
 	hstr getHostName()
 	{
-#ifdef _WINRT
-		return "";
-#else
+#if !defined(_WIN32) || !defined(_WINRT)
 		char buff[65] = {0};
 		gethostname(buff, 64);
 		return buff;
+#else
+		// TODO
+		return "";
 #endif
 	}
 
