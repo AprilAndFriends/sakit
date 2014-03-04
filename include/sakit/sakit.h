@@ -26,6 +26,7 @@ namespace sakit
 	extern hstr logTag;
 
 	sakitFnExport void init(bool threadedUpdate = false);
+	sakitFnExport bool isInitialized();
 	sakitFnExport void destroy();
 	sakitFnExport hstr getHostName();
 	/// @brief A call to this function will trigger delegate callbacks.

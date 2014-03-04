@@ -35,6 +35,11 @@ namespace sakit
 	void _asyncUpdate(hthread* thread);
 	void _internalUpdate(float timeSinceLastFrame);
 
+	bool isInitialized()
+	{
+		return mapping.size() > 0;
+	}
+	
 	void init(bool threadedUpdate)
 	{
 		bufferSize = 65536;
