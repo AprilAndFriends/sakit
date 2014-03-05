@@ -314,13 +314,18 @@ namespace sakit
 	
 	hstr getHostName()
 	{
-#if !defined(_WIN32) || !defined(_WINRT)
+#if defined _WIN32
+		char buff[MAX_COMPUTERNAME_LENGTH + 1] = {0};
+		DWORD size = MAX_COMPUTERNAME_LENGTH;		
+		GetComputerNameA(buff, &size);
+		return buff;
+#elif defined _WINRT
+		// TODO
+		return "";
+#else
 		char buff[65] = {0};
 		gethostname(buff, 64);
 		return buff;
-#else
-		// TODO
-		return "";
 #endif
 	}
 
