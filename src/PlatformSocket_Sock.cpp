@@ -470,7 +470,7 @@ namespace sakit
 			// get the IP and port of the connected client
 			char hostString[NI_MAXHOST] = {'\0'};
 			char portString[NI_MAXSERV] = {'\0'};
-			getnameinfo((sockaddr*)&address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST);
+			getnameinfo((sockaddr*)&address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
 			remoteHost = Host(hostString);
 			remotePort = (unsigned short)(int)hstr(portString);
 		}
@@ -519,7 +519,7 @@ namespace sakit
 		// get the IP and port of the connected client
 		char hostString[NI_MAXHOST] = {'\0'};
 		char portString[NI_MAXSERV] = {'\0'};
-		getnameinfo((sockaddr*)other->address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST);
+		getnameinfo((sockaddr*)other->address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
 		Host localHost;
 		unsigned short localPort = 0;
 		this->_getLocalHostPort(localHost, localPort);
