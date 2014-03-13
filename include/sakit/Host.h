@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.01
 /// 
 /// @section LICENSE
 /// 
@@ -26,6 +26,7 @@ namespace sakit
 	{
 	public:
 		Host();
+		Host(const char* domain);
 		Host(chstr domain);
 		Host(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 		~Host();

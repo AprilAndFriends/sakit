@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.01
 /// 
 /// @section LICENSE
 /// 
@@ -66,13 +66,34 @@ extern int h_errno;
 #include "Socket.h"
 
 #ifdef _WIN32
-	#define __gai_strerror(x) hstr::from_unicode(gai_strerrorW(x))
+	#ifndef uint32_t
+		typedef u_long uint32_t;
+	#endif
+	#define __gai_strerror(str) hstr::from_unicode(gai_strerrorW(str))
+
+	// inet_pton() is not supported on WinXP so we provide a native Win32 implementation
+	static int __inet_pton(int family, const char* src, void* dest)
+	{
+		struct sockaddr_storage address;
+		int size = sizeof(sockaddr_storage);
+		hstr ip = src;
+		if (WSAStringToAddressW((wchar_t*)ip.w_str().c_str(), family, NULL, (sockaddr*)&address, &size) == 0)
+		{
+			switch (family)
+			{
+			case AF_INET:
+				*((in_addr*)dest) = ((sockaddr_in*)&address)->sin_addr;
+				return 1;
+			case AF_INET6:
+				*((in6_addr*)dest) = ((sockaddr_in6*)&address)->sin6_addr;
+				return 1;
+			}
+		}
+		return 0;
+	}
 #else
 	#define __gai_strerror(x) hstr(gai_strerror(x))
-#endif
-
-#if defined(_WIN32) && !defined(uint32_t)
-typedef u_long uint32_t;
+	#define __inet_pton inet_pton
 #endif
 
 namespace sakit
@@ -604,7 +625,7 @@ namespace sakit
 #else
 		address.sin_family = PF_INET;
 #endif
-		inet_pton(address.sin_family, ip.toString().c_str(), &address.sin_addr);
+		__inet_pton(address.sin_family, ip.toString().c_str(), &address.sin_addr);
 		char hostName[NI_MAXHOST] = {'\0'};
 		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, NI_NUMERICHOST);
 		if (result != 0)

@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.01
 /// 
 /// @section LICENSE
 /// 
@@ -25,9 +25,14 @@ namespace sakit
 		this->address = "";
 	}
 
-	Host::Host(chstr name)
+	Host::Host(const char* domain)
 	{
-		this->address = name;
+		this->address = domain;
+	}
+
+	Host::Host(chstr domain)
+	{
+		this->address = domain;
 	}
 
 	Host::Host(unsigned char a, unsigned char b, unsigned char c, unsigned char d)
