@@ -11,6 +11,8 @@
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #include <netinet/tcp.h>
+#include <stdlib.h>
+#include <memory.h>
 #endif
 #define _NO_WIN_H
 #include <hltypes/hplatform.h>
