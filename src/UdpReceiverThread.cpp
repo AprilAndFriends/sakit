@@ -54,7 +54,7 @@ namespace sakit
 				port = 0;
 				stream = new hstream();
 			}
-			count--;
+			--count;
 			if (this->maxValue > 0 && count == 0)
 			{
 				break;

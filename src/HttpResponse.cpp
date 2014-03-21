@@ -30,7 +30,7 @@ namespace sakit
 			{
 				if (stream[i] == sequence[j])
 				{
-					j++;
+					++j;
 				}
 				else
 				{

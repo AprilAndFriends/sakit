@@ -71,7 +71,7 @@ namespace sakit
 			}
 			mutex.unlock();
 			hthread::sleep(1.0f);
-			i++;
+			++i;
 		}
 		return (result != FAILED);
 	}
