@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.02
 /// 
 /// @section LICENSE
 /// 
@@ -20,7 +20,8 @@
 
 #define URL_UNRESERVED "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~"
 #define URL_RESERVED ":/?#[]@"
-#define URL_DELIMITERS "!$&'()*+,;="
+#define QUERY_DELIMITERS "!$&'()*+,;"
+#define URL_DELIMITERS QUERY_DELIMITERS "="
 
 #define HOST_ALLOWED URL_UNRESERVED URL_DELIMITERS
 #define PATH_ALLOWED HOST_ALLOWED ":@"
@@ -274,7 +275,7 @@ namespace sakit
 	hmap<hstr, hstr> Url::decodeWwwForm(chstr string, char* usedDelimiter)
 	{
 		char delimiter = '&';
-		harray<char> delimiters = hstr(URL_DELIMITERS).split();
+		harray<char> delimiters = hstr(QUERY_DELIMITERS).split();
 		foreach (char, it, delimiters)
 		{
 			if (string.contains(*it))
