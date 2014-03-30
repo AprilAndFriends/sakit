@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.02
+/// @version 1.03
 /// 
 /// @section LICENSE
 /// 
@@ -139,7 +139,7 @@ namespace sakit
 			}
 			break;
 		}
-		if (query != "")
+		if (query != "" && query != "?")
 		{
 			this->query = Url::decodeWwwForm(query(1, -1)); // also removes the ? caracter
 		}
