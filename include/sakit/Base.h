@@ -39,7 +39,7 @@ namespace sakit
 
 		void setTimeout(float timeout, float retryFrequency = 0.01f);
 
-		virtual void update(float timeSinceLastFrame = 0.0f) = 0;
+		virtual void update(float timeDelta = 0.0f) = 0;
 
 	protected:
 		PlatformSocket* socket;

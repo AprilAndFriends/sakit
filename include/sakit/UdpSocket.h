@@ -41,7 +41,7 @@ namespace sakit
 		bool setMulticastTtl(int value);
 		bool setMulticastLoopback(bool value);
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeDelta = 0.0f);
 
 		bool setDestination(Host remoteHost, unsigned short remotePort);
 

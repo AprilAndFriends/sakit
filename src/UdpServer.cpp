@@ -36,7 +36,7 @@ namespace sakit
 		this->__unregister();
 	}
 	
-	void UdpServer::update(float timeSinceLastFrame)
+	void UdpServer::update(float timeDelta)
 	{
 		harray<Host> hosts;
 		harray<unsigned short> ports;
@@ -59,7 +59,7 @@ namespace sakit
 			this->udpServerDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
 			delete streams[i];
 		}
-		Server::update(timeSinceLastFrame);
+		Server::update(timeDelta);
 	}
 
 	bool UdpServer::receive(hstream* stream, Host& host, unsigned short& port)

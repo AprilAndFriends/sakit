@@ -43,10 +43,10 @@ namespace sakit
 		return this->socket->setNagleAlgorithmActive(value);
 	}
 
-	void TcpSocket::update(float timeSinceLastFrame)
+	void TcpSocket::update(float timeDelta)
 	{
-		Socket::update(timeSinceLastFrame);
-		Connector::_update(timeSinceLastFrame);
+		Socket::update(timeDelta);
+		Connector::_update(timeDelta);
 	}
 
 	void TcpSocket::_updateReceiving()

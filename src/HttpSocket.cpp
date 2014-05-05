@@ -78,7 +78,7 @@ namespace sakit
 		return result;
 	}
 
-	void HttpSocket::update(float timeSinceLastFrame)
+	void HttpSocket::update(float timeDelta)
 	{
 		this->mutexState.lock();
 		this->thread->mutex.lock();

@@ -73,7 +73,7 @@ namespace sakit
 		return result;
 	}
 
-	void Binder::_update(float timeSinceLastFrame)
+	void Binder::_update(float timeDelta)
 	{
 		this->_mutexState->lock();
 		this->_thread->mutex.lock();

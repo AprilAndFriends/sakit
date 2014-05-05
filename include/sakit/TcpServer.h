@@ -32,7 +32,7 @@ namespace sakit
 
 		harray<TcpSocket*> getSockets();
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeDelta = 0.0f);
 
 		TcpSocket* accept();
 

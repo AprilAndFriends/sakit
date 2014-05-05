@@ -45,11 +45,11 @@ namespace sakit
 		return this->sockets;
 	}
 
-	void TcpServer::update(float timeSinceLastFrame)
+	void TcpServer::update(float timeDelta)
 	{
 		foreach (TcpSocket*, it, this->sockets)
 		{
-			(*it)->update(timeSinceLastFrame);
+			(*it)->update(timeDelta);
 		}
 		this->_updateSockets();
 		harray<TcpSocket*> sockets;
@@ -67,7 +67,7 @@ namespace sakit
 		{
 			this->tcpServerDelegate->onAccepted(this, (*it));
 		}
-		Server::update(timeSinceLastFrame);
+		Server::update(timeDelta);
 	}
 
 	TcpSocket* TcpServer::accept()

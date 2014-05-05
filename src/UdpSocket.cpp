@@ -139,10 +139,10 @@ namespace sakit
 		return this->socket->setMulticastLoopback(value);
 	}
 
-	void UdpSocket::update(float timeSinceLastFrame)
+	void UdpSocket::update(float timeDelta)
 	{
-		Binder::_update(timeSinceLastFrame);
-		Socket::update(timeSinceLastFrame);
+		Binder::_update(timeDelta);
+		Socket::update(timeDelta);
 		this->mutexState.lock();
 		this->broadcaster->mutex.lock();
 		State result = this->broadcaster->result;

@@ -30,7 +30,7 @@ namespace sakit
 	sakitFnExport void destroy();
 	sakitFnExport hstr getHostName();
 	/// @brief A call to this function will trigger delegate callbacks.
-	sakitFnExport void update(float timeSinceLastFrame = 0.0f);
+	sakitFnExport void update(float timeDelta = 0.0f);
 	sakitFnExport int getBufferSize();
 	sakitFnExport void setBufferSize(int value);
 	sakitFnExport float getGlobalTimeout();

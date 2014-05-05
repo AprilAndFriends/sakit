@@ -34,7 +34,7 @@ namespace sakit
 
 		bool isRunning();
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeDelta = 0.0f);
 
 		bool startAsync();
 		bool stopAsync();

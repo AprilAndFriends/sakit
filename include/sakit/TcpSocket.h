@@ -36,7 +36,7 @@ namespace sakit
 
 		bool setNagleAlgorithmActive(bool value);
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeDelta = 0.0f);
 
 		/// @note Keep in mind that only all queued stream data is received at once.
 		int receive(hstream* stream, int maxBytes = 0);

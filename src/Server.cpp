@@ -72,9 +72,9 @@ namespace sakit
 		return true;
 	}
 
-	void Server::update(float timeSinceLastFrame)
+	void Server::update(float timeDelta)
 	{
-		Binder::_update(timeSinceLastFrame);
+		Binder::_update(timeDelta);
 		this->mutexState.lock();
 		this->serverThread->mutex.lock();
 		State result = this->serverThread->result;

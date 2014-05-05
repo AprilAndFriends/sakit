@@ -53,7 +53,7 @@ namespace sakit
 		return result;
 	}
 
-	void Socket::update(float timeSinceLastFrame)
+	void Socket::update(float timeDelta)
 	{
 		this->_updateSending();
 		this->_updateReceiving();

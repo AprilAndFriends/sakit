@@ -60,7 +60,7 @@ namespace sakit
 		bool isConnected();
 		bool isExecuting();
 
-		void update(float timeSinceLastFrame = 0.0f);
+		void update(float timeDelta = 0.0f);
 
 		bool executeOptions(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
 		bool executeGet(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));

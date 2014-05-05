@@ -33,7 +33,7 @@ namespace sakit
 	hthread* _updateThread;
 
 	void _asyncUpdate(hthread* thread);
-	void _internalUpdate(float timeSinceLastFrame);
+	void _internalUpdate(float timeDelta);
 
 	bool isInitialized()
 	{
@@ -345,14 +345,14 @@ namespace sakit
 		}
 	}
 
-	void _internalUpdate(float timeSinceLastFrame)
+	void _internalUpdate(float timeDelta)
 	{
 		connectionsMutex.lock();
 		harray<Base*> _connections = sakit::connections;
 		connectionsMutex.unlock();
 		foreach (Base*, it, _connections)
 		{
-			(*it)->update(timeSinceLastFrame);
+			(*it)->update(timeDelta);
 		}
 	}
 

@@ -38,7 +38,7 @@ namespace sakit
 		bool isSending();
 		bool isReceiving();
 
-		void update(float timeSinceLastFrame);
+		void update(float timeDelta);
 
 		int send(hstream* stream, int count = INT_MAX);
 		int send(chstr data);

@@ -47,7 +47,7 @@ namespace sakit
 		Binder(PlatformSocket* socket, BinderDelegate* binderDelegate);
 
 		void _integrate(State* stateValue, hmutex* mutexStateValue, Host* localHost, unsigned short* localPort);
-		void _update(float timeSinceLastFrame = 0.0f);
+		void _update(float timeDelta = 0.0f);
 
 		bool _canBind(State state);
 		bool _canUnbind(State state);
