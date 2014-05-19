@@ -314,14 +314,20 @@ namespace sakit
 	
 	hstr getHostName()
 	{
-#if defined _WIN32
+#ifdef _WIN32
+#ifndef _WINRT
 		char buff[MAX_COMPUTERNAME_LENGTH + 1] = {0};
 		DWORD size = MAX_COMPUTERNAME_LENGTH;		
 		GetComputerNameA(buff, &size);
 		return buff;
-#elif defined _WINRT
-		// TODO
-		return "";
+#else
+		Windows::Foundation::Collections::IVectorView<HostName^>^ vector = Windows::Networking::Connectivity::NetworkInformation::GetHostNames();
+		if (vector->Size == 0)
+		{
+			return "";
+		}
+		return _HL_PSTR_TO_HSTR(vector->First()->Current->DisplayName);
+#endif
 #else
 		char buff[65] = {0};
 		gethostname(buff, 64);

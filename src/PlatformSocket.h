@@ -160,6 +160,13 @@ namespace sakit
 		UdpReceiver^ udpReceiver;
 		IOutputStream^ udpStream;
 
+		hmutex _mutexConnected;
+		hmutex _mutexSetUdpHost;
+		hmutex _mutexBind;
+		hmutex _mutexSend;
+		hmutex _mutexReadStream;
+		static hmutex _mutexResolve;
+
 		static HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);
 

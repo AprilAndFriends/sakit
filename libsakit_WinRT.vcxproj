@@ -123,6 +123,7 @@
     <ClCompile Include="src\TcpServerThread.cpp" />
     <ClCompile Include="src\TcpSocket.cpp" />
     <ClCompile Include="src\TcpSocketDelegate.cpp" />
+    <ClCompile Include="src\TimedThread.cpp" />
     <ClCompile Include="src\UdpReceiverThread.cpp" />
     <ClCompile Include="src\UdpServer.cpp" />
     <ClCompile Include="src\UdpServerDelegate.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="src\SenderThread.h" />
     <ClInclude Include="src\TcpReceiverThread.h" />
     <ClInclude Include="src\TcpServerThread.h" />
+    <ClInclude Include="src\TimedThread.h" />
     <ClInclude Include="src\UdpReceiverThread.h" />
     <ClInclude Include="src\UdpServerThread.h" />
     <ClInclude Include="src\WorkerThread.h" />

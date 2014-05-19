@@ -32,6 +32,8 @@ namespace sakit
 	extern hmutex connectionsMutex;
 	extern int bufferSize;
 
+	hmutex PlatformSocket::_mutexResolve;
+
 	void PlatformSocket::platformInit()
 	{
 	}
@@ -153,14 +155,13 @@ namespace sakit
 		{
 			// open socket
 			State _asyncState = RUNNING;
-			hmutex _mutex;
 			IAsyncAction^ action = nullptr;
 			try
 			{
 				action = this->sSock->ConnectAsync(hostName, _HL_HSTR_TO_PSTR(hstr(remotePort)), SocketProtectionLevel::PlainSocket);
-				action->Completed = ref new AsyncActionCompletedHandler([&_asyncResult, &_asyncState, &_mutex](IAsyncAction^ action, AsyncStatus status)
+				action->Completed = ref new AsyncActionCompletedHandler([this, &_asyncResult, &_asyncState](IAsyncAction^ action, AsyncStatus status)
 				{
-					_mutex.lock();
+					this->_mutexConnected.lock();
 					if (_asyncState == RUNNING)
 					{
 						if (status == AsyncStatus::Completed)
@@ -169,9 +170,9 @@ namespace sakit
 						}
 						_asyncState = FINISHED;
 					}
-					_mutex.unlock();
+					this->_mutexConnected.unlock();
 				});
-				if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+				if (!PlatformSocket::_awaitAsync(_asyncState, this->_mutexConnected))
 				{
 					action->Cancel();
 					this->disconnect();
@@ -181,7 +182,7 @@ namespace sakit
 			catch (Platform::Exception^ e)
 			{
 				PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-				_mutex.unlock();
+				this->_mutexConnected.unlock();
 				return false;
 			}
 		}
@@ -201,15 +202,14 @@ namespace sakit
 		// open socket
 		bool _asyncResult = false;
 		State _asyncState = RUNNING;
-		hmutex _mutex;
 		IAsyncOperation<IOutputStream^>^ operation = nullptr;
 		try
 		{
 			operation = this->dSock->GetOutputStreamAsync(hostName, _HL_HSTR_TO_PSTR(hstr(remotePort)));
 			operation->Completed = ref new AsyncOperationCompletedHandler<IOutputStream^>(
-				[this, &_asyncResult, &_asyncState, &_mutex](IAsyncOperation<IOutputStream^>^ _operation, AsyncStatus status)
+				[this, &_asyncResult, &_asyncState](IAsyncOperation<IOutputStream^>^ _operation, AsyncStatus status)
 			{
-				_mutex.lock();
+				this->_mutexSetUdpHost.lock();
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -219,9 +219,9 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				}
-				_mutex.unlock();
+				this->_mutexSetUdpHost.unlock();
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, this->_mutexSetUdpHost))
 			{
 				operation->Cancel();
 				return false;
@@ -230,7 +230,7 @@ namespace sakit
 		catch (Platform::Exception^ e)
 		{
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			_mutex.unlock();
+			this->_mutexSetUdpHost.unlock();
 			return false;
 		}
 		return _asyncResult;
@@ -265,7 +265,6 @@ namespace sakit
 		*/
 		bool _asyncResult = false;
 		State _asyncState = RUNNING;
-		hmutex _mutex;
 		try
 		{
 			IAsyncAction^ action = nullptr;
@@ -282,9 +281,9 @@ namespace sakit
 			{
 				action = this->dSock->BindServiceNameAsync(_HL_HSTR_TO_PSTR(hstr(localPort)));
 			}
-			action->Completed = ref new AsyncActionCompletedHandler([&_asyncResult, &_asyncState, &_mutex](IAsyncAction^ action, AsyncStatus status)
+			action->Completed = ref new AsyncActionCompletedHandler([this, &_asyncResult, &_asyncState](IAsyncAction^ action, AsyncStatus status)
 			{
-				_mutex.lock();
+				this->_mutexBind.lock();
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -293,9 +292,9 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				}
-				_mutex.unlock();
+				this->_mutexBind.unlock();
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, this->_mutexBind))
 			{
 				action->Cancel();
 				this->disconnect();
@@ -305,7 +304,7 @@ namespace sakit
 		catch (Platform::Exception^ e)
 		{
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			_mutex.unlock();
+			this->_mutexBind.unlock();
 			return false;
 		}
 		if (!_asyncResult)
@@ -398,7 +397,6 @@ namespace sakit
 		bool _asyncResult = false;
 		State _asyncState = RUNNING;
 		int _asyncResultSize = 0;
-		hmutex _mutex;
 		unsigned char* data = (unsigned char*)&(*stream)[stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
 		DataWriter^ writer = ref new DataWriter();
@@ -415,9 +413,9 @@ namespace sakit
 				operation = this->udpStream->WriteAsync(writer->DetachBuffer());
 			}
 			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<unsigned int, unsigned int>(
-				[&_asyncResult, &_asyncState, &_asyncResultSize, &_mutex](IAsyncOperationWithProgress<unsigned int, unsigned int>^ operation, AsyncStatus status)
+				[this, &_asyncResult, &_asyncState, &_asyncResultSize](IAsyncOperationWithProgress<unsigned int, unsigned int>^ operation, AsyncStatus status)
 			{
-				_mutex.lock();
+				this->_mutexSend.lock();
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -427,9 +425,9 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				}
-				_mutex.unlock();
+				this->_mutexSend.unlock();
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, this->_mutexSend))
 			{
 				operation->Cancel();
 				return false;
@@ -438,10 +436,10 @@ namespace sakit
 		catch (Platform::Exception^ e)
 		{
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			_mutex.unlock();
+			this->_mutexSend.unlock();
 			return false;
 		}
-		if (_asyncResultSize >= 0)
+		if (_asyncResultSize > 0)
 		{
 			stream->seek(_asyncResultSize);
 			sent += _asyncResultSize;
@@ -531,16 +529,15 @@ namespace sakit
 		bool _asyncResult = false;
 		State _asyncState = RUNNING;
 		int _asyncResultSize = 0;
-		hmutex _mutex;
 		int read = (count > 0 ? hmin(this->bufferSize, count) : this->bufferSize);
 		Buffer^ _buffer = ref new Buffer(read);
 		try
 		{
 			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = inputStream->ReadAsync(_buffer, read, InputStreamOptions::None);
 			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
-				[&_asyncResult, &_asyncState, &_asyncResultSize, &_mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
+				[this, &_asyncResult, &_asyncState, &_asyncResultSize](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 			{
-				_mutex.lock();
+				this->_mutexReadStream.lock();
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -550,9 +547,9 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				}
-				_mutex.unlock();
+				this->_mutexReadStream.unlock();
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, this->_mutexReadStream))
 			{
 				operation->Cancel();
 				return false;
@@ -561,7 +558,7 @@ namespace sakit
 		catch (Platform::Exception^ e)
 		{
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			_mutex.unlock();
+			this->_mutexReadStream.unlock();
 			return false;
 		}
 		if (_asyncResultSize > 0)
@@ -664,14 +661,13 @@ namespace sakit
 		}
 		hstr result;
 		State _asyncState = RUNNING;
-		hmutex _mutex;
 		try
 		{
 			IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation = DatagramSocket::GetEndpointPairsAsync(hostName, _HL_HSTR_TO_PSTR(serviceName));
 			operation->Completed = ref new AsyncOperationCompletedHandler<Collections::IVectorView<EndpointPair^>^>(
-				[wantIp, wantPort, &result, &_asyncState, &_mutex](IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation, AsyncStatus status)
+				[wantIp, wantPort, &result, &_asyncState](IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation, AsyncStatus status)
 			{
-				_mutex.lock();
+				_mutexResolve.lock();
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -706,19 +702,18 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				}
-				_mutex.unlock();
+				_mutexResolve.unlock();
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _mutexResolve))
 			{
 				operation->Cancel();
-				_mutex.unlock();
 				return "";
 			}
 		}
 		catch (Platform::Exception^ e)
 		{
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			_mutex.unlock();
+			_mutexResolve.unlock();
 			return "";
 		}
 		return result;
