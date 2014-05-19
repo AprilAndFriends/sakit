@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-  <Identity Name="net.sourceforge.sakit.demoSimple.winrt" Publisher="CN=SAKit" Version="1.0.0.0" />
+  <Identity Name="com.sakit.demoSimple" Publisher="CN=SAKit" Version="1.0.0.0" />
   <Properties>
     <DisplayName>SAKit Demo Simple</DisplayName>
     <PublisherDisplayName>SAKit</PublisherDisplayName>
