@@ -160,13 +160,6 @@ namespace sakit
 		UdpReceiver^ udpReceiver;
 		IOutputStream^ udpStream;
 
-		hmutex _mutexConnected;
-		hmutex _mutexSetUdpHost;
-		hmutex _mutexBind;
-		hmutex _mutexSend;
-		hmutex _mutexReadStream;
-		static hmutex _mutexResolve;
-
 		static HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);
 
@@ -174,6 +167,7 @@ namespace sakit
 		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
 
 		static bool _awaitAsync(State& state, hmutex& mutex);
+		static void _awaitAsyncCancel(State& state, hmutex& mutex);
 #endif
 
 		bool _setNonBlocking(bool value);
