@@ -34,7 +34,7 @@ typedef int socklen_t;
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-//#include <ifaddrs.h>
+#include <ifaddrs.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -733,18 +733,22 @@ namespace sakit
             }
 			address = Host(pAdapter->IpAddressList.IpAddress.String);
 			mask = Host(pAdapter->IpAddressList.IpMask.String);
-			gateway = Host(pAdapter->GatewayList.IpAddress.String);
+			gateway = Host("0.0.0.0");
 			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
             pAdapter = pAdapter->Next;
 		}
 #else
-		// TODOsock - implement Unix variant
-		/*
 		struct ifaddrs* ifaddr;
 		struct ifaddrs* ifa;
         int family;
-		int s;
-		char host[NI_MAXHOST];
+		hstr host;
+		hstr gateway;
+		hstr name;
+		hstr description;
+		hstr type;
+		Host address;
+		Host mask;
+		
 		if (getifaddrs(&ifaddr) != -1)
 		{
 			for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
@@ -753,58 +757,21 @@ namespace sakit
 				{
 					family = ifa->ifa_addr->sa_family;
 
-					// Display interface name and family (including symbolic form of the latter for the common families)
-
-					printf("%s  address family: %d%s\n",
-							ifa->ifa_name, family,
-							(family == AF_PACKET) ? " (AF_PACKET)" :
-							(family == AF_INET) ?   " (AF_INET)" :
-							(family == AF_INET6) ?  " (AF_INET6)" : "");
-
-					// For an AF_INET* interface address, display the address
-
-					if (family == AF_INET || family == AF_INET6)
+					if (family == AF_INET)// || family == AF_INET6) // sakit only supports IPV4 for now
 					{
-						s = getnameinfo(ifa->ifa_addr, (family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-						if (s == 0)
-						{
-							//printf("\taddress: <%s>\n", host);
-						}
+						host    = inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
+						mask    = inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
+						gateway = inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
+						name    = ifa->ifa_name;
+						description = name + " network adapter";
+						address = Host(host);
+						result += NetworkAdapter(0, 0, name, description, type, address, mask, "");
+						
 					}
 				}
 			}
 			freeifaddrs(ifaddr);
 		}
-		*/
-		// TODOsock - or this one
-		/*
-		struct ifaddrs* ifAddrStruct = NULL;
-		struct ifaddrs* ifa = NULL;
-		void* tmpAddrPtr = NULL;
-		if (getifaddrs(&ifAddrStruct) != -1)
-		{
-			for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
-			{
-				if (ifa ->ifa_addr->sa_family == AF_INET)
-				{ // check it is IP4
-					// is a valid IP4 Address
-					tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-					char addressBuffer[INET_ADDRSTRLEN] = {'\0'};
-					inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-					//printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
-				}
-				else if (ifa->ifa_addr->sa_family == AF_INET6)
-				{ // check it is IP6
-					// is a valid IP6 Address
-					tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-					char addressBuffer[INET6_ADDRSTRLEN];
-					inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-					//printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
-				}
-			}
-			freeifaddrs(ifAddrStruct);
-		}
-		*/
 #endif
 		return result;
 	}
