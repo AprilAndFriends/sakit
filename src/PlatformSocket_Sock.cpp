@@ -34,7 +34,9 @@ typedef int socklen_t;
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#ifndef _ANDROID
 #include <ifaddrs.h>
+#endif
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -737,7 +739,7 @@ namespace sakit
 			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
             pAdapter = pAdapter->Next;
 		}
-#else
+#elif !defined(_ANDROID)
 		struct ifaddrs* ifaddr;
 		struct ifaddrs* ifa;
         int family;
