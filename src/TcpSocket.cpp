@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.04
 /// 
 /// @section LICENSE
 /// 
@@ -24,11 +24,12 @@
 namespace sakit
 {
 	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), CONNECTED),
-		Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
+		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate)), Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
 	{
 		this->tcpSocketDelegate = socketDelegate;
 		this->socket->setConnectionLess(false);
 		this->receiver = this->tcpReceiver = new TcpReceiverThread(this->socket, &this->timeout, &this->retryFrequency);
+		Binder::_integrate(&this->state, &this->mutexState, &this->localHost, &this->localPort);
 		Connector::_integrate(&this->state, &this->mutexState, &this->remoteHost, &this->remotePort, &this->localHost, &this->localPort, &this->timeout, &this->retryFrequency);
 		this->__register();
 	}
@@ -45,8 +46,9 @@ namespace sakit
 
 	void TcpSocket::update(float timeDelta)
 	{
-		Socket::update(timeDelta);
+		Binder::_update(timeDelta);
 		Connector::_update(timeDelta);
+		Socket::update(timeDelta);
 	}
 
 	void TcpSocket::_updateReceiving()

@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.04
 /// 
 /// @section LICENSE
 /// 
@@ -255,6 +255,7 @@ namespace sakit
 	{
 		harray<State> allowed;
 		allowed += IDLE;
+		allowed += BOUND;
 		return _checkState(state, allowed, "connect");
 	}
 

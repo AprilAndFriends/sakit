@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.04
 /// 
 /// @section LICENSE
 /// 
@@ -17,6 +17,7 @@
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
+#include "BinderDelegate.h"
 #include "ConnectorDelegate.h"
 #include "Host.h"
 #include "sakitExport.h"
@@ -26,7 +27,7 @@ namespace sakit
 {
 	class TcpSocket;
 
-	class sakitExport TcpSocketDelegate : public SocketDelegate, public ConnectorDelegate
+	class sakitExport TcpSocketDelegate : public SocketDelegate, public BinderDelegate, public ConnectorDelegate
 	{
 	public:
 		TcpSocketDelegate();

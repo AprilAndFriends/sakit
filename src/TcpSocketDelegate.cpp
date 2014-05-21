@@ -1,6 +1,6 @@
 /// @file
 /// @author  Boris Mikic
-/// @version 1.0
+/// @version 1.04
 /// 
 /// @section LICENSE
 /// 
@@ -11,7 +11,7 @@
 
 namespace sakit
 {
-	TcpSocketDelegate::TcpSocketDelegate() : SocketDelegate(), ConnectorDelegate()
+	TcpSocketDelegate::TcpSocketDelegate() : SocketDelegate(), BinderDelegate(), ConnectorDelegate()
 	{
 	}
 
