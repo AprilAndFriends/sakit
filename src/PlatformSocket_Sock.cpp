@@ -36,6 +36,8 @@ typedef int socklen_t;
 #include <arpa/inet.h>
 #ifndef _ANDROID
 #include <ifaddrs.h>
+#else
+#include "ifaddrs_android.h"
 #endif
 #include <unistd.h>
 #include <fcntl.h>
@@ -739,17 +741,16 @@ namespace sakit
 			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
             pAdapter = pAdapter->Next;
 		}
-#elif !defined(_ANDROID)
-		struct ifaddrs* ifaddr;
-		struct ifaddrs* ifa;
+#else
+		struct ifaddrs* ifaddr = NULL;
+		struct ifaddrs* ifa = NULL;
         int family;
-		hstr host;
-		hstr gateway;
+		Host host;
+		Host mask;
+		Host gateway;
 		hstr name;
 		hstr description;
 		hstr type;
-		Host address;
-		Host mask;
 		
 		if (getifaddrs(&ifaddr) != -1)
 		{
@@ -758,17 +759,21 @@ namespace sakit
 				if (ifa->ifa_addr != NULL)
 				{
 					family = ifa->ifa_addr->sa_family;
-
 					if (family == AF_INET)// || family == AF_INET6) // sakit only supports IPV4 for now
 					{
 						host    = inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
 						mask    = inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
-						gateway = inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
+						if (ifa->ifa_dstaddr != NULL)
+						{
+							gateway = inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
+						}
+						else // when it's localhost, gateway can be NULL
+						{
+							gateway = Host::Any;
+						}
 						name    = ifa->ifa_name;
 						description = name + " network adapter";
-						address = Host(host);
-						result += NetworkAdapter(0, 0, name, description, type, address, mask, "");
-						
+						result += NetworkAdapter(0, 0, name, description, type, host, mask, "");
 					}
 				}
 			}
