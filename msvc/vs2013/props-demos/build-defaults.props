@@ -16,5 +16,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <AntBuild>
+      <AntBuildType>Debug</AntBuildType>
+    </AntBuild>
   </ItemDefinitionGroup>
 </Project>

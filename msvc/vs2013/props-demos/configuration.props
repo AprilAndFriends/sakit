@@ -21,7 +21,7 @@
       <AdditionalDependencies>-lsakit;-lxal;-lhltypes;-lzip;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <AntBuild>
-      <AntBuildPath>$(ProjectDir)android</AntBuildPath>
+      <AntBuildPath>$(ProjectDir)..\..\demos\$(ProjectName)\android</AntBuildPath>
     </AntBuild>
   </ItemDefinitionGroup>
 </Project>
