@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -56,10 +56,10 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="props\default.props" />
-  <Import Project="..\..\..\hltypes\msvc\vs2012\props-generic\platform-$(Platform).props" />
-  <Import Project="..\..\..\hltypes\msvc\vs2012\props-generic\configurations.props" />
+  <Import Project="..\..\..\hltypes\msvc\vs2013\props-generic\platform-$(Platform).props" />
+  <Import Project="..\..\..\hltypes\msvc\vs2013\props-generic\configurations.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="..\..\..\hltypes\msvc\vs2012\props-generic\build-defaults.props" />
+  <Import Project="..\..\..\hltypes\msvc\vs2013\props-generic\build-defaults.props" />
   <Import Project="props\configuration.props" />
   <ItemGroup>
     <ClInclude Include="..\..\include\sakit\Base.h" />
@@ -155,7 +155,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\hltypes\msvc\vs2012\libhltypes.vcxproj">
+    <ProjectReference Include="..\..\..\hltypes\msvc\vs2013\libhltypes.vcxproj">
       <Project>{e4d373bf-e227-48b9-99e6-84987e8674ec}</Project>
       <Private>false</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
