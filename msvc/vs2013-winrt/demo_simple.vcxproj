@@ -67,10 +67,96 @@
     <ClCompile Include="..\..\demos\demo_simple\demo_simple.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="media\assets\logo_icon.png" />
-    <Image Include="media\assets\small_icon.png" />
-    <Image Include="media\assets\splash.png" />
-    <Image Include="media\assets\store_icon.png" />
+    <Image Include="media\assets\Logo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Logo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Logo.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Logo.scale-80.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoBig.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoBig.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoBig.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoBig.scale-80.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmall.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmall.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmall.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmall.scale-80.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.scale-80.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.targetsize-16.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.targetsize-256.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.targetsize-32.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTiny.targetsize-48.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Splash.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Splash.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Splash.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-180.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-80.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
     <None Include="..\..\demos\demo_simple\TemporaryKey.pfx" />
     <AppxManifest Include="..\..\demos\demo_simple\Package.appxmanifest">
       <SubType>Designer</SubType>

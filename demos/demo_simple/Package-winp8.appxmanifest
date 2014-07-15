@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
+  <Identity Name="com.sakit.demoSimple" Publisher="CN=SAKit" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="EAF9106C-2DC6-402A-AC6E-60091DF239A4" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>SAKit Demo Simple</DisplayName>
+    <PublisherDisplayName>SAKit</PublisherDisplayName>
+    <Logo>media\assets\StoreLogo.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.3.0</OSMinVersion>
+    <OSMaxVersionTested>6.3.0</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="sakit.App">
+      <m3:VisualElements DisplayName="demo_simple" Square150x150Logo="media\assets\Logo.png" Square44x44Logo="media\assets\LogoTinyP8.png" Description="SAKit Demo" ForegroundText="light" BackgroundColor="transparent">
+        <m3:DefaultTile Wide310x150Logo="media\assets\WideLogo.png" Square71x71Logo="media\assets\LogoSmallP8.png">
+          <m3:ShowNameOnTiles>
+            <m3:ShowOn Tile="square150x150Logo" />
+            <m3:ShowOn Tile="wide310x150Logo" />
+          </m3:ShowNameOnTiles>
+        </m3:DefaultTile>
+        <m3:SplashScreen Image="media\assets\SplashP8.png" BackgroundColor="transparent" />
+        <m3:InitialRotationPreference>
+          <m3:Rotation Preference="landscape" />
+          <m3:Rotation Preference="landscapeFlipped" />
+        </m3:InitialRotationPreference>
+      </m3:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClientServer" />
+  </Capabilities>
+</Package>

@@ -4,7 +4,7 @@
   <Properties>
     <DisplayName>SAKit Demo Simple</DisplayName>
     <PublisherDisplayName>SAKit</PublisherDisplayName>
-    <Logo>media\assets\store_icon.png</Logo>
+    <Logo>media\assets\StoreLogo.png</Logo>
   </Properties>
   <Prerequisites>
     <OSMinVersion>6.3.0</OSMinVersion>
@@ -14,14 +14,16 @@
     <Resource Language="x-generate" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="demo_simple.App">
-      <m2:VisualElements DisplayName="demo_simple" Square150x150Logo="media\assets\logo_icon.png" Square30x30Logo="media\assets\small_icon.png" Description="SAKit Demo Simple" ForegroundText="light" BackgroundColor="#464646">
-        <m2:DefaultTile>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="sakit.App">
+      <m2:VisualElements DisplayName="demo_simple" Square150x150Logo="media\assets\Logo.png" Square30x30Logo="media\assets\LogoTiny.png" Description="SAKit Demo" ForegroundText="light" BackgroundColor="#464646">
+        <m2:DefaultTile Wide310x150Logo="media\assets\WideLogo.png" Square310x310Logo="media\assets\LogoBig.png" DefaultSize="square150x150Logo" Square70x70Logo="media\assets\LogoSmall.png">
           <m2:ShowNameOnTiles>
             <m2:ShowOn Tile="square150x150Logo" />
+            <m2:ShowOn Tile="wide310x150Logo" />
+            <m2:ShowOn Tile="square310x310Logo" />
           </m2:ShowNameOnTiles>
         </m2:DefaultTile>
-        <m2:SplashScreen Image="media\assets\splash.png" />
+        <m2:SplashScreen Image="media\assets\Splash.png" BackgroundColor="#464646" />
         <m2:InitialRotationPreference>
           <m2:Rotation Preference="landscape" />
           <m2:Rotation Preference="landscapeFlipped" />

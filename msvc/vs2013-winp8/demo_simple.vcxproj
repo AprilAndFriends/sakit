@@ -67,12 +67,62 @@
     <ClCompile Include="..\..\demos\demo_simple\demo_simple.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="media\assets\logo_icon.png" />
-    <Image Include="media\assets\small_icon.png" />
-    <Image Include="media\assets\splash.png" />
-    <Image Include="media\assets\store_icon.png" />
+    <Image Include="media\assets\Logo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Logo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\Logo.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmallP8.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmallP8.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoSmallP8.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTinyP8.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTinyP8.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\LogoTinyP8.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\SplashP8.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\SplashP8.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\SplashP8.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\StoreLogo.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-140.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="media\assets\WideLogo.scale-240.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
     <None Include="..\..\demos\demo_simple\TemporaryKey.pfx" />
-    <AppxManifest Include="..\..\demos\demo_simple\Package.appxmanifest">
+    <AppxManifest Include="..\..\demos\demo_simple\Package-winp8.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
