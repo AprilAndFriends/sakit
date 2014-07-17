@@ -362,14 +362,14 @@ namespace sakit
 		}
 	}
 
-	void update(float timeSinceLastFrame)
+	void update(float timeDelta)
 	{
 		if (_updateThread != NULL)
 		{
 			hlog::warn(sakit::logTag, "Calling update() does nothing when threaded update is active!");
 			return;
 		}
-		_internalUpdate(timeSinceLastFrame);
+		_internalUpdate(timeDelta);
 	}
 
 	void _asyncUpdate(hthread* thread)
