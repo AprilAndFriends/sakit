@@ -21,6 +21,7 @@ namespace sakit
 {
 	SenderThread::SenderThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), lastSent(0)
 	{
+		this->name = "SAKit sender";
 		this->stream = new hstream();
 	}
 

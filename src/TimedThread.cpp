@@ -14,6 +14,7 @@ namespace sakit
 {
 	TimedThread::TimedThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : WorkerThread(socket)
 	{
+		this->name = "SAKit timed worker";
 		this->timeout = timeout;
 		this->retryFrequency = retryFrequency;
 	}

@@ -19,6 +19,7 @@ namespace sakit
 {
 	TcpReceiverThread::TcpReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : ReceiverThread(socket, timeout, retryFrequency)
 	{
+		this->name = "SAKit TCP receiver";
 		this->stream = new hstream();
 	}
 

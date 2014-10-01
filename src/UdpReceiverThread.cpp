@@ -19,6 +19,7 @@ namespace sakit
 {
 	UdpReceiverThread::UdpReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : ReceiverThread(socket, timeout, retryFrequency)
 	{
+		this->name = "SAKit UDP receiver";
 	}
 
 	UdpReceiverThread::~UdpReceiverThread()

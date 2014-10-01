@@ -21,6 +21,7 @@ namespace sakit
 {
 	ConnectorThread::ConnectorThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), localPort(0)
 	{
+		this->name = "SAKit connector";
 	}
 
 	ConnectorThread::~ConnectorThread()

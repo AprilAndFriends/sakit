@@ -307,7 +307,7 @@ namespace sakit
 		}
 		if (threadedUpdate)
 		{
-			_updateThread = new hthread(&_asyncUpdate);
+			_updateThread = new hthread(&_asyncUpdate, "SAKit async update");
 			_updateThread->start();
 		}
 	}
