@@ -58,17 +58,16 @@ namespace sakit
 
 	bool UdpSocket::setDestination(Host remoteHost, unsigned short remotePort)
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canSetDestination(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = CONNECTING; // just a precaution
-		this->mutexState.unlock();
+		lock.release();
 		// this is not a real connect on UDP, it just does its job of setting a proper remote host
 		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort, this->timeout, this->retryFrequency);
-		this->mutexState.lock();
+		lock.acquire(&this->mutexState);
 		if (result)
 		{
 			this->remoteHost = remoteHost;
@@ -80,19 +79,17 @@ namespace sakit
 			this->remotePort = 0;
 		}
 		this->state = BOUND;
-		this->mutexState.unlock();
 		return result;
 	}
 
 	bool UdpSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canJoinMulticastGroup(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
-		this->mutexState.unlock();
+		lock.release();
 		bool result = this->socket->joinMulticastGroup(interfaceHost, groupAddress);
 		if (result)
 		{
@@ -109,13 +106,12 @@ namespace sakit
 			hlog::warnf(sakit::logTag, "Cannot leave multicast group, interface %s is not assigned to group %s!", interfaceHost.toString().c_str(), groupAddress.toString().c_str());
 			return false;
 		}
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canLeaveMulticastGroup(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
-		this->mutexState.unlock();
+		lock.release();
 		bool result = this->socket->leaveMulticastGroup(interfaceHost, groupAddress);
 		if (result)
 		{
@@ -143,19 +139,17 @@ namespace sakit
 	{
 		Binder::_update(timeDelta);
 		Socket::update(timeDelta);
-		this->mutexState.lock();
-		this->broadcaster->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->broadcaster->mutex);
 		State result = this->broadcaster->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->broadcaster->mutex.unlock();
-			this->mutexState.unlock();
 			return;
 		}
 		this->broadcaster->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		this->broadcaster->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		// delegate calls
 		switch (result)
 		{
@@ -169,8 +163,8 @@ namespace sakit
 		harray<Host> remoteHosts;
 		harray<unsigned short> remotePorts;
 		harray<hstream*> streams;
-		this->mutexState.lock();
-		this->receiver->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->receiver->mutex);
 		if (this->udpReceiver->streams.size() > 0)
 		{
 			remoteHosts = this->udpReceiver->remoteHosts;
@@ -183,8 +177,8 @@ namespace sakit
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->receiver->mutex.unlock();
-			this->mutexState.unlock();
+			lockThread.release();
+			lock.release();
 			for_iter (i, 0, streams.size())
 			{
 				this->udpSocketDelegate->onReceived(this, remoteHosts[i], remotePorts[i], streams[i]);
@@ -194,8 +188,8 @@ namespace sakit
 		}
 		this->receiver->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		this->receiver->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		for_iter (i, 0, streams.size())
 		{
 			this->udpSocketDelegate->onReceived(this, remoteHosts[i], remotePorts[i], streams[i]);
@@ -247,18 +241,16 @@ namespace sakit
 		{
 			return false;
 		}
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canSend(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
-		this->mutexState.unlock();
+		lock.release();
 		bool result = this->socket->broadcast(adapters, remotePort, stream, count);
-		this->mutexState.lock();
+		lock.acquire(&this->mutexState);
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		this->mutexState.unlock();
 		return result;
 	}
 
@@ -289,12 +281,10 @@ namespace sakit
 		{
 			return false;
 		}
-		this->mutexState.lock();
-		this->broadcaster->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->broadcaster->mutex);
 		if (!this->_canSend(this->state))
 		{
-			this->broadcaster->mutex.unlock();
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
@@ -304,8 +294,6 @@ namespace sakit
 		this->broadcaster->stream->rewind();
 		this->broadcaster->adapters = adapters;
 		this->broadcaster->remotePort = remotePort;
-		this->broadcaster->mutex.unlock();
-		this->mutexState.unlock();
 		this->broadcaster->start();
 		return true;
 	}

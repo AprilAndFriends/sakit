@@ -29,30 +29,16 @@ namespace sakit
 
 	void BinderThread::_updateBinding()
 	{
-		if (!this->socket->bind(this->host, this->port))
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
+		bool result = this->socket->bind(this->host, this->port);
+		hmutex::ScopeLock lock(&this->mutex);
+		this->result = (result ? FINISHED : FAILED);
 	}
 
 	void BinderThread::_updateUnbinding()
 	{
-		if (!this->socket->disconnect())
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
+		bool result = this->socket->disconnect();
+		hmutex::ScopeLock lock(&this->mutex);
+		this->result = (result ? FINISHED : FAILED);
 	}
 
 	void BinderThread::_updateProcess()

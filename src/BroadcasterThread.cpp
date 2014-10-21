@@ -31,18 +31,10 @@ namespace sakit
 
 	void BroadcasterThread::_updateProcess()
 	{
-		if (!this->socket->broadcast(this->adapters, this->remotePort, this->stream, this->stream->size()))
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->stream->clear();
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
+		bool result = this->socket->broadcast(this->adapters, this->remotePort, this->stream, this->stream->size());
+		hmutex::ScopeLock lock(&this->mutex);
+		this->result = (result ? FINISHED : FAILED);
 		this->stream->clear();
-		this->mutex.unlock();
 	}
 
 }

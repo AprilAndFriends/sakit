@@ -64,29 +64,23 @@ namespace sakit
 
 	bool HttpSocket::isConnected()
 	{
-		this->mutexState.lock();
-		bool result = (this->state == RUNNING || this->state == CONNECTED);
-		this->mutexState.unlock();
-		return result;
+		hmutex::ScopeLock lock(&this->mutexState);
+		return (this->state == RUNNING || this->state == CONNECTED);
 	}
 
 	bool HttpSocket::isExecuting()
 	{
-		this->mutexState.lock();
-		bool result = (this->state == RUNNING);
-		this->mutexState.unlock();
-		return result;
+		hmutex::ScopeLock lock(&this->mutexState);
+		return (this->state == RUNNING);
 	}
 
 	void HttpSocket::update(float timeDelta)
 	{
-		this->mutexState.lock();
-		this->thread->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->thread->mutex);
 		State result = this->thread->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->thread->mutex.unlock();
-			this->mutexState.unlock();
 			return;
 		}
 		this->thread->result = IDLE;
@@ -101,8 +95,8 @@ namespace sakit
 		{
 			this->state = CONNECTED;
 		}
-		this->thread->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		switch (result)
 		{
 		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, this->url);	break;
@@ -159,40 +153,36 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
 			return false;
 		}
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canExecute(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = RUNNING;
-		this->mutexState.unlock();
+		lock.release();
 		hstr request = this->_processRequest(method, url, customHeaders);
 		unsigned short port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
 		bool result = this->socket->connect(this->remoteHost, port, this->localHost, this->localPort, this->timeout, this->retryFrequency);
 		if (!result)
 		{
 			this->_terminateConnection();
-			this->mutexState.lock();
+			lock.acquire(&this->mutexState);
 			this->state = IDLE;
-			this->mutexState.unlock();
 			return false;
 		}
 		if (SocketBase::_send(request) == 0)
 		{
 			this->_terminateConnection();
-			this->mutexState.lock();
+			lock.acquire(&this->mutexState);
 			this->state = IDLE;
-			this->mutexState.unlock();
 			return false;
 		}
 		response->clear();
 		if (this->_receiveHttpDirect(response) == 0)
 		{
 			this->_terminateConnection();
-			this->mutexState.lock();
+			lock.acquire(&this->mutexState);
 			this->state = IDLE;
-			this->mutexState.unlock();
 			return false;
 		}
 		response->Body.rewind();
@@ -200,15 +190,13 @@ namespace sakit
 		if (!this->keepAlive || response->Headers.try_get_by_key("Connection", "") == "close")
 		{
 			this->_terminateConnection();
-			this->mutexState.lock();
+			lock.acquire(&this->mutexState);
 			this->state = IDLE;
-			this->mutexState.unlock();
 		}
 		else
 		{
-			this->mutexState.lock();
+			lock.acquire(&this->mutexState);
 			this->state = CONNECTED;
-			this->mutexState.unlock();
 		}
 		return true;
 	}
@@ -240,12 +228,10 @@ namespace sakit
 			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
 			return false;
 		}
-		this->mutexState.lock();
-		this->thread->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->thread->mutex);
 		if (!this->_canExecute(this->state))
 		{
-			this->thread->mutex.unlock();
-			this->mutexState.unlock();
 			return false;
 		}
 		hstr request = this->_processRequest(method, url, customHeaders);
@@ -256,8 +242,6 @@ namespace sakit
 		this->thread->host = this->remoteHost;
 		this->thread->port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
 		this->state = RUNNING;
-		this->thread->mutex.unlock();
-		this->mutexState.unlock();
 		this->thread->start();
 		return true;
 	}

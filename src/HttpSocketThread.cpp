@@ -40,9 +40,8 @@ namespace sakit
 		unsigned short localPort = 0;
 		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
 		{
-			this->mutex.lock();
+			hmutex::ScopeLock lock(&this->mutex);
 			this->result = FAILED;
-			this->mutex.unlock();
 			this->running = false;
 		}
 	}
@@ -55,9 +54,9 @@ namespace sakit
 		{
 			if (!this->socket->send(this->stream, count, sent))
 			{
-				this->mutex.lock();
+				hmutex::ScopeLock lock(&this->mutex);
 				this->result = FAILED;
-				this->mutex.unlock();
+				lock.release();
 				this->running = false;
 				this->socket->disconnect();
 				break;
@@ -107,7 +106,7 @@ namespace sakit
 			// let's say it's complete, we don't know its supposed length anyway
 			this->response->BodyComplete = true;
 		}
-		this->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutex);
 		if (this->response->Raw.size() > 0)
 		{
 			this->result = FINISHED;
@@ -120,7 +119,6 @@ namespace sakit
 			this->response->clear();
 			this->socket->disconnect();
 		}
-		this->mutex.unlock();
 	}
 
 	void HttpSocketThread::_updateProcess()

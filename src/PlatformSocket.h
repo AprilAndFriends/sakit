@@ -138,7 +138,7 @@ namespace sakit
 
 			~UdpReceiver()
 			{
-				this->dataMutex.lock();
+				hmutex::ScopeLock lock(&this->dataMutex);
 				this->hosts.clear();
 				this->ports.clear();
 				foreach (hstream*, it, this->streams)
@@ -146,7 +146,6 @@ namespace sakit
 					delete (*it);
 				}
 				this->streams.clear();
-				this->dataMutex.unlock();
 			}
 
 		};
@@ -166,8 +165,8 @@ namespace sakit
 		bool _setUdpHost(HostName^ hostName, unsigned short remotePort);
 		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
 
-		static bool _awaitAsync(State& state, hmutex& mutex);
-		static void _awaitAsyncCancel(State& state, hmutex& mutex);
+		static bool _awaitAsync(State& state, hmutex& mutex, hmutex::ScopeLock& lock);
+		static void _awaitAsyncCancel(State& state, hmutex& mutex, hmutex::ScopeLock& lock);
 #endif
 
 		bool _setNonBlocking(bool value);

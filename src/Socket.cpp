@@ -39,18 +39,14 @@ namespace sakit
 
 	bool Socket::isSending()
 	{
-		this->mutexState.lock();
-		bool result = (this->state == SENDING || this->state == SENDING_RECEIVING);
-		this->mutexState.unlock();
-		return result;
+		hmutex::ScopeLock lock(&this->mutexState);
+		return (this->state == SENDING || this->state == SENDING_RECEIVING);
 	}
 
 	bool Socket::isReceiving()
 	{
-		this->mutexState.lock();
-		bool result = (this->state == RECEIVING || this->state == SENDING_RECEIVING);
-		this->mutexState.unlock();
-		return result;
+		hmutex::ScopeLock lock(&this->mutexState);
+		return (this->state == RECEIVING || this->state == SENDING_RECEIVING);
 	}
 
 	void Socket::update(float timeDelta)
@@ -62,8 +58,8 @@ namespace sakit
 	void Socket::_updateSending()
 	{
 		int sent = 0;
-		this->mutexState.lock();
-		this->sender->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->sender->mutex);
 		if (this->sender->lastSent > 0)
 		{
 			sent = this->sender->lastSent;
@@ -72,18 +68,18 @@ namespace sakit
 		State result = this->sender->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->sender->mutex.unlock();
-			this->mutexState.unlock();
 			if (sent > 0)
 			{
+				lockThread.release();
+				lock.release();
 				this->socketDelegate->onSent(this, sent);
 			}
 			return;
 		}
 		this->sender->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		this->sender->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		if (sent > 0)
 		{
 			this->socketDelegate->onSent(this, sent);
@@ -120,18 +116,16 @@ namespace sakit
 		{
 			return false;
 		}
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canSend(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
-		this->mutexState.unlock();
+		lock.release();
 		int result = this->_sendDirect(stream, count);
-		this->mutexState.lock();
+		lock.acquire(&this->mutexState);
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		this->mutexState.unlock();
 		return result;
 	}
 
@@ -141,12 +135,10 @@ namespace sakit
 		{
 			return false;
 		}
-		this->mutexState.lock();
-		this->sender->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->sender->mutex);
 		if (!this->_canSend(this->state))
 		{
-			this->sender->mutex.unlock();
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
@@ -154,8 +146,6 @@ namespace sakit
 		this->sender->stream->clear();
 		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
-		this->sender->mutex.unlock();
-		this->mutexState.unlock();
 		this->sender->start();
 		return true;
 	}
@@ -165,54 +155,47 @@ namespace sakit
 		bool result = false;
 		if (this->_checkReceiveParameters(stream))
 		{
-			this->mutexState.lock();
+			hmutex::ScopeLock lock(&this->mutexState);
 			result = this->_canReceive(this->state);
 			if (result)
 			{
 				this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
 			}
-			this->mutexState.unlock();
 		}
 		return result;
 	}
 
 	int Socket::_finishReceive(int result)
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		this->mutexState.unlock();
 		return result;
 	}
 
 	bool Socket::_startReceiveAsync(int maxValue)
 	{
-		this->mutexState.lock();
-		this->receiver->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->receiver->mutex);
 		if (!this->_canReceive(this->state))
 		{
-			this->receiver->mutex.unlock();
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
 		this->receiver->result = RUNNING;
 		this->receiver->maxValue = maxValue;
-		this->receiver->mutex.unlock();
-		this->mutexState.unlock();
 		this->receiver->start();
 		return true;
 	}
 
 	bool Socket::stopReceive()
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canStopReceive(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->receiver->running = false;
-		this->mutexState.unlock();
+		lock.release();
 		this->receiver->join();
 		this->_updateReceiving();
 		return true;
@@ -220,14 +203,12 @@ namespace sakit
 	
 	bool Socket::stopReceiveAsync()
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canStopReceive(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->receiver->running = false;
-		this->mutexState.unlock();
 		return true;
 	}
 

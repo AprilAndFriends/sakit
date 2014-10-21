@@ -52,8 +52,8 @@ namespace sakit
 	void TcpSocket::_updateReceiving()
 	{
 		hstream* stream = NULL;
-		this->mutexState.lock();
-		this->receiver->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->receiver->mutex);
 		if (this->tcpReceiver->stream->size() > 0)
 		{
 			stream = this->tcpReceiver->stream;
@@ -62,10 +62,10 @@ namespace sakit
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->receiver->mutex.unlock();
-			this->mutexState.unlock();
 			if (stream != NULL)
 			{
+				lockThread.release();
+				lock.release();
 				stream->rewind();
 				this->tcpSocketDelegate->onReceived(this, stream);
 				delete stream;
@@ -74,8 +74,8 @@ namespace sakit
 		}
 		this->receiver->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		this->receiver->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		if (stream != NULL)
 		{
 			stream->rewind();
@@ -100,18 +100,13 @@ namespace sakit
 	}
 	
 	hstr TcpSocket::receive(int maxBytes)
-    {
-        hstream stream;
-        int size = this->receive(&stream, maxBytes);
-		stream.rewind();
-		char* p = new char[size + 1];
-		stream.read_raw(p, size);
-		p[size] = 0;
-		hstr result;
-		result.insert(0, p, size);
-		delete [] p;
-        return result;
-    }
+	{
+		hstream stream;
+		int size = this->receive(&stream, maxBytes);
+		unsigned char terminator = 0;
+		stream.write_raw(&terminator, 1); // Terminator 2 was better though
+		return hstr((char*)&stream[0], size);
+	}
 
 	bool TcpSocket::startReceiveAsync(int maxBytes)
 	{
@@ -121,9 +116,8 @@ namespace sakit
 	void TcpSocket::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)
 	{
 		SocketBase::_activateConnection(remoteHost, remotePort, localHost, localPort);
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		this->state = CONNECTED;
-		this->mutexState.unlock();
 	}
 
 }

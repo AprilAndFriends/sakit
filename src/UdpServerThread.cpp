@@ -26,7 +26,7 @@ namespace sakit
 
 	UdpServerThread::~UdpServerThread()
 	{
-		this->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutex);
 		foreach (hstream*, it, this->streams)
 		{
 			delete (*it);
@@ -34,7 +34,6 @@ namespace sakit
 		this->remoteHosts.clear();
 		this->remotePorts.clear();
 		this->streams.clear();
-		this->mutex.unlock();
 	}
 
 	void UdpServerThread::_updateProcess()
@@ -42,6 +41,7 @@ namespace sakit
 		Host remoteHost;
 		unsigned short remotePort = 0;
 		hstream* stream = new hstream();
+		hmutex::ScopeLock lock;
 		while (this->running)
 		{
 			if (this->socket->receiveFrom(stream, remoteHost, remotePort))
@@ -49,11 +49,11 @@ namespace sakit
 				if (stream->size() > 0)
 				{
 					stream->rewind();
-					this->mutex.lock();
+					lock.acquire(&this->mutex);
 					this->remoteHosts += remoteHost;
 					this->remotePorts += remotePort;
 					this->streams += stream;
-					this->mutex.unlock();
+					lock.release();
 					remoteHost = Host();
 					remotePort = 0;
 					stream = new hstream();
@@ -62,9 +62,8 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete stream;
-		this->mutex.lock();
+		lock.acquire(&this->mutex);
 		this->result = FINISHED;
-		this->mutex.unlock();
 	}
 
 }

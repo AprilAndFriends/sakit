@@ -60,32 +60,26 @@ namespace sakit
 
 	bool Connector::isConnecting()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state == CONNECTING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state == CONNECTING);
 	}
 
 	bool Connector::isConnected()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state != IDLE && *this->_state != CONNECTING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state != IDLE && *this->_state != CONNECTING);
 	}
 
 	bool Connector::isDisconnecting()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state == DISCONNECTING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state == DISCONNECTING);
 	}
 
 	void Connector::_update(float timeDelta)
 	{
-		this->_mutexState->lock();
-		this->_thread->mutex.lock();
+		hmutex::ScopeLock lock(this->_mutexState);
+		hmutex::ScopeLock lockThread(&this->_thread->mutex);
 		State state = *this->_state;
 		State result = this->_thread->result;
 		Host remoteHost = this->_thread->host;
@@ -94,8 +88,6 @@ namespace sakit
 		unsigned short localPort = this->_thread->localPort;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->_thread->mutex.unlock();
-			this->_mutexState->unlock();
 			return;
 		}
 		this->_thread->state = IDLE;
@@ -135,8 +127,8 @@ namespace sakit
 			}
 			break;
 		}
-		this->_thread->mutex.unlock();
-		this->_mutexState->unlock();
+		lockThread.release();
+		lock.release();
 		// delegate calls
 		switch (result)
 		{
@@ -159,19 +151,18 @@ namespace sakit
 
 	bool Connector::connect(Host remoteHost, unsigned short remotePort)
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		State state = *this->_state;
 		if (!this->_canConnect(state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = CONNECTING;
-		this->_mutexState->unlock();
+		lock.release();
 		Host localHost;
 		unsigned short localPort = 0;
 		bool result = this->_socket->connect(remoteHost, remotePort, localHost, localPort, *this->_timeout, *this->_retryFrequency);
-		this->_mutexState->lock();
+		lock.acquire(this->_mutexState);
 		if (result)
 		{
 			*this->_remoteHost = remoteHost;
@@ -184,23 +175,21 @@ namespace sakit
 		{
 			*this->_state = state;
 		}
-		this->_mutexState->unlock();
 		return result;
 	}
 	
 	bool Connector::disconnect()
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		State state = *this->_state;
 		if (!this->_canDisconnect(state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = DISCONNECTING;
-		this->_mutexState->unlock();
+		lock.release();
 		bool result = this->_socket->disconnect();
-		this->_mutexState->lock();
+		lock.acquire(this->_mutexState);
 		if (result)
 		{
 			*this->_remoteHost = Host();
@@ -213,16 +202,14 @@ namespace sakit
 		{
 			*this->_state = state;
 		}
-		this->_mutexState->unlock();
 		return result;
 	}
 
 	bool Connector::connectAsync(Host remoteHost, unsigned short remotePort)
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		if (!this->_canConnect(*this->_state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = CONNECTING;
@@ -230,23 +217,20 @@ namespace sakit
 		this->_thread->result = RUNNING;
 		this->_thread->host = remoteHost;
 		this->_thread->port = remotePort;
-		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
 	}
 	
 	bool Connector::disconnectAsync()
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		if (!this->_canDisconnect(*this->_state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = DISCONNECTING;
 		this->_thread->state = DISCONNECTING;
 		this->_thread->result = RUNNING;
-		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
 	}

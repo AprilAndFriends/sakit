@@ -34,30 +34,29 @@ namespace sakit
 	{
 		int count = this->stream->size();
 		int sent = 0;
+		hmutex::ScopeLock lock;
 		while (this->running)
 		{
 			sent = 0;
 			if (!this->socket->send(this->stream, count, sent))
 			{
-				this->mutex.lock();
+				lock.acquire(&this->mutex);
 				this->result = FAILED;
 				this->stream->clear();
-				this->mutex.unlock();
 				return;
 			}
-			this->mutex.lock();
+			lock.acquire(&this->mutex);
 			this->lastSent += sent;
-			this->mutex.unlock();
+			lock.release();
 			if (this->stream->eof())
 			{
 				break;
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
-		this->mutex.lock();
+		lock.acquire(&this->mutex);
 		this->result = FINISHED;
 		this->stream->clear();
-		this->mutex.unlock();
 	}
 
 }

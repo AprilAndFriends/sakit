@@ -31,13 +31,13 @@ namespace sakit
 	void TcpReceiverThread::_updateProcess()
 	{
 		int remaining = this->maxValue;
+		hmutex::ScopeLock lock;
 		while (this->running)
 		{
 			if (!this->socket->receive(this->stream, this->mutex, remaining))
 			{
-				this->mutex.lock();
+				lock.acquire(&this->mutex);
 				this->result = FAILED;
-				this->mutex.unlock();
 				return;
 			}
 			if (this->maxValue > 0 && remaining == 0)
@@ -46,9 +46,8 @@ namespace sakit
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
-		this->mutex.lock();
+		lock.acquire(&this->mutex);
 		this->result = FINISHED;
-		this->mutex.unlock();
 	}
 
 }

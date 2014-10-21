@@ -53,16 +53,16 @@ namespace sakit
 		}
 		this->_updateSockets();
 		harray<TcpSocket*> sockets;
-		this->mutexState.lock();
-		this->tcpServerThread->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->tcpServerThread->mutex);
 		if (this->tcpServerThread->sockets.size() > 0)
 		{
 			sockets = this->tcpServerThread->sockets;
 			this->tcpServerThread->sockets.clear();
 			this->sockets += sockets;
 		}
-		this->tcpServerThread->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		foreach (TcpSocket*, it, sockets)
 		{
 			this->tcpServerDelegate->onAccepted(this, (*it));
@@ -72,18 +72,17 @@ namespace sakit
 
 	TcpSocket* TcpServer::accept()
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canStart(this->state))
 		{
-			this->mutexState.unlock();
 			return NULL;
 		}
 		this->state = RUNNING;
-		this->mutexState.unlock();
+		lock.release();
 		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
-		connectionsMutex.lock();
+		lock.acquire(&connectionsMutex);
 		connections -= tcpSocket;
-		connectionsMutex.unlock();
+		lock.release();
 		float time = 0.0f;
 		while (true)
 		{
@@ -107,9 +106,8 @@ namespace sakit
 			}
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
-		this->mutexState.lock();
+		lock.acquire(&this->mutexState);
 		this->state = BOUND;
-		this->mutexState.unlock();
 		return tcpSocket;
 	}
 

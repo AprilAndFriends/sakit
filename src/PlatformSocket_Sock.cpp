@@ -194,16 +194,16 @@ namespace sakit
 		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		this->socketInfo->ai_protocol = IPPROTO_IP;
 		this->socketInfo->ai_flags = 0;
-		getaddrinfoMutex.lock();
+		hmutex::ScopeLock lock(&getaddrinfoMutex);
 		int result = getaddrinfo(host.toString().c_str(), hstr(port).c_str(), this->socketInfo, info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, "getaddrinfo() " + __gai_strerror(result));
-			getaddrinfoMutex.unlock();
+			lock.release();
 			this->disconnect();
 			return false;
 		}
-		getaddrinfoMutex.unlock();
+		lock.release();
 		this->socketInfo->ai_family = (*info)->ai_family;
 		this->socketInfo->ai_socktype = (*info)->ai_socktype;
 		this->socketInfo->ai_protocol = (*info)->ai_protocol;
@@ -438,9 +438,9 @@ namespace sakit
 		{
 			return false;
 		}
-		mutex.lock();
+		hmutex::ScopeLock lock(&mutex);
 		stream->write_raw(this->receiveBuffer, read);
-		mutex.unlock();
+		lock.release();
 		if (maxBytes > 0) // if don't read everything
 		{
 			maxBytes -= read;
@@ -608,15 +608,14 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
-		getaddrinfoMutex.lock();
+		hmutex::ScopeLock lock(&getaddrinfoMutex);
 		int result = getaddrinfo(domain.toString().c_str(), NULL, &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
-			getaddrinfoMutex.unlock();
 			return Host();
 		}
-		getaddrinfoMutex.unlock();
+		lock.release();
 		in_addr address;
 		address.s_addr = ((sockaddr_in*)(info->ai_addr))->sin_addr.s_addr;
 		freeaddrinfo(info);
@@ -652,15 +651,14 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
-		getaddrinfoMutex.lock();
+		hmutex::ScopeLock lock(&getaddrinfoMutex);
 		int result = getaddrinfo(NULL, serviceName.c_str(), &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
-			getaddrinfoMutex.unlock();
 			return 0;
 		}
-		getaddrinfoMutex.unlock();
+		lock.release();
 		unsigned short port = ((sockaddr_in*)(info->ai_addr))->sin_port;
 		freeaddrinfo(info);
 		return port;
@@ -702,56 +700,55 @@ namespace sakit
 		Host mask;
 		Host gateway;
 		PIP_ADAPTER_INFO pAdapter = info;
-        while (pAdapter != NULL)
+		while (pAdapter != NULL)
 		{
 			comboIndex = pAdapter->ComboIndex;
 			index = pAdapter->Index;
 			name = pAdapter->AdapterName;
 			description = pAdapter->Description;
-            switch (pAdapter->Type)
+			switch (pAdapter->Type)
 			{
-            case MIB_IF_TYPE_ETHERNET:
-                type = "Ethernet";
-                break;
-            case MIB_IF_TYPE_TOKENRING:
-                type = "Token Ring";
-                break;
-            case MIB_IF_TYPE_FDDI:
-                type = "FDDI";
-                break;
-            case MIB_IF_TYPE_PPP:
-                type = "PPP";
-                break;
-            case MIB_IF_TYPE_LOOPBACK:
-                type = "Lookback";
-                break;
-            case MIB_IF_TYPE_SLIP:
-                type = "Slip";
-                break;
-            case MIB_IF_TYPE_OTHER:
-                type = "Other";
-                break;
-            default:
-                type = "Unknown type " + hstr(pAdapter->Type);
-                break;
-            }
+			case MIB_IF_TYPE_ETHERNET:
+				type = "Ethernet";
+				break;
+			case MIB_IF_TYPE_TOKENRING:
+				type = "Token Ring";
+				break;
+			case MIB_IF_TYPE_FDDI:
+				type = "FDDI";
+				break;
+			case MIB_IF_TYPE_PPP:
+				type = "PPP";
+				break;
+			case MIB_IF_TYPE_LOOPBACK:
+				type = "Lookback";
+				break;
+			case MIB_IF_TYPE_SLIP:
+				type = "Slip";
+				break;
+			case MIB_IF_TYPE_OTHER:
+				type = "Other";
+				break;
+			default:
+				type = "Unknown type " + hstr(pAdapter->Type);
+				break;
+			}
 			address = Host(pAdapter->IpAddressList.IpAddress.String);
 			mask = Host(pAdapter->IpAddressList.IpMask.String);
 			gateway = Host("0.0.0.0");
 			result += NetworkAdapter(comboIndex, index, name, description, type, address, mask, gateway);
-            pAdapter = pAdapter->Next;
+			pAdapter = pAdapter->Next;
 		}
 #else
 		struct ifaddrs* ifaddr = NULL;
 		struct ifaddrs* ifa = NULL;
-        int family;
+		int family;
 		Host host;
 		Host mask;
 		Host gateway;
 		hstr name;
 		hstr description;
 		hstr type;
-		
 		if (getifaddrs(&ifaddr) != -1)
 		{
 			for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
@@ -761,8 +758,8 @@ namespace sakit
 					family = ifa->ifa_addr->sa_family;
 					if (family == AF_INET)// || family == AF_INET6) // sakit only supports IPV4 for now
 					{
-						host    = inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
-						mask    = inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
+						host = inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
+						mask = inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
 						if (ifa->ifa_dstaddr != NULL)
 						{
 							gateway = inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
@@ -771,7 +768,7 @@ namespace sakit
 						{
 							gateway = Host::Any;
 						}
-						name    = ifa->ifa_name;
+						name = ifa->ifa_name;
 						description = name + " network adapter";
 						result += NetworkAdapter(0, 0, name, description, type, host, mask, "");
 					}

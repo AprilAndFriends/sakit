@@ -41,8 +41,8 @@ namespace sakit
 		harray<Host> hosts;
 		harray<unsigned short> ports;
 		harray<hstream*> streams;
-		this->mutexState.lock();
-		this->udpServerThread->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->udpServerThread->mutex);
 		if (this->udpServerThread->streams.size() > 0)
 		{
 			hosts = this->udpServerThread->remoteHosts;
@@ -52,8 +52,8 @@ namespace sakit
 			this->udpServerThread->remotePorts.clear();
 			this->udpServerThread->streams.clear();
 		}
-		this->udpServerThread->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		for_iter (i, 0, streams.size())
 		{
 			this->udpServerDelegate->onReceived(this, hosts[i], ports[i], streams[i]);
@@ -64,14 +64,13 @@ namespace sakit
 
 	bool UdpServer::receive(hstream* stream, Host& host, unsigned short& port)
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canStart(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = RUNNING;
-		this->mutexState.unlock();
+		lock.release();
 		float time = 0.0f;
 		bool result = false;
 		while (true)
@@ -91,9 +90,8 @@ namespace sakit
 			}
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
-		this->mutexState.lock();
+		lock.acquire(&this->mutexState);
 		this->state = BOUND;
-		this->mutexState.unlock();
 		return result;
 	}
 

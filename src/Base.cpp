@@ -23,20 +23,18 @@ namespace sakit
 
 	void Base::__register()
 	{
-		connectionsMutex.lock();
+		hmutex::ScopeLock lock(&connectionsMutex);
 		connections += this;
-		connectionsMutex.unlock();
 	}
 
 	void Base::__unregister()
 	{
-		connectionsMutex.lock();
+		hmutex::ScopeLock lock(&connectionsMutex);
 		int index = connections.index_of(this);
 		if (index >= 0)
 		{
 			connections.remove_at(index);
 		}
-		connectionsMutex.unlock();
 	}
 
 	Base::Base() : localPort(0), state(IDLE)

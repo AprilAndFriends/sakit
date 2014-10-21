@@ -38,56 +38,48 @@ namespace sakit
 
 	bool Server::isRunning()
 	{
-		this->mutexState.lock();
-		bool result = (this->state == RUNNING);
-		this->mutexState.unlock();
-		return result;
+		hmutex::ScopeLock lock(&this->mutexState);
+		return (this->state == RUNNING);
 	}
 
 	bool Server::startAsync()
 	{
-		this->mutexState.lock();
-		if (!this->_canStart(this->state))
+		hmutex::ScopeLock lock(&this->mutexState);
+		if (!this->_canStart(this->state));
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->state = RUNNING;
 		this->serverThread->result = RUNNING;
-		this->mutexState.unlock();
 		this->serverThread->start();
 		return true;
 	}
 
 	bool Server::stopAsync()
 	{
-		this->mutexState.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
 		if (!this->_canStop(this->state))
 		{
-			this->mutexState.unlock();
 			return false;
 		}
 		this->serverThread->running = false;
-		this->mutexState.unlock();
 		return true;
 	}
 
 	void Server::update(float timeDelta)
 	{
 		Binder::_update(timeDelta);
-		this->mutexState.lock();
-		this->serverThread->mutex.lock();
+		hmutex::ScopeLock lock(&this->mutexState);
+		hmutex::ScopeLock lockThread(&this->serverThread->mutex);
 		State result = this->serverThread->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->serverThread->mutex.unlock();
-			this->mutexState.unlock();
 			return;
 		}
 		this->serverThread->result = IDLE;
 		this->state = BOUND;
-		this->serverThread->mutex.unlock();
-		this->mutexState.unlock();
+		lockThread.release();
+		lock.release();
 		// delegate calls
 		switch (result)
 		{

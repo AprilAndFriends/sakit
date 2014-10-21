@@ -32,32 +32,25 @@ namespace sakit
 	{
 		Host localHost;
 		unsigned short localPort = 0;
-		if (!this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
+		bool result = this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency);
+		hmutex::ScopeLock lock(&this->mutex);
+		if (result)
 		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
+			this->result = FINISHED;
+			this->localHost = localHost;
+			this->localPort = localPort;
 		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->localHost = localHost;
-		this->localPort = localPort;
-		this->mutex.unlock();
+		else
+		{
+			this->result = FAILED;
+		}
 	}
 
 	void ConnectorThread::_updateDisconnecting()
 	{
-		if (!this->socket->disconnect())
-		{
-			this->mutex.lock();
-			this->result = FAILED;
-			this->mutex.unlock();
-			return;
-		}
-		this->mutex.lock();
-		this->result = FINISHED;
-		this->mutex.unlock();
+		bool result = this->socket->disconnect();
+		hmutex::ScopeLock lock(&this->mutex);
+		this->result = (result ? FINISHED : FAILED);
 	}
 
 	void ConnectorThread::_updateProcess()

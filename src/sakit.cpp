@@ -353,9 +353,9 @@ namespace sakit
 
 	void _internalUpdate(float timeDelta)
 	{
-		connectionsMutex.lock();
+		hmutex::ScopeLock lock(&connectionsMutex);
 		harray<Base*> _connections = sakit::connections;
-		connectionsMutex.unlock();
+		lock.release();
 		foreach (Base*, it, _connections)
 		{
 			(*it)->update(timeDelta);

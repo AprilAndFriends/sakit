@@ -35,35 +35,34 @@ namespace sakit
 	void TcpServerThread::_updateProcess()
 	{
 		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
-		connectionsMutex.lock();
+		hmutex::ScopeLock lock(&connectionsMutex);
 		connections -= tcpSocket;
-		connectionsMutex.unlock();
+		lock.release();
 		while (this->running)
 		{
 			if (!this->socket->listen())
 			{
-				this->mutex.lock();
+				lock.acquire(&this->mutex);
 				this->result = FAILED;
-				this->mutex.unlock();
+				lock.release();
 				delete tcpSocket;
 				return;
 			}
 			if (this->socket->accept(tcpSocket))
 			{
-				this->mutex.lock();
+				lock.acquire(&this->mutex);
 				this->sockets += tcpSocket;
-				this->mutex.unlock();
+				lock.release();
 				tcpSocket = new TcpSocket(this->acceptedDelegate);
-				connectionsMutex.lock();
+				lock.acquire(&connectionsMutex);
 				connections -= tcpSocket;
-				connectionsMutex.unlock();
+				lock.release();
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete tcpSocket;
-		this->mutex.lock();
+		lock.acquire(&this->mutex);
 		this->result = FINISHED;
-		this->mutex.unlock();
 	}
 
 }

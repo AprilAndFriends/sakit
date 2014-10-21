@@ -51,40 +51,32 @@ namespace sakit
 
 	bool Binder::isBinding()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state == BINDING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state == BINDING);
 	}
 
 	bool Binder::isBound()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state != IDLE && *this->_state != BINDING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state != IDLE && *this->_state != BINDING);
 	}
 
 	bool Binder::isUnbinding()
 	{
-		this->_mutexState->lock();
-		bool result = (*this->_state == UNBINDING);
-		this->_mutexState->unlock();
-		return result;
+		hmutex::ScopeLock lock(this->_mutexState);
+		return (*this->_state == UNBINDING);
 	}
 
 	void Binder::_update(float timeDelta)
 	{
-		this->_mutexState->lock();
-		this->_thread->mutex.lock();
+		hmutex::ScopeLock lock(this->_mutexState);
+		hmutex::ScopeLock lockThread(&this->_thread->mutex);
 		State state = *this->_state;
 		State result = this->_thread->result;
 		Host localHost = this->_thread->host;
 		unsigned short localPort = (unsigned short)(int)this->_thread->port;
 		if (result == RUNNING || result == IDLE)
 		{
-			this->_thread->mutex.unlock();
-			this->_mutexState->unlock();
 			return;
 		}
 		this->_thread->state = IDLE;
@@ -120,8 +112,8 @@ namespace sakit
 			}
 			break;
 		}
-		this->_thread->mutex.unlock();
-		this->_mutexState->unlock();
+		lockThread.release();
+		lock.release();
 		// delegate calls
 		switch (result)
 		{
@@ -144,17 +136,16 @@ namespace sakit
 
 	bool Binder::bind(Host localHost, unsigned short localPort)
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		State state = *this->_state;
 		if (!this->_canBind(state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = BINDING;
-		this->_mutexState->unlock();
+		lock.release();
 		bool result = this->_socket->bind(localHost, localPort);
-		this->_mutexState->lock();
+		lock.acquire(this->_mutexState);
 		if (result)
 		{
 			*this->_localHost = localHost;
@@ -165,7 +156,6 @@ namespace sakit
 		{
 			*this->_state = state;
 		}
-		this->_mutexState->unlock();
 		return result;
 	}
 	
@@ -176,17 +166,16 @@ namespace sakit
 	
 	bool Binder::unbind()
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		State state = *this->_state;
 		if (!this->_canUnbind(state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = UNBINDING;
-		this->_mutexState->unlock();
+		lock.release();
 		bool result = this->_socket->disconnect();
-		this->_mutexState->lock();
+		lock.acquire(this->_mutexState);
 		if (result)
 		{
 			*this->_localHost = Host();
@@ -197,16 +186,14 @@ namespace sakit
 		{
 			*this->_state = state;
 		}
-		this->_mutexState->unlock();
 		return result;
 	}
 
 	bool Binder::bindAsync(Host localHost, unsigned short localPort)
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		if (!this->_canBind(*this->_state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = BINDING;
@@ -214,7 +201,6 @@ namespace sakit
 		this->_thread->result = RUNNING;
 		this->_thread->host = localHost;
 		this->_thread->port = localPort;
-		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
 	}
@@ -226,16 +212,14 @@ namespace sakit
 	
 	bool Binder::unbindAsync()
 	{
-		this->_mutexState->lock();
+		hmutex::ScopeLock lock(this->_mutexState);
 		if (!this->_canUnbind(*this->_state))
 		{
-			this->_mutexState->unlock();
 			return false;
 		}
 		*this->_state = UNBINDING;
 		this->_thread->state = UNBINDING;
 		this->_thread->result = RUNNING;
-		this->_mutexState->unlock();
 		this->_thread->start();
 		return true;
 	}
