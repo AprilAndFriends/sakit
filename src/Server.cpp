@@ -45,7 +45,7 @@ namespace sakit
 	bool Server::startAsync()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		if (!this->_canStart(this->state));
+		if (!this->_canStart(this->state))
 		{
 			return false;
 		}
