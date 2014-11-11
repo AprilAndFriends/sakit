@@ -1,5 +1,4 @@
 /// @file
-/// @author  Boris Mikic
 /// @version 1.03
 /// 
 /// @section LICENSE
