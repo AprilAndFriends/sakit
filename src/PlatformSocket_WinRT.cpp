@@ -387,7 +387,7 @@ namespace sakit
 			delete (*it);
 		}
 		this->_acceptedSockets.clear();
-		lock.release();
+		_lock.release();
 		this->connectionAccepter = nullptr;
 		this->udpReceiver = nullptr;
 		bool previouslyConnected = this->connected;
@@ -490,7 +490,7 @@ namespace sakit
 		remoteHost = this->udpReceiver->hosts.remove_first();
 		remotePort = this->udpReceiver->ports.remove_first();
 		hstream* data = this->udpReceiver->streams.remove_first();
-		lock.release();
+		_lock.release();
 		if (data->size() == 0)
 		{
 			delete data;
