@@ -140,7 +140,9 @@ namespace sakit
 		if (this->Headers.try_get_by_key("Transfer-Encoding", "identity") != "chunked")
 		{
 			this->chunkSize = (int)this->Headers.try_get_by_key("Content-Length", "0");
-			this->chunkRead += this->Body.write_raw(this->Raw);
+			int written = this->Body.write_raw(this->Raw);
+			this->Raw.seek(written);
+			this->chunkRead += written;
 			if (this->chunkSize > 0 && this->chunkSize == this->chunkRead)
 			{
 				this->BodyComplete = true;

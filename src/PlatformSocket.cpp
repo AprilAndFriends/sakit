@@ -28,8 +28,8 @@ namespace sakit
 	
 	bool PlatformSocket::receive(HttpResponse* response, hmutex& mutex)
 	{
-		unsigned long position = response->Raw.position();
 		response->Raw.seek(0, hstream::END);
+		unsigned long position = response->Raw.position();
 		int count = 0;
 		bool result = this->receive(&response->Raw, mutex, count);
 		if (result)

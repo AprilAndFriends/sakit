@@ -72,7 +72,7 @@ namespace sakit
 		this->_checkValues(query);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), queryDelimiter('&')
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), port(0), queryDelimiter('&')
 	{
 		this->host = host;
 		this->path = path;
