@@ -30,7 +30,7 @@ namespace sakit
 
 	void BroadcasterThread::_updateProcess()
 	{
-		bool result = this->socket->broadcast(this->adapters, this->remotePort, this->stream, this->stream->size());
+		bool result = this->socket->broadcast(this->adapters, this->remotePort, this->stream, (int)this->stream->size());
 		hmutex::ScopeLock lock(&this->mutex);
 		this->result = (result ? FINISHED : FAILED);
 		this->stream->clear();

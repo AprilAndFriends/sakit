@@ -27,7 +27,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->_send(&stream, stream.size());
+		return this->_send(&stream, (int)stream.size());
 	}
 
 	void SocketBase::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)

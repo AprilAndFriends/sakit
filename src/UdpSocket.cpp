@@ -263,7 +263,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->broadcast(adapters, remotePort, &stream, stream.size());
+		return this->broadcast(adapters, remotePort, &stream, (int)stream.size());
 	}
 
 	bool UdpSocket::broadcast(unsigned short remotePort, chstr data)
@@ -271,7 +271,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->broadcast(PlatformSocket::getNetworkAdapters(), remotePort, &stream, stream.size());
+		return this->broadcast(PlatformSocket::getNetworkAdapters(), remotePort, &stream, (int)stream.size());
 	}
 
 	bool UdpSocket::broadcastAsync(harray<NetworkAdapter> adapters, unsigned short remotePort, hstream* stream, int count)
@@ -289,7 +289,7 @@ namespace sakit
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
 		this->broadcaster->result = RUNNING;
 		this->broadcaster->stream->clear();
-		this->broadcaster->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
+		this->broadcaster->stream->write_raw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
 		this->broadcaster->stream->rewind();
 		this->broadcaster->adapters = adapters;
 		this->broadcaster->remotePort = remotePort;
@@ -307,7 +307,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->broadcastAsync(adapters, remotePort, &stream, stream.size());
+		return this->broadcastAsync(adapters, remotePort, &stream, (int)stream.size());
 	}
 
 	bool UdpSocket::broadcastAsync(unsigned short remotePort, chstr data)
@@ -315,7 +315,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->broadcastAsync(PlatformSocket::getNetworkAdapters(), remotePort, &stream, stream.size());
+		return this->broadcastAsync(PlatformSocket::getNetworkAdapters(), remotePort, &stream, (int)stream.size());
 	}
 
 	bool UdpSocket::_canSetDestination(State state)

@@ -106,7 +106,7 @@ namespace sakit
 		hstream stream;
 		stream.write(data);
 		stream.rewind();
-		return this->sendAsync(&stream, stream.size());
+		return this->sendAsync(&stream, (int)stream.size());
 	}
 
 	int Socket::_send(hstream* stream, int count)
@@ -143,7 +143,7 @@ namespace sakit
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
 		this->sender->result = RUNNING;
 		this->sender->stream->clear();
-		this->sender->stream->write_raw(*stream, hmin((long)count, stream->size() - stream->position()));
+		this->sender->stream->write_raw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
 		this->sender->start();
 		return true;

@@ -48,7 +48,7 @@ namespace sakit
 	void HttpSocketThread::_updateSend()
 	{
 		int sent = 0;
-		int count = this->stream->size();
+		int count = (int)this->stream->size();
 		while (this->running)
 		{
 			if (!this->socket->send(this->stream, count, sent))
@@ -72,8 +72,8 @@ namespace sakit
 	void HttpSocketThread::_updateReceive()
 	{
 		float time = 0.0f;
-		int size = 0;
-		int lastSize = 0;
+		int64_t size = 0;
+		int64_t lastSize = 0;
 		while (this->running)
 		{
 			if (!this->socket->receive(this->response, this->mutex))

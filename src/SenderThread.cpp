@@ -31,7 +31,7 @@ namespace sakit
 
 	void SenderThread::_updateProcess()
 	{
-		int count = this->stream->size();
+		int count = (int)this->stream->size();
 		int sent = 0;
 		hmutex::ScopeLock lock;
 		while (this->running)

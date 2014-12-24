@@ -7,6 +7,7 @@
 /// the terms of the BSD license: http://opensource.org/licenses/BSD-3-Clause
 
 #if !defined(_WIN32) || !defined(_WINRT)
+#include <stdint.h>
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #include <netinet/tcp.h>
@@ -71,9 +72,6 @@ extern int h_errno;
 #include "Socket.h"
 
 #ifdef _WIN32
-	#ifndef uint32_t
-		typedef u_long uint32_t;
-	#endif
 	#define __gai_strerror(str) hstr::from_unicode(gai_strerrorW(str))
 
 	// inet_pton() is not supported on WinXP so we provide a native Win32 implementation
@@ -145,7 +143,7 @@ namespace sakit
 	{
 		// set to blocking or non-blocking
 		int setValue = (value ? 1 : 0);
-		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (uint32_t*)&setValue), "ioctlsocket()");
+		return this->_checkResult(ioctlsocket(this->sock, FIONBIO, (unsigned long*)&setValue), "ioctlsocket()");
 	}
 
 	bool PlatformSocket::tryCreateSocket()
@@ -387,7 +385,7 @@ namespace sakit
 
 	bool PlatformSocket::send(hstream* stream, int& count, int& sent)
 	{
-		const char* data = (const char*)&(*stream)[stream->position()];
+		const char* data = (const char*)&(*stream)[(int)stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
 		int result = 0;
 		if (!this->connectionLess)
@@ -500,7 +498,7 @@ namespace sakit
 		}
 #endif
 		// control socket IO
-		return this->_checkResult(ioctlsocket(this->sock, FIONREAD, (uint32_t*)received), "ioctlsocket()", false);
+		return this->_checkResult(ioctlsocket(this->sock, FIONREAD, (unsigned long*)received), "ioctlsocket()", false);
 	}
 
 	bool PlatformSocket::listen()
@@ -549,7 +547,7 @@ namespace sakit
 
 	bool PlatformSocket::broadcast(harray<NetworkAdapter> adapters, unsigned short port, hstream* stream, int count)
 	{
-		const char* data = (const char*)&(*stream)[stream->position()];
+		const char* data = (const char*)&(*stream)[(int)stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
 		int broadcast = 1;
 		if (!this->_checkResult(setsockopt(this->sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)), "setsockopt", false))

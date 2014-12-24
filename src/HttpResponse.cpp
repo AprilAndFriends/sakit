@@ -22,8 +22,8 @@ namespace sakit
 	{
 		if (sequence != NULL && sequenceLength > 0)
 		{
-			unsigned long position = stream.position();
-			int size = stream.size();
+			int position = (int)stream.position();
+			int size = (int)stream.size();
 			int j = 0;
 			for_iter (i, position, size)
 			{
@@ -194,7 +194,7 @@ namespace sakit
 
 	hstr HttpResponse::_getRawData()
 	{
-		int size = (this->Raw.size() - this->Raw.position());
+		int size = (int)(this->Raw.size() - this->Raw.position());
 		char* buffer = new char[size + 1];
 		this->Raw.read_raw(buffer, size);
 		buffer[size] = '\0';  // classic string terminating 0-character
@@ -210,9 +210,9 @@ namespace sakit
 		result->StatusCode = this->StatusCode;
 		result->StatusMessage = this->StatusMessage;
 		result->Headers = this->Headers;
-		result->Body.write_raw((void*)&this->Body[0], this->Body.size());
+		result->Body.write_raw((void*)&this->Body[0], (int)this->Body.size());
 		result->Body.rewind();
-		result->Raw.write_raw((void*)&this->Raw[0], this->Raw.size());
+		result->Raw.write_raw((void*)&this->Raw[0], (int)this->Raw.size());
 		result->Raw.rewind();
 		result->HeadersComplete = this->HeadersComplete;
 		result->BodyComplete = this->BodyComplete;

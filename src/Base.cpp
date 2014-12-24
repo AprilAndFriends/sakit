@@ -57,7 +57,7 @@ namespace sakit
 	int Base::_sendDirect(hstream* stream, int count)
 	{
 		int sent = 0;
-		long position = stream->position();
+		int64_t position = stream->position();
 		while (count > 0)
 		{
 			if (!this->socket->send(stream, count, sent))
@@ -79,8 +79,8 @@ namespace sakit
 		hmutex mutex;
 		float time = 0.0f;
 		int remaining = maxBytes;
-		int position = stream->position();
-		int lastPosition = position;
+		int64_t position = stream->position();
+		int64_t lastPosition = position;
 		while (true)
 		{
 			if (!this->socket->receive(stream, mutex, remaining))
@@ -114,7 +114,7 @@ namespace sakit
 		{
 			hlog::warn(logTag, "Timed out while waiting for data.");
 		}
-		return (lastPosition - position);
+		return (int)(lastPosition - position);
 	}
 
 	int Base::_receiveFromDirect(hstream* stream, Host& host, unsigned short& port)
@@ -133,7 +133,7 @@ namespace sakit
 			}
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
-		return stream->size();
+		return (int)stream->size();
 	}
 
 }

@@ -269,8 +269,8 @@ namespace sakit
 	{
 		hmutex mutex;
 		float time = 0.0f;
-		int size = 0;
-		int lastSize = 0;
+		int64_t size = 0;
+		int64_t lastSize = 0;
 		while (true)
 		{
 			if (!this->socket->receive(response, mutex))
@@ -302,7 +302,7 @@ namespace sakit
 			// let's say it's complete, we don't know its supposed length anyway
 			response->BodyComplete = true;
 		}
-		return response->Raw.size();
+		return (int)response->Raw.size();
 	}
 
 	int HttpSocket::_send(hstream* stream, int count)
