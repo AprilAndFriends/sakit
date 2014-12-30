@@ -323,7 +323,7 @@ void _testAsyncTcpServer()
 					hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
 					hstream stream;
 					char data[12] = "Hi there.\0g";
-					stream.write_raw(data, 12);
+					stream.writeRaw(data, 12);
 					stream.rewind();
 					int sent = client->send(&stream);
 					hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
@@ -390,7 +390,7 @@ void _testAsyncTcpClient()
 			{
 				hstream stream;
 				char data[12] = "Hi there.\0g";
-				stream.write_raw(data, 12);
+				stream.writeRaw(data, 12);
 				stream.rewind();
 				client->sendAsync(&stream);
 				do
@@ -463,7 +463,7 @@ void _testAsyncUdpServer()
 						hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
 						hstream stream;
 						char data[12] = "Hi there.\0g";
-						stream.write_raw(data, 12);
+						stream.writeRaw(data, 12);
 						stream.rewind();
 						int sent = client->send(&stream);
 						hlog::write(LOG_TAG, "Client sent: " + hstr(sent));
@@ -526,7 +526,7 @@ void _testAsyncUdpClient()
 			{
 				hstream stream;
 				char data[12] = "Hi there.\0g";
-				stream.write_raw(data, 12);
+				stream.writeRaw(data, 12);
 				stream.rewind();
 				client->sendAsync(&stream);
 				do
