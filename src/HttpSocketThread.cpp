@@ -100,7 +100,7 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= *this->timeout && !this->response->Headers.has_key("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
+		if (time >= *this->timeout && !this->response->Headers.hasKey("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
 			this->response->BodyComplete = true;

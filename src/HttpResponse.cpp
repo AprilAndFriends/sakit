@@ -137,9 +137,9 @@ namespace sakit
 
 	void HttpResponse::_readBody()
 	{
-		if (this->Headers.try_get_by_key("Transfer-Encoding", "identity") != "chunked")
+		if (this->Headers.tryGet("Transfer-Encoding", "identity") != "chunked")
 		{
-			this->chunkSize = (int)this->Headers.try_get_by_key("Content-Length", "0");
+			this->chunkSize = (int)this->Headers.tryGet("Content-Length", "0");
 			int written = this->Body.writeRaw(this->Raw);
 			this->Raw.seek(written);
 			this->chunkRead += written;

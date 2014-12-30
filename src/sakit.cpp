@@ -434,7 +434,7 @@ namespace sakit
 		hstr entity;
 		for_itert (unsigned int, i, 0, chars.size())
 		{
-			entity = mapping.try_get_by_key(chars[i], "");
+			entity = mapping.tryGet(chars[i], "");
 			if (entity != "")
 			{
 				result += hstr::from_unicode(chars.substr(start, i - start).c_str()) + "&" + entity + ";";
@@ -487,7 +487,7 @@ namespace sakit
 					result += hstr::from_unicode(entity(2, -1).unhex());
 				}
 			}
-			else if (reverseMapping.has_key(entity))
+			else if (reverseMapping.hasKey(entity))
 			{
 				result += reverseMapping[entity];
 			}

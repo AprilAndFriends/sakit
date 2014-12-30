@@ -85,7 +85,7 @@ namespace sakit
 		this->thread->result = IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
-		if (!this->keepAlive || response->Headers.try_get_by_key("Connection", "") == "close" || !this->socket->isConnected())
+		if (!this->keepAlive || response->Headers.tryGet("Connection", "") == "close" || !this->socket->isConnected())
 		{
 			this->_terminateConnection();
 			this->state = IDLE;
@@ -186,7 +186,7 @@ namespace sakit
 		}
 		response->Body.rewind();
 		response->Raw.rewind();
-		if (!this->keepAlive || response->Headers.try_get_by_key("Connection", "") == "close")
+		if (!this->keepAlive || response->Headers.tryGet("Connection", "") == "close")
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
@@ -297,7 +297,7 @@ namespace sakit
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= this->timeout && !response->Headers.has_key("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
+		if (time >= this->timeout && !response->Headers.hasKey("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
 			response->BodyComplete = true;
@@ -336,15 +336,15 @@ namespace sakit
 		this->remoteHost = Host(this->url.getHost());
 		customHeaders["Host"] = this->remoteHost.toString();
 		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
-		if (!customHeaders.has_key("Accept-Encoding"))
+		if (!customHeaders.hasKey("Accept-Encoding"))
 		{
 			customHeaders["Accept-Encoding"] = "identity";
 		}
-		if (!customHeaders.has_key("Content-Type"))
+		if (!customHeaders.hasKey("Content-Type"))
 		{
 			customHeaders["Content-Type"] = "application/x-www-form-urlencoded";
 		}
-		if (!customHeaders.has_key("Accept"))
+		if (!customHeaders.hasKey("Accept"))
 		{
 			customHeaders["Accept"] = "*/*";
 		}
