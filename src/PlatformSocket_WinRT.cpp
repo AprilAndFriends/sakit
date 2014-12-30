@@ -402,7 +402,7 @@ namespace sakit
 		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		int _asyncResultSize = 0;
-		unsigned char* data = (unsigned char*)&(*stream)[stream->position()];
+		unsigned char* data = (unsigned char*)&(*stream)[(int)stream->position()];
 		int size = hmin((int)(stream->size() - stream->position()), count);
 		DataWriter^ writer = ref new DataWriter();
 		writer->WriteBytes(ref new Platform::Array<unsigned char>(data, size));
