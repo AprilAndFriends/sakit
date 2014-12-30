@@ -436,7 +436,7 @@ namespace sakit
 			return false;
 		}
 		hmutex::ScopeLock lock(&mutex);
-		stream->write_raw(this->receiveBuffer, read);
+		stream->writeRaw(this->receiveBuffer, read);
 		lock.release();
 		if (maxBytes > 0) // if don't read everything
 		{
@@ -469,7 +469,7 @@ namespace sakit
 		this->_setNonBlocking(false);
 		if (read > 0)
 		{
-			stream->write_raw(this->receiveBuffer, read);
+			stream->writeRaw(this->receiveBuffer, read);
 			// get the IP and port of the connected client
 			char hostString[NI_MAXHOST] = {'\0'};
 			char portString[NI_MAXSERV] = {'\0'};

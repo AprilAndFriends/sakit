@@ -103,7 +103,7 @@ namespace sakit
 		hstream stream;
 		int size = this->receive(&stream, maxBytes);
 		unsigned char terminator = 0;
-		stream.write_raw(&terminator, 1); // Terminator 2 was better though
+		stream.writeRaw(&terminator, 1); // Terminator 2 was better though
 		return hstr((char*)&stream[0], size);
 	}
 

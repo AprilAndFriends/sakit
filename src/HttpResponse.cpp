@@ -140,7 +140,7 @@ namespace sakit
 		if (this->Headers.try_get_by_key("Transfer-Encoding", "identity") != "chunked")
 		{
 			this->chunkSize = (int)this->Headers.try_get_by_key("Content-Length", "0");
-			int written = this->Body.write_raw(this->Raw);
+			int written = this->Body.writeRaw(this->Raw);
 			this->Raw.seek(written);
 			this->chunkRead += written;
 			if (this->chunkSize > 0 && this->chunkSize == this->chunkRead)
@@ -165,7 +165,7 @@ namespace sakit
 					this->Raw.seek(2);
 					if (this->chunkSize == 0)
 					{
-						this->Body.write_raw(this->Raw);
+						this->Body.writeRaw(this->Raw);
 						this->Raw.seek(0, hstream::END);
 						this->BodyComplete = true;
 						break;
@@ -174,7 +174,7 @@ namespace sakit
 				if (this->chunkSize > 0)
 				{
 					read = this->chunkSize - this->chunkRead;
-					read = this->Body.write_raw(this->Raw, read);
+					read = this->Body.writeRaw(this->Raw, read);
 					this->Raw.seek(read);
 					this->chunkRead += read;
 					if (this->chunkRead == this->chunkSize)
@@ -196,7 +196,7 @@ namespace sakit
 	{
 		int size = (int)(this->Raw.size() - this->Raw.position());
 		char* buffer = new char[size + 1];
-		this->Raw.read_raw(buffer, size);
+		this->Raw.readRaw(buffer, size);
 		buffer[size] = '\0';  // classic string terminating 0-character
 		hstr data = hstr(buffer);
 		delete [] buffer;
@@ -210,9 +210,9 @@ namespace sakit
 		result->StatusCode = this->StatusCode;
 		result->StatusMessage = this->StatusMessage;
 		result->Headers = this->Headers;
-		result->Body.write_raw((void*)&this->Body[0], (int)this->Body.size());
+		result->Body.writeRaw((void*)&this->Body[0], (int)this->Body.size());
 		result->Body.rewind();
-		result->Raw.write_raw((void*)&this->Raw[0], (int)this->Raw.size());
+		result->Raw.writeRaw((void*)&this->Raw[0], (int)this->Raw.size());
 		result->Raw.rewind();
 		result->HeadersComplete = this->HeadersComplete;
 		result->BodyComplete = this->BodyComplete;

@@ -216,7 +216,7 @@ namespace sakit
 		int size = this->receive(&stream, remoteHost, remotePort);
 		stream.rewind();
 		char* p = new char[size + 1];
-		stream.read_raw(p, size);
+		stream.readRaw(p, size);
 		p[size] = 0;
 		hstr result = p;
 		delete [] p;
@@ -289,7 +289,7 @@ namespace sakit
 		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
 		this->broadcaster->result = RUNNING;
 		this->broadcaster->stream->clear();
-		this->broadcaster->stream->write_raw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
+		this->broadcaster->stream->writeRaw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
 		this->broadcaster->stream->rewind();
 		this->broadcaster->adapters = adapters;
 		this->broadcaster->remotePort = remotePort;
