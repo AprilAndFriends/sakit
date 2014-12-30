@@ -496,7 +496,7 @@ namespace sakit
 			delete data;
 			return false;
 		}
-		stream->write_raw(*data);
+		stream->writeRaw(*data);
 		delete data;
 		return true;
 	}
@@ -556,7 +556,7 @@ namespace sakit
 			}
 			reader->DetachBuffer();
 			_lock.acquire(&mutex);
-			stream->write_raw(_data->Data, _data->Length);
+			stream->writeRaw(_data->Data, _data->Length);
 			_asyncResultSize = (int)_data->Length;
 			_lock.release();
 			if (count > 0) // if don't read everything
