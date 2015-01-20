@@ -241,7 +241,11 @@ namespace sakit
 			interval.tv_sec = (long)sec;
 			if (sec != (int)sec)
 			{
+#ifdef __APPLE__
+				interval.tv_usec = (int)((sec - (int)sec) * 1000000);
+#else
 				interval.tv_usec = (long)((sec - (int)sec) * 1000000);
+#endif
 			}
 			fd_set writeSet;
 			FD_ZERO(&writeSet);
@@ -390,15 +394,15 @@ namespace sakit
 		int result = 0;
 		if (!this->connectionLess)
 		{
-			result = ::send(this->sock, data, size, 0);
+			result = (int)::send(this->sock, data, size, 0);
 		}
 		else if (this->remoteInfo != NULL)
 		{
-			result = ::sendto(this->sock, data, size, 0, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen);
+			result = (int)::sendto(this->sock, data, size, 0, this->remoteInfo->ai_addr, this->remoteInfo->ai_addrlen);
 		}
 		else if (this->address != NULL)
 		{
-			result = ::sendto(this->sock, data, size, 0, (sockaddr*)this->address, sizeof(*this->address));
+			result = (int)::sendto(this->sock, data, size, 0, (sockaddr*)this->address, sizeof(*this->address));
 		}
 		else
 		{
@@ -430,7 +434,7 @@ namespace sakit
 		{
 			read = hmin(read, maxBytes);
 		}
-		read = recv(this->sock, this->receiveBuffer, read, 0);
+		read = (int)recv(this->sock, this->receiveBuffer, read, 0);
 		if (!this->_checkResult(read, "recv()", false))
 		{
 			return false;
@@ -460,7 +464,7 @@ namespace sakit
 		sockaddr_storage address;
 		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
 		this->_setNonBlocking(true);
-		read = recvfrom(this->sock, this->receiveBuffer, read, 0, (sockaddr*)&address, &size);
+		read = (int)recvfrom(this->sock, this->receiveBuffer, read, 0, (sockaddr*)&address, &size);
 		if (!this->_checkResult(read, "recvfrom()"))
 		{
 			this->_setNonBlocking(false);
@@ -575,7 +579,7 @@ namespace sakit
 		foreach (Host, it, ips)
 		{
 			address.sin_addr.s_addr = inet_addr((*it).toString().c_str());
-			result = sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
+			result = (int)sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
 			if (this->_checkResult(result, "sendto", false) && result > 0)
 			{
 				maxResult = hmax(result, maxResult);

@@ -60,7 +60,7 @@ namespace sakit
 		chars += '#';
 		while (parts.size() > 0)
 		{
-			index = newUrl.find(chars.remove_first());
+			index = (int)newUrl.find(chars.remove_first());
 			next = parts.remove_first();
 			if (index >= 0)
 			{
@@ -83,7 +83,7 @@ namespace sakit
 
 	void Url::_checkValues(chstr query)
 	{
-		int index = this->host.find(':');
+		int index = (int)this->host.find(':');
 		if (index >= 0)
 		{
 			hstr port = this->host(index + 1, -1);
@@ -248,7 +248,7 @@ namespace sakit
 		int index = 0;
 		while (true)
 		{
-			index = current.find('%');
+			index = (int)current.find('%');
 			if (index < 0)
 			{
 				result += current;

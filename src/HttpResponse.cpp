@@ -87,7 +87,7 @@ namespace sakit
 		harray<hstr> lineData;
 		while (true)
 		{
-			index = data.find(HTTP_DELIMITER);
+			index = (int)data.find(HTTP_DELIMITER);
 			if (index < 0)
 			{
 				this->Raw.seek(-data.size(), hstream::END);
@@ -103,12 +103,12 @@ namespace sakit
 			}
 			if (this->StatusCode == HttpResponse::UNDEFINED)
 			{
-				index = line.find(' ');
+				index = (int)line.find(' ');
 				if (index >= 0)
 				{
 					this->Protocol = line(0, index);
 					line = line(index + 1, -1);
-					index = line.find(' ');
+					index = (int)line.find(' ');
 					if (index >= 0)
 					{
 						this->StatusCode = (HttpResponse::Code)(int)line(0, index);
