@@ -675,7 +675,7 @@ namespace sakit
 									else if (it->Current->RemoteHostName->Type == HostNameType::Ipv4 || it->Current->RemoteHostName->Type == HostNameType::DomainName)
 									{
 										result = _HL_PSTR_TO_HSTR(it->Current->RemoteServiceName);
-										if (result.is_number())
+										if (result.isNumber())
 										{
 											break;
 										}

@@ -56,7 +56,7 @@ namespace sakit
 			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 					NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, NULL))
 			{
-				message = hstr::from_unicode((wchar_t*)buffer).split('\n').first(); // there's a \n we don't want
+				message = hstr::fromUnicode((wchar_t*)buffer).split('\n').first(); // there's a \n we don't want
 				LocalFree(buffer);
 			}
 		}

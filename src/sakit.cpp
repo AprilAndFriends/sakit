@@ -27,7 +27,7 @@ namespace sakit
 	harray<Base*> connections;
 	hmutex connectionsMutex;
 	hmap<unsigned int, hstr> mapping;
-	/// @note Used for optimization to avoid hstr::from_unicode() calls.
+	/// @note Used for optimization to avoid hstr::fromUnicode() calls.
 	hmap<hstr, hstr> reverseMapping;
 	hthread* _updateThread;
 
@@ -302,7 +302,7 @@ namespace sakit
 		mapping[0x2666u] = "diams";
 		foreach_map (unsigned int, hstr, it, mapping)
 		{
-			reverseMapping[it->second] = hstr::from_unicode(it->first);
+			reverseMapping[it->second] = hstr::fromUnicode(it->first);
 		}
 		if (threadedUpdate)
 		{
@@ -429,7 +429,7 @@ namespace sakit
 	hstr encodeHtmlEntities(chstr string)
 	{
 		harray<hstr> result; // adding stuff to an array is much faster than concatenating strings
-		std::basic_string<unsigned int> chars = string.u_str();
+		std::basic_string<unsigned int> chars = string.uStr();
 		unsigned int start = 0;
 		hstr entity;
 		for_itert (unsigned int, i, 0, chars.size())
@@ -437,18 +437,18 @@ namespace sakit
 			entity = mapping.tryGet(chars[i], "");
 			if (entity != "")
 			{
-				result += hstr::from_unicode(chars.substr(start, i - start).c_str()) + "&" + entity + ";";
+				result += hstr::fromUnicode(chars.substr(start, i - start).c_str()) + "&" + entity + ";";
 				start = i + 1;
 			}
 			else if (chars[i] > 0xFF)
 			{
-				result += hstr::from_unicode(chars.substr(start, i - start).c_str()) + hsprintf("&%d;", chars[i]);
+				result += hstr::fromUnicode(chars.substr(start, i - start).c_str()) + hsprintf("&%d;", chars[i]);
 				start = i + 1;
 			}
 		}
 		if (start < chars.size())
 		{
-			result += hstr::from_unicode(chars.substr(start, chars.size() - start).c_str());
+			result += hstr::fromUnicode(chars.substr(start, chars.size() - start).c_str());
 		}
 		return result.join("");
 	}
@@ -476,15 +476,15 @@ namespace sakit
 			}
 			entity = string(start, index - start);
 			start = index + 1;
-			if (entity.starts_with('#'))
+			if (entity.startsWith('#'))
 			{
 				if (entity[1] != 'x')
 				{
-					result += hstr::from_unicode((unsigned int)entity(1, -1));
+					result += hstr::fromUnicode((unsigned int)entity(1, -1));
 				}
 				else
 				{
-					result += hstr::from_unicode(entity(2, -1).unhex());
+					result += hstr::fromUnicode(entity(2, -1).unhex());
 				}
 			}
 			else if (reverseMapping.hasKey(entity))

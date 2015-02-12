@@ -72,7 +72,7 @@ extern int h_errno;
 #include "Socket.h"
 
 #ifdef _WIN32
-	#define __gai_strerror(str) hstr::from_unicode(gai_strerrorW(str))
+	#define __gai_strerror(str) hstr::fromUnicode(gai_strerrorW(str))
 
 	// inet_pton() is not supported on WinXP so we provide a native Win32 implementation
 	static int __inet_pton(int family, const char* src, void* dest)
@@ -80,7 +80,7 @@ extern int h_errno;
 		struct sockaddr_storage address;
 		int size = sizeof(sockaddr_storage);
 		hstr ip = src;
-		if (WSAStringToAddressW((wchar_t*)ip.w_str().c_str(), family, NULL, (sockaddr*)&address, &size) == 0)
+		if (WSAStringToAddressW((wchar_t*)ip.wcStr(), family, NULL, (sockaddr*)&address, &size) == 0)
 		{
 			switch (family)
 			{
@@ -192,7 +192,7 @@ namespace sakit
 		this->socketInfo->ai_protocol = IPPROTO_IP;
 		this->socketInfo->ai_flags = 0;
 		hmutex::ScopeLock lock(&getaddrinfoMutex);
-		int result = getaddrinfo(host.toString().c_str(), hstr(port).c_str(), this->socketInfo, info);
+		int result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, "getaddrinfo() " + __gai_strerror(result));
@@ -308,7 +308,7 @@ namespace sakit
 		socklen_t addressSize = (socklen_t)sizeof(sockaddr_in);
 		memset(&address, 0, addressSize);
 		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = inet_addr(host.toString().c_str());
+		address.sin_addr.s_addr = inet_addr(host.toString().cStr());
 		address.sin_port = htons(port);
 		getsockname(this->sock, (sockaddr*)&address, &addressSize);
 		host = Host(inet_ntoa(address.sin_addr));
@@ -318,16 +318,16 @@ namespace sakit
 	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().c_str());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
+		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
 	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().c_str());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().c_str());
+		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
@@ -340,7 +340,7 @@ namespace sakit
 	bool PlatformSocket::setMulticastInterface(Host interfaceHost)
 	{
 		in_addr local;
-		local.s_addr = inet_addr(interfaceHost.toString().c_str());
+		local.s_addr = inet_addr(interfaceHost.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
 	}
 
@@ -578,7 +578,7 @@ namespace sakit
 		ips.remove_duplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{
-			address.sin_addr.s_addr = inet_addr((*it).toString().c_str());
+			address.sin_addr.s_addr = inet_addr((*it).toString().cStr());
 			result = (int)sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
 			if (this->_checkResult(result, "sendto", false) && result > 0)
 			{
@@ -610,7 +610,7 @@ namespace sakit
 		hints.ai_family = PF_INET;
 #endif
 		hmutex::ScopeLock lock(&getaddrinfoMutex);
-		int result = getaddrinfo(domain.toString().c_str(), NULL, &hints, &info);
+		int result = getaddrinfo(domain.toString().cStr(), NULL, &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));
@@ -631,7 +631,7 @@ namespace sakit
 #else
 		address.sin_family = PF_INET;
 #endif
-		__inet_pton(address.sin_family, ip.toString().c_str(), &address.sin_addr);
+		__inet_pton(address.sin_family, ip.toString().cStr(), &address.sin_addr);
 		char hostName[NI_MAXHOST] = {'\0'};
 		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, NI_NUMERICHOST);
 		if (result != 0)
@@ -653,7 +653,7 @@ namespace sakit
 		hints.ai_family = PF_INET;
 #endif
 		hmutex::ScopeLock lock(&getaddrinfoMutex);
-		int result = getaddrinfo(NULL, serviceName.c_str(), &hints, &info);
+		int result = getaddrinfo(NULL, serviceName.cStr(), &hints, &info);
 		if (result != 0)
 		{
 			hlog::error(sakit::logTag, __gai_strerror(result));

@@ -41,7 +41,7 @@ namespace sakit
 			return;
 		}
 		hstr newUrl = url;
-		if (url.starts_with(HTTP_SCHEME))
+		if (url.startsWith(HTTP_SCHEME))
 		{
 			newUrl = newUrl(strlen(HTTP_SCHEME), -1);
 		}
@@ -88,7 +88,7 @@ namespace sakit
 		{
 			hstr port = this->host(index + 1, -1);
 			this->host = this->host(0, index);
-			if (!port.is_number())
+			if (!port.isNumber())
 			{
 				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
 				return;
@@ -128,10 +128,10 @@ namespace sakit
 		{
 			if (this->path.contains("/../"))
 			{
-				this->path = this->path.replace("/../", "/");
+				this->path = this->path.replaced("/../", "/");
 				continue;
 			}
-			if (this->path.ends_with("/.."))
+			if (this->path.endsWith("/.."))
 			{
 				this->path = this->path(0, -4);
 				continue;
@@ -196,7 +196,7 @@ namespace sakit
 		hstr body = this->getBody();
 		if (body != "")
 		{
-			if (!body.starts_with('#'))
+			if (!body.startsWith('#'))
 			{
 				result += "?";
 			}
@@ -215,7 +215,7 @@ namespace sakit
 		hstr checked = string;
 		foreach (char, it, allAllowed)
 		{
-			checked = checked.replace((*it), "");
+			checked = checked.replaced((*it), "");
 			if (checked == "")
 			{
 				return true;

@@ -52,7 +52,7 @@ namespace sakit
 		}
 		foreach (hstr, it, fragments)
 		{
-			if (!(*it).is_number() || (int)(*it) >= 256)
+			if (!(*it).isNumber() || (int)(*it) >= 256)
 			{
 				return false;
 			}
@@ -72,7 +72,7 @@ namespace sakit
 
 	bool Host::operator!=(const Host& other) const
 	{
-		return (this->address !=  other.address);
+		return (this->address != other.address);
 	}
 
 }

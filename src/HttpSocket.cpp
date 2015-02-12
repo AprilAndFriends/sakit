@@ -236,7 +236,7 @@ namespace sakit
 		hstr request = this->_processRequest(method, url, customHeaders);
 		this->thread->response->clear();
 		this->thread->stream->clear();
-		this->thread->stream->writeRaw((void*)request.c_str(), request.size());
+		this->thread->stream->writeRaw((void*)request.cStr(), request.size());
 		this->thread->stream->rewind();
 		this->thread->host = this->remoteHost;
 		this->thread->port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
