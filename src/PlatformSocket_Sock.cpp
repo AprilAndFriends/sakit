@@ -80,7 +80,7 @@ extern int h_errno;
 		struct sockaddr_storage address;
 		int size = sizeof(sockaddr_storage);
 		hstr ip = src;
-		if (WSAStringToAddressW((wchar_t*)ip.wcStr(), family, NULL, (sockaddr*)&address, &size) == 0)
+		if (WSAStringToAddressW((wchar_t*)ip.wStr().c_str(), family, NULL, (sockaddr*)&address, &size) == 0)
 		{
 			switch (family)
 			{
