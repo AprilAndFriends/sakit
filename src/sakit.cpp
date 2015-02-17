@@ -461,14 +461,14 @@ namespace sakit
 		int index = 0;
 		while (start <= string.size())
 		{
-			index = (int)string.find('&', start);
+			index = string.indexOf('&', start);
 			if (index < 0)
 			{
 				break;
 			}
 			result += string(start, index - start);
 			start = index + 1;
-			index = (int)string.find(';', start);
+			index = string.indexOf(';', start);
 			if (index < 0)
 			{
 				result += '&';
