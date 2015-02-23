@@ -87,7 +87,7 @@ namespace sakit
 		harray<hstr> lineData;
 		while (true)
 		{
-			index = data.rindexOf(HTTP_DELIMITER);
+			index = data.indexOf(HTTP_DELIMITER);
 			if (index < 0)
 			{
 				this->Raw.seek(-data.size(), hstream::END);
