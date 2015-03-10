@@ -450,7 +450,7 @@ namespace sakit
 		{
 			result += hstr::fromUnicode(chars.substr(start, chars.size() - start).c_str());
 		}
-		return result.join("");
+		return result.joined("");
 	}
 
 	hstr decodeHtmlEntities(chstr string)
@@ -497,7 +497,7 @@ namespace sakit
 			}
 		}
 		result += string(start, -1);
-		return result.join("");
+		return result.joined("");
 	}
 
 }

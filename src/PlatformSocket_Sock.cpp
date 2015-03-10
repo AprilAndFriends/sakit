@@ -575,7 +575,7 @@ namespace sakit
 		{
 			ips += (*it).getBroadcastIp();
 		}
-		ips.remove_duplicates(); // to avoid broadcasting on the same IP twice, just to be sure
+		ips.removeDuplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{
 			address.sin_addr.s_addr = inet_addr((*it).toString().cStr());

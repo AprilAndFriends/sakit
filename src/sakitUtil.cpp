@@ -39,7 +39,7 @@ namespace sakit
 
 	bool _checkState(State current, harray<State> allowed, chstr action)
 	{
-		if (allowed.contains(current))
+		if (allowed.has(current))
 		{
 			return true;
 		}

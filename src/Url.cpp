@@ -60,8 +60,8 @@ namespace sakit
 		chars += '#';
 		while (parts.size() > 0)
 		{
-			index = newUrl.indexOf(chars.remove_first());
-			next = parts.remove_first();
+			index = newUrl.indexOf(chars.removeFirst());
+			next = parts.removeFirst();
 			if (index >= 0)
 			{
 				*current = newUrl(0, index);
@@ -211,7 +211,7 @@ namespace sakit
 		{
 			return true;
 		}
-		harray<char> allAllowed = (allowed + "%0123456789ABCDEFabcdef").split().removed_duplicates();
+		harray<char> allAllowed = (allowed + "%0123456789ABCDEFabcdef").split().removedDuplicates();
 		hstr checked = string;
 		foreach (char, it, allAllowed)
 		{
@@ -268,7 +268,7 @@ namespace sakit
 		{
 			parameters += Url::_encodeWwwFormComponent(it->first, QUERY_ALLOWED) + "=" + Url::_encodeWwwFormComponent(it->second, QUERY_ALLOWED);
 		}
-		return parameters.join(delimiter);
+		return parameters.joined(delimiter);
 	}
 
 	hmap<hstr, hstr> Url::decodeWwwForm(chstr string, char* usedDelimiter)

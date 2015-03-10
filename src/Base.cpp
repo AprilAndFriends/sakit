@@ -29,10 +29,10 @@ namespace sakit
 	void Base::__unregister()
 	{
 		hmutex::ScopeLock lock(&connectionsMutex);
-		int index = connections.index_of(this);
+		int index = connections.indexOf(this);
 		if (index >= 0)
 		{
-			connections.remove_at(index);
+			connections.removeAt(index);
 		}
 	}
 
