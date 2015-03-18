@@ -210,9 +210,9 @@ namespace sakit
 		result->StatusCode = this->StatusCode;
 		result->StatusMessage = this->StatusMessage;
 		result->Headers = this->Headers;
-		result->Body.writeRaw((void*)&this->Body[0], (int)this->Body.size());
+		result->Body.writeRaw((unsigned char*)this->Body, (int)this->Body.size());
 		result->Body.rewind();
-		result->Raw.writeRaw((void*)&this->Raw[0], (int)this->Raw.size());
+		result->Raw.writeRaw((unsigned char*)this->Raw, (int)this->Raw.size());
 		result->Raw.rewind();
 		result->HeadersComplete = this->HeadersComplete;
 		result->BodyComplete = this->BodyComplete;

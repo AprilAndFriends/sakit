@@ -104,7 +104,7 @@ namespace sakit
 		int size = this->receive(&stream, maxBytes);
 		unsigned char terminator = 0;
 		stream.writeRaw(&terminator, 1); // Terminator 2 was better though
-		return hstr((char*)&stream[0], size);
+		return hstr((char*)stream, size);
 	}
 
 	bool TcpSocket::startReceiveAsync(int maxBytes)
