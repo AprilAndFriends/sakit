@@ -487,9 +487,9 @@ namespace sakit
 		{
 			return false;
 		}
-		remoteHost = this->udpReceiver->hosts.remove_first();
-		remotePort = this->udpReceiver->ports.remove_first();
-		hstream* data = this->udpReceiver->streams.remove_first();
+		remoteHost = this->udpReceiver->hosts.removeFirst();
+		remotePort = this->udpReceiver->ports.removeFirst();
+		hstream* data = this->udpReceiver->streams.removeFirst();
 		_lock.release();
 		if (data->size() == 0)
 		{
