@@ -159,6 +159,11 @@ namespace sakit
 	{
 	}
 
+	void Url::setCustomBody(chstr value)
+	{
+		this->customBody = value;
+	}
+
 	hstr Url::getAbsolutePath(bool withPort) const
 	{
 		hstr result;
@@ -177,6 +182,10 @@ namespace sakit
 
 	hstr Url::getBody() const
 	{
+		if (this->customBody != "")
+		{
+			return this->customBody;
+		}
 		hstr result;
 		hstr query = Url::encodeWwwForm(this->query, this->queryDelimiter);
 		if (query != "")
@@ -196,7 +205,11 @@ namespace sakit
 		hstr body = this->getBody();
 		if (body != "")
 		{
-			if (!body.startsWith('#'))
+			if (this->customBody != "")
+			{
+				result += "\n\n";
+			}
+			else if (!body.startsWith('#'))
 			{
 				result += "?";
 			}

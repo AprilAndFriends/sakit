@@ -36,6 +36,8 @@ namespace sakit
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
 		HL_DEFINE_GET(hstr, fragment, Fragment);
+		/// @note Overrides the body and uses a custom string as body.
+		void setCustomBody(chstr value);
 
 		/// @note The returned value is fully encoded.
 		hstr getAbsolutePath(bool withPort = false) const;
@@ -54,6 +56,7 @@ namespace sakit
 		hstr path;
 		hmap<hstr, hstr> query;
 		hstr fragment;
+		hstr customBody;
 		char queryDelimiter;
 
 		void _checkValues(chstr query);

@@ -53,6 +53,7 @@ namespace sakit
 		~HttpSocket();
 
 		HL_DEFINE_ISSET(keepAlive, KeepAlive);
+		HL_DEFINE_ISSET(forceUrlEncoding, ForceUrlEncoding);
 		HL_DEFINE_GETSET(Protocol, protocol, Protocol);
 		HL_DEFINE_SET(unsigned short, remotePort, RemotePort);
 		/// @note This is due to keepAlive which has to be set beforehand
@@ -105,6 +106,7 @@ namespace sakit
 		HttpSocketThread* thread;
 		Protocol protocol;
 		bool keepAlive;
+		bool forceUrlEncoding;
 		Url url;
 
 		bool _executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders);

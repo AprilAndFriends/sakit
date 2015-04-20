@@ -44,7 +44,7 @@ namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
 
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false), forceUrlEncoding(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
@@ -348,7 +348,7 @@ namespace sakit
 		{
 			customHeaders["Accept"] = "*/*";
 		}
-		bool urlEncoded = (method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS);
+		bool urlEncoded = (this->forceUrlEncoding || method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS);
 		hstr absolutePath;
 		hstr body;
 		if (!urlEncoded)
