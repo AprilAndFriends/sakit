@@ -20,31 +20,31 @@
 #include "State.h"
 
 #define NORMAL_EXECUTE(name, constant) \
-	bool HttpSocket::execute ## name(HttpResponse* response, Url url, hmap<hstr, hstr> customHeaders) \
+	bool HttpSocket::execute ## name(HttpResponse* response, Url url, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, url, customHeaders); \
+		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, url, customBody, customHeaders); \
 	}
 #define NORMAL_EXECUTE_ASYNC(name, constant) \
-	bool HttpSocket::execute ## name ## Async(Url url, hmap<hstr, hstr> customHeaders) \
+	bool HttpSocket::execute ## name ## Async(Url url, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, url, customHeaders); \
+		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, url, customBody, customHeaders); \
 	}
 #define CONNECTED_EXECUTE(name, constant) \
-	bool HttpSocket::execute ## name(HttpResponse* response, hmap<hstr, hstr> customHeaders) \
+	bool HttpSocket::execute ## name(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, customHeaders); \
+		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, customBody, customHeaders); \
 	}
 #define CONNECTED_EXECUTE_ASYNC(name, constant) \
-	bool HttpSocket::execute ## name ## Async(hmap<hstr, hstr> customHeaders) \
+	bool HttpSocket::execute ## name ## Async(chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, customHeaders); \
+		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, customBody, customHeaders); \
 	}
 
 namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
 
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false), forceUrlEncoding(false)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
@@ -140,7 +140,7 @@ namespace sakit
 	CONNECTED_EXECUTE_ASYNC(Trace, TRACE);
 	CONNECTED_EXECUTE_ASYNC(Connect, CONNECT);
 
-	bool HttpSocket::_executeMethodInternal(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethodInternal(HttpResponse* response, chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (response == NULL)
 		{
@@ -159,7 +159,7 @@ namespace sakit
 		}
 		this->state = RUNNING;
 		lock.release();
-		hstr request = this->_processRequest(method, url, customHeaders);
+		hstr request = this->_processRequest(method, url, customBody, customHeaders);
 		unsigned short port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
 		bool result = this->socket->connect(this->remoteHost, port, this->localHost, this->localPort, this->timeout, this->retryFrequency);
 		if (!result)
@@ -200,27 +200,27 @@ namespace sakit
 		return true;
 	}
 
-	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (this->isConnected())
 		{
 			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
 			this->_terminateConnection();
 		}
-		return this->_executeMethodInternal(response, method, url, customHeaders);
+		return this->_executeMethodInternal(response, method, url, customBody, customHeaders);
 	}
 
-	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (!this->isConnected())
 		{
 			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
 			return false;
 		}
-		return this->_executeMethodInternal(response, method, this->url, customHeaders);
+		return this->_executeMethodInternal(response, method, this->url, customBody, customHeaders);
 	}
 
-	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethodInternalAsync(chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (!url.isValid())
 		{
@@ -233,7 +233,7 @@ namespace sakit
 		{
 			return false;
 		}
-		hstr request = this->_processRequest(method, url, customHeaders);
+		hstr request = this->_processRequest(method, url, customBody, customHeaders);
 		this->thread->response->clear();
 		this->thread->stream->clear();
 		this->thread->stream->writeRaw((void*)request.cStr(), request.size());
@@ -245,24 +245,24 @@ namespace sakit
 		return true;
 	}
 
-	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethodAsync(chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (this->isConnected())
 		{
 			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
 			this->_terminateConnection();
 		}
-		return this->_executeMethodInternalAsync(method, url, customHeaders);
+		return this->_executeMethodInternalAsync(method, url, customBody, customHeaders);
 	}
 
-	bool HttpSocket::_executeMethodAsync(chstr method, hmap<hstr, hstr>& customHeaders)
+	bool HttpSocket::_executeMethodAsync(chstr method, chstr customBody, hmap<hstr, hstr>& customHeaders)
 	{
 		if (!this->isConnected())
 		{
 			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
 			return false;
 		}
-		return this->_executeMethodInternalAsync(method, this->url, customHeaders);
+		return this->_executeMethodInternalAsync(method, this->url, customBody, customHeaders);
 	}
 
 	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
@@ -330,7 +330,7 @@ namespace sakit
 		return _checkState(state, allowed, "execute");
 	}
 
-	hstr HttpSocket::_processRequest(chstr method, Url url, hmap<hstr, hstr> customHeaders)
+	hstr HttpSocket::_processRequest(chstr method, Url url, chstr customBody, hmap<hstr, hstr> customHeaders)
 	{
 		this->url = url;
 		this->remoteHost = Host(this->url.getHost());
@@ -348,13 +348,16 @@ namespace sakit
 		{
 			customHeaders["Accept"] = "*/*";
 		}
-		bool urlEncoded = (this->forceUrlEncoding || method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS);
+		bool urlEncoded = (customBody == "" && (method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS));
 		hstr absolutePath;
-		hstr body;
+		hstr body = customBody;
 		if (!urlEncoded)
 		{
 			absolutePath = this->url.getAbsolutePath();
-			body = this->url.getBody();
+			if (customBody == "")
+			{
+				body = this->url.getBody();
+			}
 			if (body != "")
 			{
 				customHeaders["Content-Length"] = hstr(body.size());
@@ -375,6 +378,7 @@ namespace sakit
 		{
 			request += body + SAKIT_HTTP_LINE_ENDING;
 		}
+		hlog::debug(sakit::logTag, "Processed request generated:\n" + request);
 		return request;
 	}
 
