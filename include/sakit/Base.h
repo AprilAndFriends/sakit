@@ -58,6 +58,9 @@ namespace sakit
 		void __register();
 		void __unregister();
 
+	private:
+		Base(const Base& other); // prevents copying
+
 	};
 
 }

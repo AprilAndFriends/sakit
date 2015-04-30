@@ -75,6 +75,9 @@ namespace sakit
 		bool _canJoinMulticastGroup(State state);
 		bool _canLeaveMulticastGroup(State state);
 
+	private:
+		UdpSocket(const UdpSocket& other); // prevents copying
+
 	};
 
 }

@@ -47,6 +47,8 @@ namespace sakit
 		bool _canStop(State state);
 
 	private:
+		Server(const Server& other); // prevents copying
+
 		ServerDelegate* serverDelegate;
 
 	};

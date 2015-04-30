@@ -43,6 +43,9 @@ namespace sakit
 
 		void _updateSockets();
 
+	private:
+		TcpServer(const TcpServer& other); // prevents copying
+
 	};
 
 }

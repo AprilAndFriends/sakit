@@ -50,6 +50,9 @@ namespace sakit
 
 		void _activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort);
 
+	private:
+		TcpSocket(const TcpSocket& other); // prevents copying
+
 	};
 
 }

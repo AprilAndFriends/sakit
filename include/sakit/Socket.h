@@ -71,6 +71,9 @@ namespace sakit
 		bool _checkSendParameters(hstream* stream, int count);
 		bool _checkReceiveParameters(hstream* stream);
 
+	private:
+		Socket(const Socket& other); // prevents copying
+
 	};
 
 }

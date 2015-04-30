@@ -50,6 +50,8 @@ namespace sakit
 		bool _canDisconnect(State state);
 
 	private:
+		Connector(const Connector& other); // prevents copying
+
 		PlatformSocket* _socket;
 		State* _state;
 		hmutex* _mutexState;

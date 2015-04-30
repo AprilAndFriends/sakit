@@ -52,6 +52,8 @@ namespace sakit
 		bool _canUnbind(State state);
 
 	private:
+		Binder(const Binder& other); // prevents copying
+
 		PlatformSocket* _socket;
 		State* _state;
 		hmutex* _mutexState;

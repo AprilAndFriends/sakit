@@ -47,6 +47,9 @@ namespace sakit
 
 		virtual void _activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort);
 
+	private:
+		SocketBase(const SocketBase& other); // prevents copying
+
 	};
 
 }

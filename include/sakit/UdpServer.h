@@ -37,6 +37,9 @@ namespace sakit
 		UdpServerThread* udpServerThread;
 		UdpServerDelegate* udpServerDelegate;
 
+	private:
+		UdpServer(const UdpServer& other); // prevents copying
+
 	};
 
 }

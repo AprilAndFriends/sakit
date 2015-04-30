@@ -127,6 +127,9 @@ namespace sakit
 
 		hstr _makeProtocol();
 
+	private:
+		HttpSocket(const HttpSocket& other); // prevents copying
+
 	};
 
 }
