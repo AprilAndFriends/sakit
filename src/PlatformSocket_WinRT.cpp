@@ -332,7 +332,7 @@ namespace sakit
 
 	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
-		hlog::error(sakit::logTag, "It is not possible to leave multicast groups on WinRT!");
+		hlog::error(logTag, "It is not possible to leave multicast groups on WinRT!");
 		return false;
 	}
 
@@ -348,7 +348,7 @@ namespace sakit
 
 	bool PlatformSocket::setMulticastInterface(Host address)
 	{
-		hlog::warn(sakit::logTag, "WinRT does not support setting the multicast interface!");
+		hlog::warn(logTag, "WinRT does not support setting the multicast interface!");
 		return false;
 	}
 
@@ -360,7 +360,7 @@ namespace sakit
 
 	bool PlatformSocket::setMulticastLoopback(bool value)
 	{
-		hlog::warn(sakit::logTag, "WinRT does not support changing the multicast loopback (it's always disabled)!");
+		hlog::warn(logTag, "WinRT does not support changing the multicast loopback (it's always disabled)!");
 		return false;
 	}
 
@@ -464,14 +464,14 @@ namespace sakit
 
 	bool PlatformSocket::listen()
 	{
-		hlog::error(sakit::logTag, "Server calls are not supported on WinRT due to the problematic threading and data-sharing model of WinRT.");
+		hlog::error(logTag, "Server calls are not supported on WinRT due to the problematic threading and data-sharing model of WinRT.");
 		return false;
 	}
 
 	bool PlatformSocket::accept(Socket* socket)
 	{
 		// not supported on WinRT due to broken server model
-		hlog::error(sakit::logTag, "Server calls are not supported on WinRT due to the problematic threading and data-sharing model of WinRT.");
+		hlog::error(logTag, "Server calls are not supported on WinRT due to the problematic threading and data-sharing model of WinRT.");
 		return false;
 	}
 
@@ -617,7 +617,7 @@ namespace sakit
 	Host PlatformSocket::resolveIp(Host ip)
 	{
 		// wow, Microsoft, just wow
-		hlog::warn(sakit::logTag, "WinRT does not support resolving an IP address to a host name. Attempting anyway, but don't count on it.");
+		hlog::warn(logTag, "WinRT does not support resolving an IP address to a host name. Attempting anyway, but don't count on it.");
 		return Host(PlatformSocket::_resolve(ip.toString(), "0", false, false));
 	}
 

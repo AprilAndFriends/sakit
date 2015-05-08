@@ -86,7 +86,7 @@ namespace sakit
 				message = hstr(code);
 			}
 #endif
-			hlog::error(sakit::logTag, printMessage + message);
+			hlog::error(logTag, printMessage + message);
 		}
 		return print;
 	}

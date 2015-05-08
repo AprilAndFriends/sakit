@@ -216,7 +216,7 @@ namespace sakit
 	{
 		if (receiverState == RUNNING)
 		{
-			hlog::warn(sakit::logTag, "Cannot start receiving, already receiving!");
+			hlog::warn(logTag, "Cannot start receiving, already receiving!");
 			return false;
 		}
 		return true;
@@ -250,17 +250,17 @@ namespace sakit
 	{
 		if (stream == NULL)
 		{
-			hlog::warn(sakit::logTag, "Cannot send, stream is NULL!");
+			hlog::warn(logTag, "Cannot send, stream is NULL!");
 			return false;
 		}
 		if (stream->size() == 0)
 		{
-			hlog::warn(sakit::logTag, "Cannot send, no data to send!");
+			hlog::warn(logTag, "Cannot send, no data to send!");
 			return false;
 		}
 		if (count == 0)
 		{
-			hlog::warn(sakit::logTag, "Cannot send, count is 0!");
+			hlog::warn(logTag, "Cannot send, count is 0!");
 			return false;
 		}
 		return true;
@@ -270,7 +270,7 @@ namespace sakit
 	{
 		if (stream == NULL)
 		{
-			hlog::warn(sakit::logTag, "Cannot receive, stream is NULL!");
+			hlog::warn(logTag, "Cannot receive, stream is NULL!");
 			return false;
 		}
 		return true;

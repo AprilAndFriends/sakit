@@ -42,7 +42,7 @@ namespace sakit
 	void init(bool threadedUpdate)
 	{
 		bufferSize = 65536;
-		hlog::write(sakit::logTag, "Initializing Socket Abstraction Kit.");
+		hlog::write(logTag, "Initializing Socket Abstraction Kit.");
 		PlatformSocket::platformInit();
 		sakit::bufferSize = bufferSize;
 		// all 254 HTML entities as per HTML 4.0 specification
@@ -336,7 +336,7 @@ namespace sakit
 
 	void destroy()
 	{
-		hlog::write(sakit::logTag, "Destroying Socket Abstraction Kit.");
+		hlog::write(logTag, "Destroying Socket Abstraction Kit.");
 		if (_updateThread != NULL)
 		{
 			_updateThread->join();
@@ -346,7 +346,7 @@ namespace sakit
 		PlatformSocket::platformDestroy();
 		if (connections.size() > 0)
 		{
-			hlog::warn(sakit::logTag, "Not all sockets/servers have been destroyed!");
+			hlog::warn(logTag, "Not all sockets/servers have been destroyed!");
 		}
 	}
 
@@ -365,7 +365,7 @@ namespace sakit
 	{
 		if (_updateThread != NULL)
 		{
-			hlog::warn(sakit::logTag, "Calling update() does nothing when threaded update is active!");
+			hlog::warn(logTag, "Calling update() does nothing when threaded update is active!");
 			return;
 		}
 		_internalUpdate(timeDelta);

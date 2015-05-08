@@ -46,7 +46,7 @@ namespace sakit
 		hstr text = _getText(current);
 		if (text != "")
 		{
-			hlog::warn(sakit::logTag, "Cannot " + action + ", " + text + "!");
+			hlog::warn(logTag, "Cannot " + action + ", " + text + "!");
 			return false;
 		}
 		return true;

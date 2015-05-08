@@ -102,7 +102,7 @@ namespace sakit
 		std::pair<Host, Host> pair(interfaceHost, groupAddress);
 		if (!this->multicastHosts.has(pair))
 		{
-			hlog::warnf(sakit::logTag, "Cannot leave multicast group, interface %s is not assigned to group %s!", interfaceHost.toString().cStr(), groupAddress.toString().cStr());
+			hlog::warnf(logTag, "Cannot leave multicast group, interface %s is not assigned to group %s!", interfaceHost.toString().cStr(), groupAddress.toString().cStr());
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);

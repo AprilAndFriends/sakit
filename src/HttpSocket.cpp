@@ -144,12 +144,12 @@ namespace sakit
 	{
 		if (response == NULL)
 		{
-			hlog::warn(sakit::logTag, "Cannot execute, response is NULL!");
+			hlog::warn(logTag, "Cannot execute, response is NULL!");
 			return false;
 		}
 		if (!url.isValid())
 		{
-			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
+			hlog::warn(logTag, "Cannot execute, URL is not valid!");
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);
@@ -204,7 +204,7 @@ namespace sakit
 	{
 		if (this->isConnected())
 		{
-			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			hlog::warn(logTag, "Already existing connection will be closed!");
 			this->_terminateConnection();
 		}
 		return this->_executeMethodInternal(response, method, url, customBody, customHeaders);
@@ -214,7 +214,7 @@ namespace sakit
 	{
 		if (!this->isConnected())
 		{
-			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
+			hlog::warn(logTag, "Cannot execute, there is no existing connection!");
 			return false;
 		}
 		return this->_executeMethodInternal(response, method, this->url, customBody, customHeaders);
@@ -224,7 +224,7 @@ namespace sakit
 	{
 		if (!url.isValid())
 		{
-			hlog::warn(sakit::logTag, "Cannot execute, URL is not valid!");
+			hlog::warn(logTag, "Cannot execute, URL is not valid!");
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);
@@ -249,7 +249,7 @@ namespace sakit
 	{
 		if (this->isConnected())
 		{
-			hlog::warn(sakit::logTag, "Already existing connection will be closed!");
+			hlog::warn(logTag, "Already existing connection will be closed!");
 			this->_terminateConnection();
 		}
 		return this->_executeMethodInternalAsync(method, url, customBody, customHeaders);
@@ -259,7 +259,7 @@ namespace sakit
 	{
 		if (!this->isConnected())
 		{
-			hlog::warn(sakit::logTag, "Cannot execute, there is no existing connection!");
+			hlog::warn(logTag, "Cannot execute, there is no existing connection!");
 			return false;
 		}
 		return this->_executeMethodInternalAsync(method, this->url, customBody, customHeaders);
@@ -378,7 +378,7 @@ namespace sakit
 		{
 			request += body + SAKIT_HTTP_LINE_ENDING;
 		}
-		hlog::debug(sakit::logTag, "Processed request generated:\n" + request);
+		hlog::debug(logTag, "Processed request generated:\n" + request);
 		return request;
 	}
 
@@ -390,7 +390,7 @@ namespace sakit
 		case HTTP11:	return "HTTP/1.1";
 		//case HTTP20:	return "HTTP/2.0";
 		}
-		hlog::error(sakit::logTag, "Invalid HTTP protocol version!");
+		hlog::error(logTag, "Invalid HTTP protocol version!");
 		return ""; // invalid
 	}
 

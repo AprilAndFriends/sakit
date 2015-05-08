@@ -37,7 +37,7 @@ namespace sakit
 	{
 		if (url == "")
 		{
-			hlog::warn(sakit::logTag, "URL cannot be empty!");
+			hlog::warn(logTag, "URL cannot be empty!");
 			return;
 		}
 		hstr newUrl = url;
@@ -90,20 +90,20 @@ namespace sakit
 			this->host = this->host(0, index);
 			if (!port.isNumber())
 			{
-				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+				hlog::warn(logTag, "Malformed URL host: " + this->host);
 				return;
 			}
 			unsigned int portValue = (unsigned int)port;
 			if (portValue > USHRT_MAX)
 			{
-				hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+				hlog::warn(logTag, "Malformed URL host: " + this->host);
 				return;
 			}
 			this->port = (unsigned short)portValue;
 		}
 		if (!Url::_checkCharset(this->host, HOST_ALLOWED))
 		{
-			hlog::warn(sakit::logTag, "Malformed URL host: " + this->host);
+			hlog::warn(logTag, "Malformed URL host: " + this->host);
 			return;
 		}
 		this->host = Url::_decodeWwwFormComponent(this->host);
@@ -113,7 +113,7 @@ namespace sakit
 		{
 			if (!Url::_checkCharset((*it), PATH_ALLOWED))
 			{
-				hlog::warn(sakit::logTag, "Malformed URL path segment: " + (*it));
+				hlog::warn(logTag, "Malformed URL path segment: " + (*it));
 				return;
 			}
 			this->path += "/" + Url::_decodeWwwFormComponent(*it);
@@ -147,7 +147,7 @@ namespace sakit
 			this->fragment = this->fragment(1, -1); // remove the # caracter
 			if (!Url::_checkCharset(this->fragment, FRAGMENT_ALLOWED))
 			{
-				hlog::warn(sakit::logTag, "Malformed URL fragment: " + this->fragment);
+				hlog::warn(logTag, "Malformed URL fragment: " + this->fragment);
 				return;
 			}
 			this->fragment = Url::_decodeWwwFormComponent(this->fragment);

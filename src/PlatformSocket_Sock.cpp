@@ -111,7 +111,7 @@ namespace sakit
 		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, "Error: " + hstr(result));
+			hlog::error(logTag, "Error: " + hstr(result));
 		}
 #endif
 	}
@@ -122,7 +122,7 @@ namespace sakit
 		int result = WSACleanup();
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, "Error: " + hstr(result));
+			hlog::error(logTag, "Error: " + hstr(result));
 		}
 #endif
 	}
@@ -195,7 +195,7 @@ namespace sakit
 		int result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, "getaddrinfo() " + __gai_strerror(result));
+			hlog::error(logTag, "getaddrinfo() " + __gai_strerror(result));
 			lock.release();
 			this->disconnect();
 			return false;
@@ -406,7 +406,7 @@ namespace sakit
 		}
 		else
 		{
-			hlog::warn(sakit::logTag, "Trying to send without a remote host!");
+			hlog::warn(logTag, "Trying to send without a remote host!");
 		}
 		if (result >= 0)
 		{
@@ -613,7 +613,7 @@ namespace sakit
 		int result = getaddrinfo(domain.toString().cStr(), NULL, &hints, &info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, __gai_strerror(result));
+			hlog::error(logTag, __gai_strerror(result));
 			return Host();
 		}
 		lock.release();
@@ -636,7 +636,7 @@ namespace sakit
 		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, NI_NUMERICHOST);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, __gai_strerror(result));
+			hlog::error(logTag, __gai_strerror(result));
 			return Host();
 		}
 		return Host(hostName);
@@ -656,7 +656,7 @@ namespace sakit
 		int result = getaddrinfo(NULL, serviceName.cStr(), &hints, &info);
 		if (result != 0)
 		{
-			hlog::error(sakit::logTag, __gai_strerror(result));
+			hlog::error(logTag, __gai_strerror(result));
 			return 0;
 		}
 		lock.release();
@@ -674,7 +674,7 @@ namespace sakit
 		info = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
 		if (info == NULL)
 		{
-			hlog::error(sakit::logTag, "Not enough memory!");
+			hlog::error(logTag, "Not enough memory!");
 			return result;
 		}
 		if (GetAdaptersInfo(info, &size) == ERROR_BUFFER_OVERFLOW) // gets the size required if necessary
@@ -683,13 +683,13 @@ namespace sakit
 			info = (IP_ADAPTER_INFO*)malloc(size);
 			if (info == NULL)
 			{
-				hlog::error(sakit::logTag, "Not enough memory!");
+				hlog::error(logTag, "Not enough memory!");
 				return result;
 			}
 		}
 		if ((GetAdaptersInfo(info, &size)) != NO_ERROR)
 		{
-			hlog::error(sakit::logTag, "Not enough memory!");
+			hlog::error(logTag, "Not enough memory!");
 			return result;
 		}
 		int comboIndex;
