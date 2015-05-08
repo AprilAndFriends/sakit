@@ -899,10 +899,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D1358BCB18D7781000A36FDC /* Mac.xcconfig */;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/kreso/projects/brawe/__build__/products/Debug,
-				);
 				INFOPLIST_FILE = Info.plist;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Frameworks/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = sakit;
@@ -935,10 +931,6 @@
 			baseConfigurationReference = D1358BCB18D7781000A36FDC /* Mac.xcconfig */;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/kreso/projects/brawe/__build__/products/Debug,
-				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Info.plist;
@@ -970,10 +962,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D1358BCB18D7781000A36FDC /* Mac.xcconfig */;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/kreso/projects/brawe/__build__/products/Debug,
-				);
 				INFOPLIST_FILE = Info.plist;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Frameworks/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = sakit;
