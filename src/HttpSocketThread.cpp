@@ -1,5 +1,5 @@
 /// @file
-/// @version 1.0
+/// @version 1.05
 /// 
 /// @section LICENSE
 /// 
@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 
+#include <hltypes/hlog.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hthread.h>
 
@@ -103,10 +104,12 @@ namespace sakit
 		if (time >= *this->timeout && !this->response->Headers.hasKey("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
+			hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
 			this->response->BodyComplete = true;
 		}
 		hmutex::ScopeLock lock(&this->mutex);
-		if (this->response->Raw.size() > 0)
+		// only a response with complete headers and a complete body is considered
+		if (this->response->HeadersComplete && this->response->BodyComplete)
 		{
 			this->result = FINISHED;
 			this->response->Raw.rewind();

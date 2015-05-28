@@ -1,5 +1,5 @@
 /// @file
-/// @version 1.0
+/// @version 1.05
 /// 
 /// @section LICENSE
 /// 
@@ -197,7 +197,7 @@ namespace sakit
 			lock.acquire(&this->mutexState);
 			this->state = CONNECTED;
 		}
-		return true;
+		return (response->HeadersComplete && response->BodyComplete);
 	}
 
 	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
@@ -300,6 +300,7 @@ namespace sakit
 		if (time >= this->timeout && !response->Headers.hasKey("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
 		{
 			// let's say it's complete, we don't know its supposed length anyway
+			hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
 			response->BodyComplete = true;
 		}
 		return (int)response->Raw.size();

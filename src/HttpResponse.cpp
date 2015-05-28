@@ -1,5 +1,5 @@
 /// @file
-/// @version 1.0
+/// @version 1.05
 /// 
 /// @section LICENSE
 /// 
@@ -210,9 +210,9 @@ namespace sakit
 		result->StatusCode = this->StatusCode;
 		result->StatusMessage = this->StatusMessage;
 		result->Headers = this->Headers;
-		result->Body.writeRaw((unsigned char*)this->Body, (int)this->Body.size());
+		result->Body = this->Body; // assignment operator is properly implemented for hstream
 		result->Body.rewind();
-		result->Raw.writeRaw((unsigned char*)this->Raw, (int)this->Raw.size());
+		result->Raw = this->Raw; // assignment operator is properly implemented for hstream
 		result->Raw.rewind();
 		result->HeadersComplete = this->HeadersComplete;
 		result->BodyComplete = this->BodyComplete;
