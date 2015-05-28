@@ -103,9 +103,16 @@ namespace sakit
 		// if timed out, has no predefined length, all headers were received and there is a body
 		if (time >= *this->timeout && !this->response->Headers.hasKey("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
 		{
-			// let's say it's complete, we don't know its supposed length anyway
-			hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
-			this->response->BodyComplete = true;
+			if (!this->response->Headers.hasKey("Content-Length") && this->response->Body.size() > 0)
+			{
+				// let's say it's complete, we don't know its supposed length anyway
+				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
+				this->response->BodyComplete = true;
+			}
+			else if ((int)this->response->Headers["Content-Length"] == 0) // empty body
+			{
+				this->response->BodyComplete = true;
+			}
 		}
 		hmutex::ScopeLock lock(&this->mutex);
 		// only a response with complete headers and a complete body is considered

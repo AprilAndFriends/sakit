@@ -297,11 +297,18 @@ namespace sakit
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= this->timeout && !response->Headers.hasKey("Content-Length") && response->HeadersComplete && response->Body.size() > 0)
+		if (time >= this->timeout && response->HeadersComplete)
 		{
-			// let's say it's complete, we don't know its supposed length anyway
-			hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
-			response->BodyComplete = true;
+			if (!response->Headers.hasKey("Content-Length") && response->Body.size() > 0)
+			{
+				// let's say it's complete, we don't know its supposed length anyway
+				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
+				response->BodyComplete = true;
+			}
+			else if ((int)response->Headers["Content-Length"] == 0) // empty body
+			{
+				response->BodyComplete = true;
+			}
 		}
 		return (int)response->Raw.size();
 	}
