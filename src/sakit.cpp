@@ -44,7 +44,6 @@ namespace sakit
 		bufferSize = 65536;
 		hlog::write(logTag, "Initializing Socket Abstraction Kit.");
 		PlatformSocket::platformInit();
-		sakit::bufferSize = bufferSize;
 		// all 254 HTML entities as per HTML 4.0 specification
 		mapping[0x22u] = "quot";
 		mapping[0x26u] = "amp";

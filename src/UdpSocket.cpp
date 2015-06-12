@@ -154,6 +154,7 @@ namespace sakit
 		{
 		case FINISHED:	this->udpSocketDelegate->onBroadcastFinished(this);	break;
 		case FAILED:	this->udpSocketDelegate->onBroadcastFailed(this);	break;
+		default:															break;
 		}
 	}
 

@@ -112,6 +112,8 @@ namespace sakit
 				*this->_localHost = Host();
 				*this->_localPort = 0;
 				break;
+			default:
+				break;
 			}
 			break;
 		case FAILED:
@@ -123,7 +125,11 @@ namespace sakit
 			case DISCONNECTING:
 				*this->_state = CONNECTED;
 				break;
+			default:
+				break;
 			}
+			break;
+		default:
 			break;
 		}
 		lockThread.release();
@@ -136,6 +142,7 @@ namespace sakit
 			{
 			case CONNECTING:	this->_connectorDelegate->onConnected(this, remoteHost, remotePort);		break;
 			case DISCONNECTING:	this->_connectorDelegate->onDisconnected(this, remoteHost, remotePort);		break;
+			default:																						break;
 			}
 			break;
 		case FAILED:
@@ -143,7 +150,10 @@ namespace sakit
 			{
 			case CONNECTING:	this->_connectorDelegate->onConnectFailed(this, remoteHost, remotePort);	break;
 			case DISCONNECTING:	this->_connectorDelegate->onDisconnectFailed(this, remoteHost, remotePort);	break;
+			default:																						break;
 			}
+			break;
+		default:
 			break;
 		}
 	}

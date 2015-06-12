@@ -84,6 +84,7 @@ namespace sakit
 		{
 		case FINISHED:	this->serverDelegate->onStopped(this);		break;
 		case FAILED:	this->serverDelegate->onStartFailed(this);	break;
+		default:													break;
 		}
 	}
 

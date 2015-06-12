@@ -62,6 +62,8 @@ namespace sakit
 		case DISCONNECTING:
 			this->_updateDisconnecting();
 			break;
+		default:
+			break;
 		}
 	}
 

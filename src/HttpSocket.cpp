@@ -100,6 +100,7 @@ namespace sakit
 		{
 		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, this->url);	break;
 		case FAILED:	this->socketDelegate->onExecuteFailed(this, response, this->url);		break;
+		default:																				break;
 		}
 		delete response;
 	}

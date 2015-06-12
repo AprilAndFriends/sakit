@@ -86,6 +86,7 @@ namespace sakit
 		{
 		case FINISHED:	this->socketDelegate->onReceiveFinished(this);	break;
 		case FAILED:	this->tcpSocketDelegate->onReceiveFailed(this);	break;
+		default:														break;
 		}
 	}
 

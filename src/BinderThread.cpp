@@ -50,6 +50,8 @@ namespace sakit
 		case UNBINDING:
 			this->_updateUnbinding();
 			break;
+		default:
+			break;
 		}
 	}
 

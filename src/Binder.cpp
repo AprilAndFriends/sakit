@@ -97,6 +97,8 @@ namespace sakit
 				*this->_localHost = Host();
 				*this->_localPort = 0;
 				break;
+			default:
+				break;
 			}
 			break;
 		case FAILED:
@@ -108,7 +110,11 @@ namespace sakit
 			case UNBINDING:
 				*this->_state = BOUND;
 				break;
+			default:
+				break;
 			}
+			break;
+		default:
 			break;
 		}
 		lockThread.release();
@@ -121,6 +127,7 @@ namespace sakit
 			{
 			case BINDING:	this->_binderDelegate->onBound(this, localHost, localPort);		break;
 			case UNBINDING:	this->_binderDelegate->onUnbound(this, localHost, localPort);	break;
+			default:																		break;
 			}
 			break;
 		case FAILED:
@@ -128,7 +135,10 @@ namespace sakit
 			{
 			case BINDING:	this->_binderDelegate->onBindFailed(this, localHost, localPort);	break;
 			case UNBINDING:	this->_binderDelegate->onUnbindFailed(this, localHost, localPort);	break;
+			default:																			break;
 			}
+			break;
+		default:
 			break;
 		}
 	}
