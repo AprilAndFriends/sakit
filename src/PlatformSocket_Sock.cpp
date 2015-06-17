@@ -148,7 +148,7 @@ namespace sakit
 
 	bool PlatformSocket::tryCreateSocket()
 	{
-		if (this->sock == -1)
+		if (this->sock == (unsigned int)-1)
 		{
 			this->connected = true;
 			this->sock = socket(this->socketInfo->ai_family, this->socketInfo->ai_socktype, this->socketInfo->ai_protocol);
@@ -377,10 +377,10 @@ namespace sakit
 			free(this->address);
 			this->address = NULL;
 		}
-		if (this->sock != -1)
+		if (this->sock != (unsigned int)-1)
 		{
 			closesocket(this->sock);
-			this->sock = -1;
+			this->sock = (unsigned int)-1;
 		}
 		bool previouslyConnected = this->connected;
 		this->connected = false;
