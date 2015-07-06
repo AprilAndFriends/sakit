@@ -101,6 +101,11 @@ extern int h_errno;
 
 namespace sakit
 {
+	static Host _map_adapterHosts(NetworkAdapter adapter)
+	{
+		return adapter.getBroadcastIp();
+	}
+
 	extern int bufferSize;
 	static hmutex getaddrinfoMutex; // on some platforms getaddrinfo apparently isn't thread-safe
 
@@ -570,11 +575,7 @@ namespace sakit
 		int maxResult = 0;
 		socklen_t addrSize = sizeof(sockaddr_in);
 		Host broadcastIp;
-		harray<Host> ips;
-		foreach (NetworkAdapter, it, adapters)
-		{
-			ips += (*it).getBroadcastIp();
-		}
+		harray<Host> ips = adapters.mapped(&_map_adapterHosts);
 		ips.removeDuplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{
