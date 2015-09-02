@@ -14,8 +14,6 @@
 #include <stdlib.h>
 #include <memory.h>
 #endif
-#define _NO_WIN_H
-#include <hltypes/hplatform.h>
 
 #ifdef _WIN32
 #define _WIN32_WINNT 0x602
