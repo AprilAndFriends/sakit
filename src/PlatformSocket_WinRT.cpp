@@ -7,7 +7,6 @@
 /// the terms of the BSD license: http://opensource.org/licenses/BSD-3-Clause
 
 #if defined(_WIN32) && defined(_WINRT)
-#define _NO_WIN_H
 #include <hltypes/hplatform.h>
 #include <hltypes/hlog.h>
 #include <hltypes/hstring.h>

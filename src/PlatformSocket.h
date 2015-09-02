@@ -13,6 +13,7 @@
 #ifndef SAKIT_PLATFORM_SOCKET_H
 #define SAKIT_PLATFORM_SOCKET_H
 
+#define __HL_INCLUDE_PLATFORM_HEADERS
 #include <hltypes/harray.h>
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmutex.h>
