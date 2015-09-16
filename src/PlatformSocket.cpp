@@ -21,6 +21,9 @@
 
 namespace sakit
 {
+	// making this thread-safe, you never know
+	static hmutex mutexPrint;
+
 	PlatformSocket::~PlatformSocket()
 	{
 		this->disconnect();
@@ -45,6 +48,7 @@ namespace sakit
 	{
 		hstr message;
 		bool print = true;
+		hmutex::ScopeLock lock(&mutexPrint);
 #ifdef _WIN32
 #ifndef _WINRT
 		wchar_t* buffer = L"Unknown error";
@@ -74,6 +78,7 @@ namespace sakit
 		print = (code != 0 && code != EINPROGRESS && code != EAGAIN && code != EWOULDBLOCK);
 		message = strerror(code);
 #endif
+		lock.release();
 		if (print)
 		{
 			hstr printMessage = basicMessage;

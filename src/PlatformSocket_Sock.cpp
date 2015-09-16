@@ -69,6 +69,21 @@ extern int h_errno;
 #include "Server.h"
 #include "Socket.h"
 
+namespace sakit
+{
+	static Host _map_adapterHosts(NetworkAdapter adapter)
+	{
+		return adapter.getBroadcastIp();
+	}
+
+	extern int bufferSize;
+	// even though by standard definition these functions should be thread-safe, practice has shown otherwise
+	static hmutex mutexGetaddrinfo;
+	static hmutex mutexFreeaddrinfo;
+	static hmutex mutexGetnameinfo;
+	static hmutex mutexGetsockname;
+
+	// utility functions
 #ifdef _WIN32
 	#define __gai_strerror(str) hstr::fromUnicode(gai_strerrorW(str))
 
@@ -97,15 +112,37 @@ extern int h_errno;
 	#define __inet_pton inet_pton
 #endif
 
-namespace sakit
-{
-	static Host _map_adapterHosts(NetworkAdapter adapter)
+	// wrappers for thread-unsafe functions
+	static hmutex mutexInetNtoa;
+	static hmutex mutexInetAddr;
+	static hmutex mutexHtons;
+	static hmutex mutexNtohs;
+
+	static char* __inet_ntoa(struct in_addr in)
 	{
-		return adapter.getBroadcastIp();
+		hmutex::ScopeLock lock(&mutexInetNtoa);
+		return inet_ntoa(in);
 	}
 
-	extern int bufferSize;
-	static hmutex getaddrinfoMutex; // on some platforms getaddrinfo apparently isn't thread-safe
+	static unsigned long __inet_addr(const char* cp)
+	{
+		hmutex::ScopeLock lock(&mutexInetAddr);
+		return inet_addr(cp);
+	}
+
+	static unsigned short __htons(unsigned hostshort)
+	{
+		hmutex::ScopeLock lock(&mutexHtons);
+		return htons(hostshort);
+	}
+
+	static unsigned short __ntohs(unsigned netshort)
+	{
+		hmutex::ScopeLock lock(&mutexNtohs);
+		return ntohs(netshort);
+	}
+
+	// normal methods
 
 	void PlatformSocket::platformInit()
 	{
@@ -155,11 +192,7 @@ namespace sakit
 		{
 			this->connected = true;
 			this->sock = socket(this->socketInfo->ai_family, this->socketInfo->ai_socktype, this->socketInfo->ai_protocol);
-			if (!this->_checkResult(this->sock, "socket()"))
-			{
-				this->disconnect();
-				return false;
-			}
+			return this->_checkResult(this->sock, "socket()");
 		}
 		return true;
 	}
@@ -181,9 +214,12 @@ namespace sakit
 			this->socketInfo = (addrinfo*)malloc(sizeof(addrinfo));
 			memset(this->socketInfo, 0, sizeof(addrinfo));
 		}
+		hmutex::ScopeLock lock;
 		if (*info != NULL)
 		{
+			lock.acquire(&mutexFreeaddrinfo);
 			freeaddrinfo(*info);
+			lock.release();
 			*info = NULL;
 		}
 #ifndef _ANDROID
@@ -194,7 +230,7 @@ namespace sakit
 		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		this->socketInfo->ai_protocol = IPPROTO_IP;
 		this->socketInfo->ai_flags = 0;
-		hmutex::ScopeLock lock(&getaddrinfoMutex);
+		lock.acquire(&mutexGetaddrinfo);
 		int result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
 		if (result != 0)
 		{
@@ -262,7 +298,6 @@ namespace sakit
 			}
 			if (!this->_checkResult(result, "select()"))
 			{
-				this->disconnect();
 				return false;
 			}
 			int error;
@@ -270,7 +305,6 @@ namespace sakit
 			result = getsockopt(this->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &size);
 			if (!this->_checkResult(result, "getsockopt()"))
 			{
-				this->disconnect();
 				return false;
 			}
 			if (PlatformSocket::_printLastError("", error))
@@ -311,26 +345,28 @@ namespace sakit
 		socklen_t addressSize = (socklen_t)sizeof(sockaddr_in);
 		memset(&address, 0, addressSize);
 		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = inet_addr(host.toString().cStr());
-		address.sin_port = htons(port);
+		address.sin_addr.s_addr = __inet_addr(host.toString().cStr());
+		address.sin_port = __htons(port);
+		hmutex::ScopeLock lock(&mutexGetsockname);
 		getsockname(this->sock, (sockaddr*)&address, &addressSize);
-		host = Host(inet_ntoa(address.sin_addr));
-		port = ntohs(address.sin_port);
+		lock.release();
+		host = Host(__inet_ntoa(address.sin_addr));
+		port = __ntohs(address.sin_port);
 	}
 
 	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().cStr());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().cStr());
+		group.imr_interface.s_addr = __inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = __inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
 	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = inet_addr(interfaceHost.toString().cStr());
-		group.imr_multiaddr.s_addr = inet_addr(groupAddress.toString().cStr());
+		group.imr_interface.s_addr = __inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = __inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
@@ -343,7 +379,7 @@ namespace sakit
 	bool PlatformSocket::setMulticastInterface(Host interfaceHost)
 	{
 		in_addr local;
-		local.s_addr = inet_addr(interfaceHost.toString().cStr());
+		local.s_addr = __inet_addr(interfaceHost.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
 	}
 
@@ -365,6 +401,7 @@ namespace sakit
 			free(this->socketInfo);
 			this->socketInfo = NULL;
 		}
+		hmutex::ScopeLock lock(&mutexFreeaddrinfo);
 		if (this->localInfo != NULL)
 		{
 			freeaddrinfo(this->localInfo);
@@ -375,6 +412,7 @@ namespace sakit
 			freeaddrinfo(this->remoteInfo);
 			this->remoteInfo = NULL;
 		}
+		lock.release();
 		if (this->address != NULL)
 		{
 			free(this->address);
@@ -480,7 +518,9 @@ namespace sakit
 			// get the IP and port of the connected client
 			char hostString[NI_MAXHOST] = {'\0'};
 			char portString[NI_MAXSERV] = {'\0'};
+			hmutex::ScopeLock lock(&mutexGetnameinfo);
 			getnameinfo((sockaddr*)&address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+			lock.release();
 			remoteHost = Host(hostString);
 			remotePort = (unsigned short)(int)hstr(portString);
 		}
@@ -529,7 +569,9 @@ namespace sakit
 		// get the IP and port of the connected client
 		char hostString[NI_MAXHOST] = {'\0'};
 		char portString[NI_MAXSERV] = {'\0'};
+		hmutex::ScopeLock lock(&mutexGetnameinfo);
 		getnameinfo((sockaddr*)other->address, size, hostString, NI_MAXHOST, portString, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+		lock.release();
 		Host localHost;
 		unsigned short localPort = 0;
 		this->_getLocalHostPort(localHost, localPort);
@@ -568,7 +610,7 @@ namespace sakit
 #else
 		address.sin_family = PF_INET;
 #endif
-		address.sin_port = htons(port);
+		address.sin_port = __htons(port);
 		int result = 0;
 		int maxResult = 0;
 		socklen_t addrSize = sizeof(sockaddr_in);
@@ -577,7 +619,7 @@ namespace sakit
 		ips.removeDuplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{
-			address.sin_addr.s_addr = inet_addr((*it).toString().cStr());
+			address.sin_addr.s_addr = __inet_addr((*it).toString().cStr());
 			result = (int)sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
 			if (this->_checkResult(result, "sendto", false) && result > 0)
 			{
@@ -608,7 +650,7 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
-		hmutex::ScopeLock lock(&getaddrinfoMutex);
+		hmutex::ScopeLock lock(&mutexGetaddrinfo);
 		int result = getaddrinfo(domain.toString().cStr(), NULL, &hints, &info);
 		if (result != 0)
 		{
@@ -618,8 +660,10 @@ namespace sakit
 		lock.release();
 		in_addr address;
 		address.s_addr = ((sockaddr_in*)(info->ai_addr))->sin_addr.s_addr;
+		lock.acquire(&mutexFreeaddrinfo);
 		freeaddrinfo(info);
-		return Host(inet_ntoa(address));
+		lock.release();
+		return Host(__inet_ntoa(address));
 	}
 
 	Host PlatformSocket::resolveIp(Host ip)
@@ -632,6 +676,7 @@ namespace sakit
 #endif
 		__inet_pton(address.sin_family, ip.toString().cStr(), &address.sin_addr);
 		char hostName[NI_MAXHOST] = {'\0'};
+		hmutex::ScopeLock lock(&mutexGetnameinfo);
 		int result = getnameinfo((sockaddr*)&address, sizeof(address), hostName, sizeof(hostName), NULL, 0, NI_NUMERICHOST);
 		if (result != 0)
 		{
@@ -651,7 +696,7 @@ namespace sakit
 #else
 		hints.ai_family = PF_INET;
 #endif
-		hmutex::ScopeLock lock(&getaddrinfoMutex);
+		hmutex::ScopeLock lock(&mutexGetaddrinfo);
 		int result = getaddrinfo(NULL, serviceName.cStr(), &hints, &info);
 		if (result != 0)
 		{
@@ -660,6 +705,7 @@ namespace sakit
 		}
 		lock.release();
 		unsigned short port = ((sockaddr_in*)(info->ai_addr))->sin_port;
+		lock.acquire(&mutexFreeaddrinfo);
 		freeaddrinfo(info);
 		return port;
 	}
@@ -758,11 +804,11 @@ namespace sakit
 					family = ifa->ifa_addr->sa_family;
 					if (family == AF_INET)// || family == AF_INET6) // sakit only supports IPV4 for now
 					{
-						host = inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
-						mask = inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
+						host = __inet_ntoa(((sockaddr_in*)ifa->ifa_addr)->sin_addr);
+						mask = __inet_ntoa(((sockaddr_in*)ifa->ifa_netmask)->sin_addr);
 						if (ifa->ifa_dstaddr != NULL)
 						{
-							gateway = inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
+							gateway = __inet_ntoa(((sockaddr_in*)ifa->ifa_dstaddr)->sin_addr);
 						}
 						else // when it's localhost, gateway can be NULL
 						{
