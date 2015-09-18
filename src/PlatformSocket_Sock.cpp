@@ -1,5 +1,5 @@
 /// @file
-/// @version 1.01
+/// @version 1.06
 /// 
 /// @section LICENSE
 /// 
@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <memory.h>
 #define IN_ADDRT_T_TYPECAST (in_addr_t)
+#else
+#define IN_ADDRT_T_TYPECAST
 #endif
 
 #ifdef _WIN32
