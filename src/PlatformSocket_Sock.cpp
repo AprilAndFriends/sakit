@@ -13,6 +13,7 @@
 #include <netinet/tcp.h>
 #include <stdlib.h>
 #include <memory.h>
+#define IN_ADDRT_T_TYPECAST (in_addr_t)
 #endif
 
 #ifdef _WIN32
@@ -345,7 +346,7 @@ namespace sakit
 		socklen_t addressSize = (socklen_t)sizeof(sockaddr_in);
 		memset(&address, 0, addressSize);
 		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = __inet_addr(host.toString().cStr());
+		address.sin_addr.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(host.toString().cStr());
 		address.sin_port = __htons(port);
 		hmutex::ScopeLock lock(&mutexGetsockname);
 		getsockname(this->sock, (sockaddr*)&address, &addressSize);
@@ -357,16 +358,16 @@ namespace sakit
 	bool PlatformSocket::joinMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = __inet_addr(interfaceHost.toString().cStr());
-		group.imr_multiaddr.s_addr = __inet_addr(groupAddress.toString().cStr());
+		group.imr_interface.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
 	bool PlatformSocket::leaveMulticastGroup(Host interfaceHost, Host groupAddress)
 	{
 		ip_mreq group;
-		group.imr_interface.s_addr = __inet_addr(interfaceHost.toString().cStr());
-		group.imr_multiaddr.s_addr = __inet_addr(groupAddress.toString().cStr());
+		group.imr_interface.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(interfaceHost.toString().cStr());
+		group.imr_multiaddr.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(groupAddress.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&group, sizeof(ip_mreq)), "setsockopt()");
 	}
 
@@ -379,7 +380,7 @@ namespace sakit
 	bool PlatformSocket::setMulticastInterface(Host interfaceHost)
 	{
 		in_addr local;
-		local.s_addr = __inet_addr(interfaceHost.toString().cStr());
+		local.s_addr = IN_ADDRT_T_TYPECAST __inet_addr(interfaceHost.toString().cStr());
 		return this->_checkResult(setsockopt(this->sock, IPPROTO_IP, IP_MULTICAST_IF, (char*)&local, sizeof(in_addr)), "setsockopt()");
 	}
 
@@ -619,7 +620,7 @@ namespace sakit
 		ips.removeDuplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{
-			address.sin_addr.s_addr = __inet_addr((*it).toString().cStr());
+			address.sin_addr.s_addr = IN_ADDRT_T_TYPECAST __inet_addr((*it).toString().cStr());
 			result = (int)sendto(this->sock, data, size, 0, (sockaddr*)&address, addrSize);
 			if (this->_checkResult(result, "sendto", false) && result > 0)
 			{
