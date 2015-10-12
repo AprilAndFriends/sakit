@@ -195,6 +195,8 @@
 		D132521F189BBA8300847DE1 /* BroadcasterThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D132521A189BBA8300847DE1 /* BroadcasterThread.h */; };
 		D1325220189BBA8300847DE1 /* BroadcasterThread.h in Headers */ = {isa = PBXBuildFile; fileRef = D132521A189BBA8300847DE1 /* BroadcasterThread.h */; };
 		D1325262189BC35F00847DE1 /* demo_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1325261189BC35F00847DE1 /* demo_simple.cpp */; };
+		D176BC721BC8FE1B00C98D34 /* libsakit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D1F27A89177A2CB600E5C131 /* libsakit.a */; };
+		D176BC741BC8FE2100C98D34 /* libhltypes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D176BC731BC8FE2100C98D34 /* libhltypes.a */; };
 		D1E5A84A18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
 		D1E5A84B18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
 		D1E5A84C18AE06B50052FD92 /* TimedThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1E5A84818AE06B50052FD92 /* TimedThread.cpp */; };
@@ -314,6 +316,7 @@
 		D1358BCA18D7781000A36FDC /* iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = iOS.xcconfig; path = xcconfig/iOS.xcconfig; sourceTree = "<group>"; };
 		D1358BCB18D7781000A36FDC /* Mac.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Mac.xcconfig; path = xcconfig/Mac.xcconfig; sourceTree = "<group>"; };
 		D1522F1C140F79500012F290 /* libsakit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsakit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D176BC731BC8FE2100C98D34 /* libhltypes.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhltypes.a; path = ../../__build__/products/Debug/libhltypes.a; sourceTree = "<group>"; };
 		D1E5A84818AE06B50052FD92 /* TimedThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TimedThread.cpp; path = src/TimedThread.cpp; sourceTree = "<group>"; };
 		D1E5A84918AE06B50052FD92 /* TimedThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TimedThread.h; path = src/TimedThread.h; sourceTree = "<group>"; };
 		D1F27A89177A2CB600E5C131 /* libsakit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsakit.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -332,6 +335,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D176BC741BC8FE2100C98D34 /* libhltypes.a in Frameworks */,
+				D176BC721BC8FE1B00C98D34 /* libsakit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,6 +480,7 @@
 		D11B18D418AE64CF00C078BA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D176BC731BC8FE2100C98D34 /* libhltypes.a */,
 				D11B18D218AE64C600C078BA /* hltypes.framework */,
 			);
 			name = Frameworks;
@@ -882,7 +888,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
@@ -912,7 +917,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -947,7 +951,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;

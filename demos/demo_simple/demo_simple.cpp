@@ -686,15 +686,15 @@ void _testHttpSocket()
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
-	if (client->executeGet(&response, url, headers))
-	{
-		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
-		hlog::write(LOG_TAG, response.Raw.read(1500) + "\n...");
-	}
-	else
-	{
-		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
-	}
+//	if (client->executeGet(&response, url, headers))
+//	{
+//		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
+//		hlog::write(LOG_TAG, response.Raw.read(1500) + "\n...");
+//	}
+//	else
+//	{
+//		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
+//	}
 	delete client;
 }
 
@@ -709,18 +709,18 @@ void _testAsyncHttpSocket()
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
-	if (client->executeGetAsync(url, headers))
-	{
-		do
-		{
-			sakit::update();
-			hthread::sleep(100.0f);
-		} while (client->isExecuting());
-	}
-	else
-	{
-		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
-	}
+//	if (client->executeGetAsync(url, headers))
+//	{
+//		do
+//		{
+//			sakit::update();
+//			hthread::sleep(100.0f);
+//		} while (client->isExecuting());
+//	}
+//	else
+//	{
+//		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
+//	}
 	delete client;
 }
 
