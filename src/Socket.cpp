@@ -194,7 +194,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->receiver->running = false;
+		this->receiver->executing = false;
 		lock.release();
 		this->receiver->join();
 		this->_updateReceiving();
@@ -208,7 +208,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->receiver->running = false;
+		this->receiver->executing = false;
 		return true;
 	}
 

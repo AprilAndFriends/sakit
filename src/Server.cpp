@@ -61,7 +61,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->serverThread->running = false;
+		this->serverThread->executing = false;
 		return true;
 	}
 

@@ -40,7 +40,7 @@ namespace sakit
 		hstream* stream = new hstream();
 		int count = this->maxValue;
 		hmutex::ScopeLock lock;
-		while (this->running)
+		while (this->executing)
 		{
 			if (this->socket->receiveFrom(stream, host, port) && stream->size() > 0)
 			{

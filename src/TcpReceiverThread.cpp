@@ -31,7 +31,7 @@ namespace sakit
 	{
 		int remaining = this->maxValue;
 		hmutex::ScopeLock lock;
-		while (this->running)
+		while (this->executing)
 		{
 			if (!this->socket->receive(this->stream, this->mutex, remaining))
 			{

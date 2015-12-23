@@ -42,7 +42,7 @@ namespace sakit
 		{
 			hmutex::ScopeLock lock(&this->mutex);
 			this->result = FAILED;
-			this->running = false;
+			this->executing = false;
 		}
 	}
 
@@ -50,14 +50,14 @@ namespace sakit
 	{
 		int sent = 0;
 		int count = (int)this->stream->size();
-		while (this->running)
+		while (this->executing)
 		{
 			if (!this->socket->send(this->stream, count, sent))
 			{
 				hmutex::ScopeLock lock(&this->mutex);
 				this->result = FAILED;
 				lock.release();
-				this->running = false;
+				this->executing = false;
 				this->socket->disconnect();
 				break;
 			}
@@ -75,7 +75,7 @@ namespace sakit
 		float time = 0.0f;
 		int64_t size = 0;
 		int64_t lastSize = 0;
-		while (this->running)
+		while (this->executing)
 		{
 			if (!this->socket->receive(this->response, this->mutex))
 			{
@@ -133,11 +133,11 @@ namespace sakit
 	void HttpSocketThread::_updateProcess()
 	{
 		this->_updateConnect();
-		if (this->running)
+		if (this->executing)
 		{
 			this->_updateSend();
 		}
-		if (this->running)
+		if (this->executing)
 		{
 			this->_updateReceive();
 		}

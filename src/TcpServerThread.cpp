@@ -37,7 +37,7 @@ namespace sakit
 		hmutex::ScopeLock lock(&connectionsMutex);
 		connections -= tcpSocket;
 		lock.release();
-		while (this->running)
+		while (this->executing)
 		{
 			if (!this->socket->listen())
 			{
