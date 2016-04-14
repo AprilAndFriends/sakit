@@ -215,7 +215,7 @@ namespace sakit
 		hstr checked = string;
 		foreach (char, it, allAllowed)
 		{
-			checked = checked.replaced((*it), "");
+			checked.replace((*it), "");
 			if (checked == "")
 			{
 				return true;
