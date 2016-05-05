@@ -44,7 +44,7 @@ namespace sakit
 		return -1;
 	}
 
-	HttpResponse::HttpResponse() : StatusCode(UNDEFINED), HeadersComplete(false), BodyComplete(false), chunkSize(0), chunkRead(0)
+	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0)
 	{
 		this->clear();
 	}
@@ -55,25 +55,25 @@ namespace sakit
 
 	void HttpResponse::clear()
 	{
-		this->Protocol = "";
-		this->StatusCode = UNDEFINED;
-		this->StatusMessage = "";
-		this->Headers.clear();
-		this->Body.clear();
-		this->Raw.clear();
-		this->HeadersComplete = false;
-		this->BodyComplete = false;
+		this->protocol = "";
+		this->statusCode = UNDEFINED;
+		this->statusMessage = "";
+		this->headers.clear();
+		this->body.clear();
+		this->raw.clear();
+		this->headersComplete = false;
+		this->bodyComplete = false;
 		this->chunkSize = 0;
 		this->chunkRead = 0;
 	}
 
 	void HttpResponse::parseFromRaw()
 	{
-		if (!this->HeadersComplete)
+		if (!this->headersComplete)
 		{
 			this->_readHeaders();
 		}
-		if (this->HeadersComplete && !this->BodyComplete)
+		if (this->headersComplete && !this->bodyComplete)
 		{
 			this->_readBody();
 		}
@@ -90,33 +90,33 @@ namespace sakit
 			index = data.indexOf(HTTP_DELIMITER);
 			if (index < 0)
 			{
-				this->Raw.seek(-data.size(), hstream::END);
+				this->raw.seek(-data.size(), hstream::END);
 				break;
 			}
 			line = data(0, index);
 			data = data(index + 2, -1);
 			if (line == "")
 			{
-				this->Raw.seek(-data.size(), hstream::END);
-				this->HeadersComplete = true;
+				this->raw.seek(-data.size(), hstream::END);
+				this->headersComplete = true;
 				break;
 			}
-			if (this->StatusCode == HttpResponse::UNDEFINED)
+			if (this->statusCode == HttpResponse::UNDEFINED)
 			{
 				index = line.indexOf(' ');
 				if (index >= 0)
 				{
-					this->Protocol = line(0, index);
+					this->protocol = line(0, index);
 					line = line(index + 1, -1);
 					index = line.indexOf(' ');
 					if (index >= 0)
 					{
-						this->StatusCode = (HttpResponse::Code)(int)line(0, index);
-						this->StatusMessage = line(index + 1, -1);
+						this->statusCode = (HttpResponse::Code)(int)line(0, index);
+						this->statusMessage = line(index + 1, -1);
 					}
 					else
 					{
-						this->StatusMessage = line;
+						this->statusMessage = line;
 					}
 				}
 			}
@@ -125,11 +125,11 @@ namespace sakit
 				lineData = line.split(':', 1, true);
 				if (lineData.size() > 1)
 				{
-					this->Headers[lineData[0]] = lineData[1](1, -1); // because there's that space character
+					this->headers[lineData[0]] = lineData[1](1, -1); // because there's that space character
 				}
 				else
 				{
-					this->Headers[lineData[0]] = "";
+					this->headers[lineData[0]] = "";
 				}
 			}
 		}
@@ -137,15 +137,15 @@ namespace sakit
 
 	void HttpResponse::_readBody()
 	{
-		if (this->Headers.tryGet("Transfer-Encoding", "identity") != "chunked")
+		if (this->headers.tryGet("Transfer-Encoding", "identity") != "chunked")
 		{
-			this->chunkSize = (int)this->Headers.tryGet("Content-Length", "0");
-			int written = this->Body.writeRaw(this->Raw);
-			this->Raw.seek(written);
+			this->chunkSize = (int)this->headers.tryGet("Content-Length", "0");
+			int written = this->body.writeRaw(this->raw);
+			this->raw.seek(written);
 			this->chunkRead += written;
 			if (this->chunkSize > 0 && this->chunkSize == this->chunkRead)
 			{
-				this->BodyComplete = true;
+				this->bodyComplete = true;
 			}
 		}
 		else
@@ -156,34 +156,34 @@ namespace sakit
 			{
 				if (this->chunkSize == 0)
 				{
-					offset = _findSequence(this->Raw, (unsigned char*)HTTP_DELIMITER, strlen(HTTP_DELIMITER));
+					offset = _findSequence(this->raw, (unsigned char*)HTTP_DELIMITER, strlen(HTTP_DELIMITER));
 					if (offset < 0)
 					{
 						break; // not enough bytes to read
 					}
-					this->chunkSize = (int)hstr(this->Raw.read(offset)).unhex();
-					this->Raw.seek(2);
+					this->chunkSize = (int)hstr(this->raw.read(offset)).unhex();
+					this->raw.seek(2);
 					if (this->chunkSize == 0)
 					{
-						this->Body.writeRaw(this->Raw);
-						this->Raw.seek(0, hstream::END);
-						this->BodyComplete = true;
+						this->body.writeRaw(this->raw);
+						this->raw.seek(0, hstream::END);
+						this->bodyComplete = true;
 						break;
 					}
 				}
 				if (this->chunkSize > 0)
 				{
 					read = this->chunkSize - this->chunkRead;
-					read = this->Body.writeRaw(this->Raw, read);
-					this->Raw.seek(read);
+					read = this->body.writeRaw(this->raw, read);
+					this->raw.seek(read);
 					this->chunkRead += read;
 					if (this->chunkRead == this->chunkSize)
 					{
 						this->chunkSize = 0;
 						this->chunkRead = 0;
-						this->Raw.seek(2);
+						this->raw.seek(2);
 					}
-					if (this->Raw.eof())
+					if (this->raw.eof())
 					{
 						break;
 					}
@@ -194,9 +194,9 @@ namespace sakit
 
 	hstr HttpResponse::_getRawData()
 	{
-		int size = (int)(this->Raw.size() - this->Raw.position());
+		int size = (int)(this->raw.size() - this->raw.position());
 		char* buffer = new char[size + 1];
-		this->Raw.readRaw(buffer, size);
+		this->raw.readRaw(buffer, size);
 		buffer[size] = '\0';  // classic string terminating 0-character
 		hstr data = hstr(buffer);
 		delete [] buffer;
@@ -206,16 +206,16 @@ namespace sakit
 	HttpResponse* HttpResponse::clone()
 	{
 		HttpResponse* result = new HttpResponse();
-		result->Protocol = this->Protocol;
-		result->StatusCode = this->StatusCode;
-		result->StatusMessage = this->StatusMessage;
-		result->Headers = this->Headers;
-		result->Body = this->Body; // assignment operator is properly implemented for hstream
-		result->Body.rewind();
-		result->Raw = this->Raw; // assignment operator is properly implemented for hstream
-		result->Raw.rewind();
-		result->HeadersComplete = this->HeadersComplete;
-		result->BodyComplete = this->BodyComplete;
+		result->protocol = this->protocol;
+		result->statusCode = this->statusCode;
+		result->statusMessage = this->statusMessage;
+		result->headers = this->headers;
+		result->body = this->body; // assignment operator is properly implemented for hstream
+		result->body.rewind();
+		result->raw = this->raw; // assignment operator is properly implemented for hstream
+		result->raw.rewind();
+		result->headersComplete = this->headersComplete;
+		result->bodyComplete = this->bodyComplete;
 		result->chunkSize = this->chunkSize;
 		result->chunkRead = this->chunkRead;
 		return result;

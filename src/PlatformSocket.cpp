@@ -32,13 +32,13 @@ namespace sakit
 	
 	bool PlatformSocket::receive(HttpResponse* response, hmutex& mutex)
 	{
-		response->Raw.seek(0, hstream::END);
-		int64_t position = response->Raw.position();
+		response->raw.seek(0, hstream::END);
+		int64_t position = response->raw.position();
 		int count = 0;
-		bool result = this->receive(&response->Raw, mutex, count);
+		bool result = this->receive(&response->raw, mutex, count);
 		if (result)
 		{
-			response->Raw.seek(position, hstream::START);
+			response->raw.seek(position, hstream::START);
 			response->parseFromRaw();
 		}
 		return result;

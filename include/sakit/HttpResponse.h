@@ -70,14 +70,14 @@ namespace sakit
 			HTTP_VERSION_NOT_SUPPORTED = 505
 		};
 
-		hstr Protocol;
-		Code StatusCode;
-		hstr StatusMessage;
-		hmap<hstr, hstr> Headers;
-		hstream Body;
-		hstream Raw;
-		bool HeadersComplete;
-		bool BodyComplete;
+		hstr protocol;
+		Code statusCode;
+		hstr statusMessage;
+		hmap<hstr, hstr> headers;
+		hstream body;
+		hstream raw;
+		bool headersComplete;
+		bool bodyComplete;
 
 		HttpResponse();
 		~HttpResponse();

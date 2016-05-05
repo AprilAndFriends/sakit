@@ -81,11 +81,11 @@ namespace sakit
 			{
 				break;
 			}
-			if (this->response->HeadersComplete && this->response->BodyComplete)
+			if (this->response->headersComplete && this->response->bodyComplete)
 			{
 				break;
 			}
-			size = this->response->Raw.size();
+			size = this->response->raw.size();
 			if (lastSize != size)
 			{
 				lastSize = size;
@@ -101,26 +101,26 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= *this->timeout && !this->response->Headers.hasKey("Content-Length") && this->response->HeadersComplete && this->response->Body.size() > 0)
+		if (time >= *this->timeout && !this->response->headers.hasKey("Content-Length") && this->response->headersComplete && this->response->body.size() > 0)
 		{
-			if (!this->response->Headers.hasKey("Content-Length") && this->response->Body.size() > 0)
+			if (!this->response->headers.hasKey("Content-Length") && this->response->body.size() > 0)
 			{
 				// let's say it's complete, we don't know its supposed length anyway
 				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
-				this->response->BodyComplete = true;
+				this->response->bodyComplete = true;
 			}
-			else if ((int)this->response->Headers["Content-Length"] == 0) // empty body
+			else if ((int)this->response->headers["Content-Length"] == 0) // empty body
 			{
-				this->response->BodyComplete = true;
+				this->response->bodyComplete = true;
 			}
 		}
 		hmutex::ScopeLock lock(&this->mutex);
 		// only a response with complete headers and a complete body is considered
-		if (this->response->HeadersComplete && this->response->BodyComplete)
+		if (this->response->headersComplete && this->response->bodyComplete)
 		{
 			this->result = FINISHED;
-			this->response->Raw.rewind();
-			this->response->Body.rewind();
+			this->response->raw.rewind();
+			this->response->body.rewind();
 		}
 		else
 		{

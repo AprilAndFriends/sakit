@@ -85,7 +85,7 @@ namespace sakit
 		this->thread->result = IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
-		if (!this->keepAlive || response->Headers.tryGet("Connection", "") == "close" || !this->socket->isConnected())
+		if (!this->keepAlive || response->headers.tryGet("Connection", "") == "close" || !this->socket->isConnected())
 		{
 			this->_terminateConnection();
 			this->state = IDLE;
@@ -185,9 +185,9 @@ namespace sakit
 			this->state = IDLE;
 			return false;
 		}
-		response->Body.rewind();
-		response->Raw.rewind();
-		if (!this->keepAlive || response->Headers.tryGet("Connection", "") == "close")
+		response->body.rewind();
+		response->raw.rewind();
+		if (!this->keepAlive || response->headers.tryGet("Connection", "") == "close")
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
@@ -198,7 +198,7 @@ namespace sakit
 			lock.acquire(&this->mutexState);
 			this->state = CONNECTED;
 		}
-		return (response->HeadersComplete && response->BodyComplete);
+		return (response->headersComplete && response->bodyComplete);
 	}
 
 	bool HttpSocket::_executeMethod(HttpResponse* response, chstr method, Url& url, chstr customBody, hmap<hstr, hstr>& customHeaders)
@@ -278,11 +278,11 @@ namespace sakit
 			{
 				break;
 			}
-			if (response->HeadersComplete && response->BodyComplete)
+			if (response->headersComplete && response->bodyComplete)
 			{
 				break;
 			}
-			size = response->Raw.size();
+			size = response->raw.size();
 			if (lastSize != size)
 			{
 				lastSize = size;
@@ -298,20 +298,20 @@ namespace sakit
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= this->timeout && response->HeadersComplete)
+		if (time >= this->timeout && response->headersComplete)
 		{
-			if (!response->Headers.hasKey("Content-Length") && response->Body.size() > 0)
+			if (!response->headers.hasKey("Content-Length") && response->body.size() > 0)
 			{
 				// let's say it's complete, we don't know its supposed length anyway
 				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
-				response->BodyComplete = true;
+				response->bodyComplete = true;
 			}
-			else if ((int)response->Headers["Content-Length"] == 0) // empty body
+			else if ((int)response->headers["Content-Length"] == 0) // empty body
 			{
-				response->BodyComplete = true;
+				response->bodyComplete = true;
 			}
 		}
-		return (int)response->Raw.size();
+		return (int)response->raw.size();
 	}
 
 	int HttpSocket::_send(hstream* stream, int count)
