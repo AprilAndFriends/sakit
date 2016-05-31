@@ -529,7 +529,7 @@ namespace sakit
 			{
 				operation->Cancel();
 				PlatformSocket::_awaitAsyncCancel(_asyncState, mutex, _lock);
-				//this->disconnect(); // must disconnect connection, because WinRT terminates the connection upon cancel
+				this->disconnect(); // must disconnect connection, because WinRT terminates the connection upon cancel
 				if (_asyncResultSize == 0)
 				{
 					return true;
@@ -563,7 +563,7 @@ namespace sakit
 				count -= _asyncResultSize;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	void PlatformSocket::UdpReceiver::onReceivedDatagram(DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args)
