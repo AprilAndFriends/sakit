@@ -35,7 +35,7 @@ namespace sakit
 		HL_DEFINE_GET(Host, address, Address);
 		HL_DEFINE_GET(Host, mask, Mask);
 		HL_DEFINE_GET(Host, gateway, Gateway);
-		Host getBroadcastIp();
+		Host getBroadcastIp() const;
 
 	protected:
 		int comboIndex;

@@ -63,6 +63,7 @@ extern int h_errno;
 #endif
 
 #include <hltypes/hlog.h>
+#include <hltypes/hltypesUtil.h>
 #include <hltypes/hstream.h>
 #include <hltypes/hstring.h>
 
@@ -74,11 +75,6 @@ extern int h_errno;
 
 namespace sakit
 {
-	static Host _map_adapterHosts(NetworkAdapter adapter)
-	{
-		return adapter.getBroadcastIp();
-	}
-
 	extern int bufferSize;
 	// even though by standard definition these functions should be thread-safe, practice has shown otherwise
 	static hmutex mutexGetaddrinfo;
@@ -618,7 +614,8 @@ namespace sakit
 		int maxResult = 0;
 		socklen_t addrSize = sizeof(sockaddr_in);
 		Host broadcastIp;
-		harray<Host> ips = adapters.mapped(&_map_adapterHosts);
+		HL_LAMBDA_CLASS(_adapterHosts, Host, ((NetworkAdapter const& adapter) { return adapter.getBroadcastIp(); }));
+		harray<Host> ips = adapters.mapped(&_adapterHosts::lambda);
 		ips.removeDuplicates(); // to avoid broadcasting on the same IP twice, just to be sure
 		foreach (Host, it, ips)
 		{

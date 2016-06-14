@@ -43,7 +43,7 @@ namespace sakit
 	{
 	}
 
-	bool Host::isIp()
+	bool Host::isIp() const
 	{
 		harray<hstr> fragments = this->address.split('.');
 		if (fragments.size() != 4)

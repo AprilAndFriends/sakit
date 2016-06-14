@@ -27,7 +27,7 @@ namespace sakit
 	{
 	}
 
-	Host NetworkAdapter::getBroadcastIp()
+	Host NetworkAdapter::getBroadcastIp() const
 	{
 		if (!this->address.isIp())
 		{

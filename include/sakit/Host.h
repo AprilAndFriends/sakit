@@ -30,7 +30,7 @@ namespace sakit
 		Host(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 		~Host();
 
-		bool isIp();
+		bool isIp() const;
 
 		hstr toString() const;
 
