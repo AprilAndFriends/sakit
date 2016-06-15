@@ -50,15 +50,20 @@ namespace sakit
 
 	bool PlatformSocket::_awaitAsync(State& result, hmutex& mutex, hmutex::ScopeLock& lock)
 	{
-		// TODOsock - add timeouts from settings?
+		// if WinRT socket doesn't react in X seconds, something could be wrong
+		const int timeout = (int)(sakit::getGlobalTimeout() * 1000);
 		int i = 0;
 		lock.acquire(&mutex);
-		while (result != FINISHED)
+		while (result != FINISHED && i < timeout)
 		{
 			lock.release();
 			hthread::sleep(1.0f);
 			++i;
 			lock.acquire(&mutex);
+		}
+		if (i >= timeout)
+		{
+			result = FAILED;
 		}
 		lock.release();
 		return (result != FAILED);
@@ -70,7 +75,7 @@ namespace sakit
 		while (result != FINISHED)
 		{
 			lock.release();
-			hthread::sleep(1.0f);
+			hthread::sleep(0.01f);
 			lock.acquire(&mutex);
 		}
 		lock.release();
@@ -529,7 +534,7 @@ namespace sakit
 			{
 				operation->Cancel();
 				PlatformSocket::_awaitAsyncCancel(_asyncState, mutex, _lock);
-				this->disconnect(); // must disconnect connection, because WinRT terminates the connection upon cancel
+				// don't disconnect here, a timeout could have caused the operation to abort
 				if (_asyncResultSize == 0)
 				{
 					return true;
@@ -541,29 +546,30 @@ namespace sakit
 			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
 			return false;
 		}
-		if (_asyncResultSize > 0)
+		if (_asyncResultSize <= 0)
 		{
-			Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
-			DataReader^ reader = DataReader::FromBuffer(_buffer);
-			try
-			{
-				reader->ReadBytes(_data);
-			}
-			catch (Platform::OutOfBoundsException^ e)
-			{
-				return false;
-			}
-			reader->DetachBuffer();
-			_lock.acquire(&mutex);
-			stream->writeRaw(_data->Data, _data->Length);
-			_asyncResultSize = (int)_data->Length;
-			_lock.release();
-			if (count > 0) // if don't read everything
-			{
-				count -= _asyncResultSize;
-			}
+			return true;
 		}
-		return true;
+		Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
+		DataReader^ reader = DataReader::FromBuffer(_buffer);
+		try
+		{
+			reader->ReadBytes(_data);
+		}
+		catch (Platform::OutOfBoundsException^ e)
+		{
+			return false;
+		}
+		reader->DetachBuffer();
+		_lock.acquire(&mutex);
+		stream->writeRaw(_data->Data, _data->Length);
+		_asyncResultSize = (int)_data->Length;
+		_lock.release();
+		if (count > 0) // if don't read everything
+		{
+			count -= _asyncResultSize;
+		}
+		return false; // all data has been read, that's how WinRT works
 	}
 
 	void PlatformSocket::UdpReceiver::onReceivedDatagram(DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args)
