@@ -34,7 +34,7 @@ namespace sakit
 		int count = (int)this->stream->size();
 		int sent = 0;
 		hmutex::ScopeLock lock;
-		while (this->executing)
+		while (this->isRunning() && this->executing)
 		{
 			sent = 0;
 			if (!this->socket->send(this->stream, count, sent))

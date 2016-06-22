@@ -41,7 +41,7 @@ namespace sakit
 		unsigned short remotePort = 0;
 		hstream* stream = new hstream();
 		hmutex::ScopeLock lock;
-		while (this->executing)
+		while (this->isRunning() && this->executing)
 		{
 			if (this->socket->receiveFrom(stream, remoteHost, remotePort))
 			{
