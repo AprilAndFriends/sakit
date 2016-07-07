@@ -34,7 +34,7 @@ namespace sakit
 		~UdpSocket();
 
 		HL_DEFINE_GET2(harray<std::pair, Host, Host>, multicastHosts, MulticastHosts);
-		bool hasDestination();
+		bool hasDestination() const;
 
 		bool setMulticastInterface(Host interfaceHost);
 		bool setMulticastTtl(int value);

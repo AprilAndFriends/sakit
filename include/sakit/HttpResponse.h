@@ -85,7 +85,7 @@ namespace sakit
 		void clear();
 		void parseFromRaw();
 
-		HttpResponse* clone();
+		HttpResponse* clone() const;
 
 	protected:
 		int chunkSize;

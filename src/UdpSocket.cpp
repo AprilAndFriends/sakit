@@ -40,7 +40,7 @@ namespace sakit
 		delete this->broadcaster;
 	}
 
-	bool UdpSocket::hasDestination()
+	bool UdpSocket::hasDestination() const
 	{
 		return this->socket->isConnected();
 	}

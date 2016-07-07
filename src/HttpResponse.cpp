@@ -203,7 +203,7 @@ namespace sakit
 		return data;
 	}
 
-	HttpResponse* HttpResponse::clone()
+	HttpResponse* HttpResponse::clone() const
 	{
 		HttpResponse* result = new HttpResponse();
 		result->protocol = this->protocol;
