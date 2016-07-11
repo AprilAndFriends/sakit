@@ -80,23 +80,23 @@ namespace sakit
 		bool executeConnectAsync(Url url, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
 
 		// these are used when a persistent connection is available
-		bool executeOptions(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeGet(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeHead(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executePost(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executePut(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeDelete(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeTrace(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeConnect(HttpResponse* response, chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeOptions(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeGet(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeHead(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executePost(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executePut(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeDelete(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeTrace(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeConnect(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
 
-		bool executeOptionsAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeGetAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeHeadAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executePostAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executePutAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeDeleteAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeTraceAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
-		bool executeConnectAsync(chstr customBody = "", hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeOptionsAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeGetAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeHeadAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executePostAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executePutAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeDeleteAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeTraceAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
+		bool executeConnectAsync(chstr customBody, hmap<hstr, hstr> customHeaders = (hmap<hstr, hstr>()));
 
 		static unsigned short DefaultPort;
 

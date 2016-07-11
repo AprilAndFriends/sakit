@@ -85,6 +85,7 @@ namespace sakit
 		this->thread->result = IDLE;
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
+		Url url = this->url; // _terminateConnection() deletes this, but it's needed for the delegate call ahead
 		if (!this->keepAlive || response->headers.tryGet("Connection", "") == "close" || !this->socket->isConnected())
 		{
 			this->_terminateConnection();
@@ -98,9 +99,9 @@ namespace sakit
 		lock.release();
 		switch (result)
 		{
-		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, this->url);	break;
-		case FAILED:	this->socketDelegate->onExecuteFailed(this, response, this->url);		break;
-		default:																				break;
+		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, url);	break;
+		case FAILED:	this->socketDelegate->onExecuteFailed(this, response, url);		break;
+		default:																		break;
 		}
 		delete response;
 	}
@@ -215,7 +216,7 @@ namespace sakit
 	{
 		if (!this->isConnected())
 		{
-			hlog::warn(logTag, "Cannot execute, there is no existing connection!");
+			hlog::warn(logTag, "Cannot execute, there is no existing persistent connection!");
 			return false;
 		}
 		return this->_executeMethodInternal(response, method, this->url, customBody, customHeaders);

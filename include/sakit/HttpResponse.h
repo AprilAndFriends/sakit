@@ -91,7 +91,7 @@ namespace sakit
 		int chunkSize;
 		int chunkRead;
 
-		hstr _getRawData();
+		void _getRawData(hstr& data, int& size);
 		void _readHeaders();
 		void _readBody();
 

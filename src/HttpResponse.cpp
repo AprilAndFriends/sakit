@@ -81,8 +81,11 @@ namespace sakit
 
 	void HttpResponse::_readHeaders()
 	{
-		hstr data = this->_getRawData();
+		hstr data;
+		int size = 0;
+		this->_getRawData(data, size);
 		int index = 0;
+		int read = 0;
 		hstr line;
 		harray<hstr> lineData;
 		while (true)
@@ -90,14 +93,15 @@ namespace sakit
 			index = data.indexOf(HTTP_DELIMITER);
 			if (index < 0)
 			{
-				this->raw.seek(-data.size(), hstream::END);
+				this->raw.seek(read - size, hstream::END);
 				break;
 			}
-			line = data(0, index);
-			data = data(index + 2, -1);
+			line = (index > 0 ? data(0, index) : "");
+			data = data(index + 2, -1); // +2 is HTTP_DELIMITER's size
+			read += index + 2;
 			if (line == "")
 			{
-				this->raw.seek(-data.size(), hstream::END);
+				this->raw.seek(read - size, hstream::END);
 				this->headersComplete = true;
 				break;
 			}
@@ -192,15 +196,14 @@ namespace sakit
 		}
 	}
 
-	hstr HttpResponse::_getRawData()
+	void HttpResponse::_getRawData(hstr& data, int& size)
 	{
-		int size = (int)(this->raw.size() - this->raw.position());
+		size = (int)(this->raw.size() - this->raw.position());
 		char* buffer = new char[size + 1];
 		this->raw.readRaw(buffer, size);
-		buffer[size] = '\0';  // classic string terminating 0-character
-		hstr data = hstr(buffer);
+		buffer[size] = '\0'; // classic string terminating 0-character
+		data = hstr(buffer);
 		delete [] buffer;
-		return data;
 	}
 
 	HttpResponse* HttpResponse::clone() const
