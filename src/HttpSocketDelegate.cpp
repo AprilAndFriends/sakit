@@ -18,6 +18,10 @@ namespace sakit
 	{
 	}
 
+	void HttpSocketDelegate::onExecuteProgress(HttpSocket* socket, HttpResponse* response, Url url)
+	{
+	}
+
 	void HttpSocketDelegate::onExecuteCompleted(HttpSocket* socket, HttpResponse* response, Url url)
 	{
 	}

@@ -35,11 +35,29 @@ namespace sakit
 
 	Url::Url(chstr url) : valid(false), port(0), queryDelimiter('&')
 	{
+		this->set(url);
+	}
+
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), port(0), queryDelimiter('&')
+	{
+		this->set(host, path, query, fragment);
+	}
+
+	void Url::set(chstr url)
+	{
 		if (url == "")
 		{
-			hlog::warn(logTag, "URL cannot be empty!");
+			hlog::warn(logTag, "URL cannot be empty! Ignoring call.");
 			return;
 		}
+		// reset first
+		this->valid = false;
+		this->port = 0;
+		this->path = "";
+		this->query.clear();
+		this->fragment = "";
+		this->queryDelimiter = '&';
+		// set new
 		hstr newUrl = url;
 		if (url.startsWith(HTTP_SCHEME))
 		{
@@ -72,8 +90,13 @@ namespace sakit
 		this->_checkValues(query);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), port(0), queryDelimiter('&')
+	void Url::set(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
 	{
+		// reset
+		this->valid = false;
+		this->port = 0;
+		this->queryDelimiter = '&';
+		// set new
 		this->host = host;
 		this->path = path;
 		this->query = query;

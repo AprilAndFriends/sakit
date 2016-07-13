@@ -30,6 +30,7 @@ namespace sakit
 		HttpSocketDelegate();
 		virtual ~HttpSocketDelegate();
 
+		virtual void onExecuteProgress(HttpSocket* socket, HttpResponse* response, Url url);
 		virtual void onExecuteCompleted(HttpSocket* socket, HttpResponse* response, Url url);
 		virtual void onExecuteFailed(HttpSocket* socket, HttpResponse* response, Url url);
 

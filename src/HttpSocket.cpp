@@ -19,32 +19,42 @@
 #include "sakitUtil.h"
 #include "State.h"
 
+#define HTTP_DELIMITER "\r\n"
+#define REQUEST_OPTIONS "OPTIONS"
+#define REQUEST_GET "GET"
+#define REQUEST_HEAD "HEAD"
+#define REQUEST_POST "POST"
+#define REQUEST_PUT "PUT"
+#define REQUEST_DELETE "DELETE"
+#define REQUEST_TRACE "TRACE"
+#define REQUEST_CONNECT "CONNECT"
+
 #define NORMAL_EXECUTE(name, constant) \
 	bool HttpSocket::execute ## name(HttpResponse* response, Url url, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, url, customBody, customHeaders); \
+		return this->_executeMethod(response, REQUEST_ ## constant, url, customBody, customHeaders); \
 	}
 #define NORMAL_EXECUTE_ASYNC(name, constant) \
 	bool HttpSocket::execute ## name ## Async(Url url, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, url, customBody, customHeaders); \
+		return this->_executeMethodAsync(REQUEST_ ## constant, url, customBody, customHeaders); \
 	}
 #define CONNECTED_EXECUTE(name, constant) \
 	bool HttpSocket::execute ## name(HttpResponse* response, chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethod(response, SAKIT_HTTP_REQUEST_ ## constant, customBody, customHeaders); \
+		return this->_executeMethod(response, REQUEST_ ## constant, customBody, customHeaders); \
 	}
 #define CONNECTED_EXECUTE_ASYNC(name, constant) \
 	bool HttpSocket::execute ## name ## Async(chstr customBody, hmap<hstr, hstr> customHeaders) \
 	{ \
-		return this->_executeMethodAsync(SAKIT_HTTP_REQUEST_ ## constant, customBody, customHeaders); \
+		return this->_executeMethodAsync(REQUEST_ ## constant, customBody, customHeaders); \
 	}
 
 namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
 
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false), reportProgress(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;
@@ -80,6 +90,16 @@ namespace sakit
 		State result = this->thread->result;
 		if (result == RUNNING || result == IDLE)
 		{
+			if (this->reportProgress && this->thread->response->hasNewData())
+			{
+				HttpResponse* response = this->thread->response->clone();
+				this->thread->response->consumeNewData();
+				Url url = this->url;
+				lockThread.release();
+				lock.release();
+				this->socketDelegate->onExecuteProgress(this, response, url);
+				delete response;
+			}
 			return;
 		}
 		this->thread->result = IDLE;
@@ -97,6 +117,11 @@ namespace sakit
 		}
 		lockThread.release();
 		lock.release();
+		// some final data might be available
+		if (this->reportProgress && response->hasNewData())
+		{
+			this->socketDelegate->onExecuteProgress(this, response, url);
+		}
 		switch (result)
 		{
 		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, url);	break;
@@ -326,6 +351,33 @@ namespace sakit
 		return false;
 	}
 
+	bool HttpSocket::abort()
+	{
+		hmutex::ScopeLock lock(&this->mutexState);
+		if (!this->_canAbort(this->state))
+		{
+			return false;
+		}
+		this->state = DISCONNECTING;
+		lock.release();
+		bool result = this->socket->disconnect();
+		lock.acquire(&this->mutexState);
+		if (result)
+		{
+			this->remoteHost = Host();
+			this->remotePort = 0;
+			this->localHost = Host();
+			this->localPort = 0;
+			this->state = IDLE;
+			this->url = Url();
+		}
+		else
+		{
+			this->state = state;
+		}
+		return result;
+	}
+
 	void HttpSocket::_terminateConnection()
 	{
 		this->socket->disconnect();
@@ -340,25 +392,32 @@ namespace sakit
 		return _checkState(state, allowed, "execute");
 	}
 
+	bool HttpSocket::_canAbort(State state)
+	{
+		harray<State> allowed;
+		allowed += RUNNING;
+		return _checkState(state, allowed, "abort");
+	}
+
 	hstr HttpSocket::_processRequest(chstr method, Url url, chstr customBody, hmap<hstr, hstr> customHeaders)
 	{
 		this->url = url;
 		this->remoteHost = Host(this->url.getHost());
-		customHeaders["Host"] = this->remoteHost.toString();
-		customHeaders["Connection"] = (this->keepAlive ? "keep-alive" : "close");
-		if (!customHeaders.hasKey("Accept-Encoding"))
+		customHeaders[SAKIT_HTTP_REQUEST_HEADER_HOST] = this->remoteHost.toString();
+		customHeaders[SAKIT_HTTP_REQUEST_HEADER_CONNECTION] = (this->keepAlive ? "keep-alive" : "close");
+		if (!customHeaders.hasKey(SAKIT_HTTP_REQUEST_HEADER_ACCEPT_ENCODING))
 		{
-			customHeaders["Accept-Encoding"] = "identity";
+			customHeaders[SAKIT_HTTP_REQUEST_HEADER_ACCEPT_ENCODING] = "identity";
 		}
-		if (!customHeaders.hasKey("Content-Type"))
+		if (!customHeaders.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_TYPE))
 		{
-			customHeaders["Content-Type"] = "application/x-www-form-urlencoded";
+			customHeaders[SAKIT_HTTP_REQUEST_HEADER_CONTENT_TYPE] = "application/x-www-form-urlencoded";
 		}
-		if (!customHeaders.hasKey("Accept"))
+		if (!customHeaders.hasKey(SAKIT_HTTP_REQUEST_HEADER_ACCEPT))
 		{
-			customHeaders["Accept"] = "*/*";
+			customHeaders[SAKIT_HTTP_REQUEST_HEADER_ACCEPT] = "*/*";
 		}
-		bool urlEncoded = (customBody == "" && (method == SAKIT_HTTP_REQUEST_GET || method == SAKIT_HTTP_REQUEST_HEAD || method == SAKIT_HTTP_REQUEST_OPTIONS));
+		bool urlEncoded = (customBody == "" && (method == REQUEST_GET || method == REQUEST_HEAD || method == REQUEST_OPTIONS));
 		hstr absolutePath;
 		hstr body = customBody;
 		if (!urlEncoded)
@@ -370,7 +429,7 @@ namespace sakit
 			}
 			if (body != "")
 			{
-				customHeaders["Content-Length"] = hstr(body.size());
+				customHeaders[SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH] = hstr(body.size());
 			}
 		}
 		else
@@ -378,15 +437,15 @@ namespace sakit
 			absolutePath = this->url.toString(false);
 		}
 		hstr request;
-		request += method + " " + absolutePath + " " + this->_makeProtocol() + SAKIT_HTTP_LINE_ENDING;
+		request += method + " " + absolutePath + " " + this->_makeProtocol() + HTTP_DELIMITER;
 		foreach_m (hstr, it, customHeaders)
 		{
-			request += it->first + ": " + it->second + SAKIT_HTTP_LINE_ENDING;
+			request += it->first + ": " + it->second + HTTP_DELIMITER;
 		}
-		request += SAKIT_HTTP_LINE_ENDING;
+		request += HTTP_DELIMITER;
 		if (body != "")
 		{
-			request += body + SAKIT_HTTP_LINE_ENDING;
+			request += body + HTTP_DELIMITER;
 		}
 		hlog::debug(logTag, "Processed request generated:\n" + request);
 		return request;

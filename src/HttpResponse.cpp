@@ -44,7 +44,7 @@ namespace sakit
 		return -1;
 	}
 
-	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0)
+	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0)
 	{
 		this->clear();
 	}
@@ -65,6 +65,7 @@ namespace sakit
 		this->bodyComplete = false;
 		this->chunkSize = 0;
 		this->chunkRead = 0;
+		this->newDataSize = 0;
 	}
 
 	void HttpResponse::parseFromRaw()
@@ -77,6 +78,22 @@ namespace sakit
 		{
 			this->_readBody();
 		}
+	}
+
+	bool HttpResponse::hasNewData()
+	{
+		return (this->newDataSize > 0);
+	}
+
+	int HttpResponse::consumeNewData()
+	{
+		if (this->newDataSize > 0)
+		{
+			int result = this->newDataSize;
+			this->newDataSize = 0;
+			return result;
+		}
+		return 0;
 	}
 
 	void HttpResponse::_readHeaders()
@@ -141,12 +158,16 @@ namespace sakit
 
 	void HttpResponse::_readBody()
 	{
-		if (this->headers.tryGet("Transfer-Encoding", "identity") != "chunked")
+		if (this->headers.tryGet(SAKIT_HTTP_RESPONSE_HEADER_TRANSFER_ENCODING, "identity") != "chunked")
 		{
-			this->chunkSize = (int)this->headers.tryGet("Content-Length", "0");
+			this->chunkSize = (int)this->headers.tryGet(SAKIT_HTTP_RESPONSE_HEADER_CONTENT_LENGTH, "0");
 			int written = this->body.writeRaw(this->raw);
 			this->raw.seek(written);
 			this->chunkRead += written;
+			if (written > 0)
+			{
+				this->newDataSize += written;
+			}
 			if (this->chunkSize > 0 && this->chunkSize == this->chunkRead)
 			{
 				this->bodyComplete = true;
@@ -181,6 +202,7 @@ namespace sakit
 					read = this->body.writeRaw(this->raw, read);
 					this->raw.seek(read);
 					this->chunkRead += read;
+					this->newDataSize += read;
 					if (this->chunkRead == this->chunkSize)
 					{
 						this->chunkSize = 0;
@@ -221,6 +243,7 @@ namespace sakit
 		result->bodyComplete = this->bodyComplete;
 		result->chunkSize = this->chunkSize;
 		result->chunkRead = this->chunkRead;
+		result->newDataSize = this->newDataSize;
 		return result;
 	}
 
