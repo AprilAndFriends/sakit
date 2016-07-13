@@ -685,7 +685,7 @@ void _testHttpSocket()
 	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
-	headers["User-Agent"] = "SAKit Demo Simple";
+	headers[SAKIT_HTTP_REQUEST_HEADER_USER_AGENT] = "SAKit Demo Simple";
 	/*
 	if (client->executeGet(&response, url, headers))
 	{
@@ -710,7 +710,7 @@ void _testAsyncHttpSocket()
 	sakit::Url url("http://en.wikipedia.org/wiki/C++#Polymorphism");
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
-	headers["User-Agent"] = "SAKit Demo Simple";
+	headers[SAKIT_HTTP_REQUEST_HEADER_USER_AGENT] = "SAKit Demo Simple";
 	/*
 	if (client->executeGetAsync(url, headers))
 	{
