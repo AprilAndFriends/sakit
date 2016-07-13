@@ -49,7 +49,7 @@ void _printReceived(hstream* stream)
 	char c;
 	while (!stream->eof())
 	{
-		stream->read_raw(&c, 1);
+		stream->readRaw(&c, 1);
 		string += c;
 		hex += hsprintf("%02X", c);
 	}
@@ -67,53 +67,53 @@ public:
 
 	void onConnected(sakit::Connector* connector, sakit::Host remoteHost, unsigned short remotePort)
 	{
-		hlog::writef(LOG_TAG, "- %s connected to '%s:%d'", this->name.c_str(), remoteHost.toString().c_str(), remotePort);
+		hlog::writef(LOG_TAG, "- %s connected to '%s:%d'", this->name.cStr(), remoteHost.toString().cStr(), remotePort);
 	}
 
 	void onDisconnected(sakit::Connector* connector, sakit::Host remoteHost, unsigned short remotePort)
 	{
-		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.c_str(), remoteHost.toString().c_str(), remotePort);
+		hlog::writef(LOG_TAG, "- %s disconnected from '%s:%d'", this->name.cStr(), remoteHost.toString().cStr(), remotePort);
 	}
 
 	void onConnectFailed(sakit::Connector* connector, sakit::Host remoteHost, unsigned short remotePort)
 	{
-		hlog::errorf(LOG_TAG, "- %s connect failed to '%s:%d'", this->name.c_str(), remoteHost.toString().c_str(), remotePort);
+		hlog::errorf(LOG_TAG, "- %s connect failed to '%s:%d'", this->name.cStr(), remoteHost.toString().cStr(), remotePort);
 	}
 
 	void onDisconnectFailed(sakit::Connector* connector, sakit::Host remoteHost, unsigned short remotePort)
 	{
-		hlog::errorf(LOG_TAG, "- %s disconnect failed from '%s:%d'", this->name.c_str(), remoteHost.toString().c_str(), remotePort);
+		hlog::errorf(LOG_TAG, "- %s disconnect failed from '%s:%d'", this->name.cStr(), remoteHost.toString().cStr(), remotePort);
 	}
 
 	void onSent(sakit::Socket* socket, int bytes)
 	{
-		hlog::writef(LOG_TAG, "- %s sent: %d", this->name.c_str(), bytes);
+		hlog::writef(LOG_TAG, "- %s sent: %d", this->name.cStr(), bytes);
 	}
 
 	void onSendFinished(sakit::Socket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s send finished", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s send finished", this->name.cStr());
 	}
 
 	void onSendFailed(sakit::Socket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s send failed", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s send failed", this->name.cStr());
 	}
 
 	void onReceived(sakit::Socket* socket, hstream* stream)
 	{
-		hlog::writef(LOG_TAG, "- %s received: %d", this->name.c_str(), stream->size());
+		hlog::writef(LOG_TAG, "- %s received: %d", this->name.cStr(), stream->size());
 		_printReceived(stream);
 	}
 
 	void onReceiveFinished(sakit::TcpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s receive finished", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s receive finished", this->name.cStr());
 	}
 
 	void onReceiveFailed(sakit::TcpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s receive failed", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s receive failed", this->name.cStr());
 	}
 
 protected:
@@ -131,38 +131,38 @@ public:
 
 	void onSent(sakit::Socket* socket, int bytes)
 	{
-		hlog::writef(LOG_TAG, "- %s sent %d bytes ", this->name.c_str(), bytes);
+		hlog::writef(LOG_TAG, "- %s sent %d bytes ", this->name.cStr(), bytes);
 	}
 
 	void onSendFinished(sakit::Socket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s send finished", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s send finished", this->name.cStr());
 	}
 
 	void onSendFailed(sakit::Socket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s send failed", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s send failed", this->name.cStr());
 	}
 
 	void onReceived(sakit::UdpSocket* socket, sakit::Host remoteHost, unsigned short port, hstream* stream)
 	{
-		hlog::writef(LOG_TAG, "- %s received %d bytes (from '%s:%d'): %d", this->name.c_str(), stream->size(), remoteHost.toString().c_str(), port, stream->size());
+		hlog::writef(LOG_TAG, "- %s received %d bytes (from '%s:%d'): %d", this->name.cStr(), stream->size(), remoteHost.toString().cStr(), port, stream->size());
 		_printReceived(stream);
 	}
 
 	void onReceiveFinished(sakit::Socket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s receive finished", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s receive finished", this->name.cStr());
 	}
 
 	void onBroadcastFinished(sakit::UdpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s broadcast finished", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s broadcast finished", this->name.cStr());
 	}
 
 	void onBroadcastFailed(sakit::UdpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- %s broadcast failed", this->name.c_str());
+		hlog::writef(LOG_TAG, "- %s broadcast failed", this->name.cStr());
 	}
 
 protected:
@@ -178,22 +178,22 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 {
 	void onBound(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", localHost.toString().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onBindFailed(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", localHost.toString().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onUnbound(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", localHost.toString().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onUnbindFailed(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", localHost.toString().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onStopped(sakit::Server* server)
@@ -208,8 +208,8 @@ class TcpServerDelegate : public sakit::TcpServerDelegate
 
 	void onAccepted(sakit::TcpServer* server, sakit::TcpSocket* socket)
 	{
-		hlog::writef(LOG_TAG, "- SERVER '%s:%d' accepted connection '%s:%d'", server->getLocalHost().toString().c_str(),
-			server->getLocalPort(), socket->getRemoteHost().toString().c_str(), socket->getRemotePort());
+		hlog::writef(LOG_TAG, "- SERVER '%s:%d' accepted connection '%s:%d'", server->getLocalHost().toString().cStr(),
+			server->getLocalPort(), socket->getRemoteHost().toString().cStr(), socket->getRemotePort());
 		hstream stream;
 		socket->receive(&stream, 12); // receive 12 bytes max
 		stream.rewind();
@@ -225,22 +225,22 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 {
 	void onBound(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", localHost.toString().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER bound to '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onBindFailed(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", localHost.toString().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER bind failed to '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onUnbound(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", localHost.toString().c_str(), port);
+		hlog::writef(LOG_TAG, "- SERVER unbound from '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onUnbindFailed(sakit::Binder* binder, sakit::Host localHost, unsigned short port)
 	{
-		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", localHost.toString().c_str(), port);
+		hlog::errorf(LOG_TAG, "- SERVER unbind failed from '%s:%d'", localHost.toString().cStr(), port);
 	}
 
 	void onStopped(sakit::Server* server)
@@ -255,15 +255,15 @@ class UdpServerDelegate : public sakit::UdpServerDelegate
 
 	void onReceived(sakit::UdpServer* server, sakit::Host remoteHost, unsigned short remotePort, hstream* stream)
 	{
-		hlog::writef(LOG_TAG, "- SERVER '%s:%d' received data (from '%s:%d'): %d", server->getLocalHost().toString().c_str(), server->getLocalPort(), remoteHost.toString().c_str(), remotePort, stream->size());
+		hlog::writef(LOG_TAG, "- SERVER '%s:%d' received data (from '%s:%d'): %d", server->getLocalHost().toString().cStr(), server->getLocalPort(), remoteHost.toString().cStr(), remotePort, stream->size());
 		_printReceived(stream);
 		sakit::UdpSocket* udpSocket = new sakit::UdpSocket(&udpClientDelegate);
 		if (udpSocket->bind(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER_ANSWER))
 		{
-			hlog::writef(LOG_TAG, "UDP-Socket bound to '%s:%d'", udpSocket->getLocalHost().toString().c_str(), udpSocket->getLocalPort());
+			hlog::writef(LOG_TAG, "UDP-Socket bound to '%s:%d'", udpSocket->getLocalHost().toString().cStr(), udpSocket->getLocalPort());
 			if (udpSocket->setDestination(remoteHost, remotePort))
 			{
-				hlog::writef(LOG_TAG, "UDP-Socket connected to '%s:%d'", udpSocket->getRemoteHost().toString().c_str(), udpSocket->getRemotePort());
+				hlog::writef(LOG_TAG, "UDP-Socket connected to '%s:%d'", udpSocket->getRemoteHost().toString().cStr(), udpSocket->getRemotePort());
 				int sent = udpSocket->send("Hello.");
 				hlog::write(LOG_TAG, "UDP-SOCKET sent: " + hstr(sent));
 			}
@@ -290,8 +290,8 @@ public:
 
 	void onExecuteCompleted(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url)
 	{
-		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response->Raw.size(), url.getHost().c_str());
-		hlog::write(LOG_TAG, response->Raw.read(1500) + "\n...");
+		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response->raw.size(), url.getHost().cStr());
+		hlog::write(LOG_TAG, response->raw.read(1500) + "\n...");
 	}
 
 	void onExecuteFailed(sakit::HttpSocket* socket, sakit::HttpResponse* response, sakit::Url url)
@@ -320,7 +320,7 @@ void _testAsyncTcpServer()
 				sakit::TcpSocket* client = new sakit::TcpSocket(&tcpClientDelegate);
 				if (client->connect(sakit::Host::Localhost, TCP_PORT_ASYNC_SERVER))
 				{
-					hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
+					hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().cStr(), client->getRemotePort());
 					hstream stream;
 					char data[12] = "Hi there.\0g";
 					stream.writeRaw(data, 12);
@@ -370,7 +370,7 @@ void _testAsyncTcpClient()
 	server->setTimeout(1.0f);
 	if (server->bind(sakit::Host::Localhost, TCP_PORT_SYNC_SERVER))
 	{
-		hlog::writef(LOG_TAG, "Server bound to '%s:%d'", server->getLocalHost().toString().c_str(), server->getLocalPort());
+		hlog::writef(LOG_TAG, "Server bound to '%s:%d'", server->getLocalHost().toString().cStr(), server->getLocalPort());
 		sakit::TcpSocket* client = new sakit::TcpSocket(&tcpClientDelegate);
 		if (client->connectAsync(sakit::Host::Localhost, TCP_PORT_SYNC_SERVER))
 		{
@@ -457,10 +457,10 @@ void _testAsyncUdpServer()
 				sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
 				if (client->bind(sakit::Host::Localhost, UDP_PORT_SYNC_CLIENT))
 				{
-					hlog::writef(LOG_TAG, "Bound to '%s:%d'", client->getLocalHost().toString().c_str(), client->getLocalPort());
+					hlog::writef(LOG_TAG, "Bound to '%s:%d'", client->getLocalHost().toString().cStr(), client->getLocalPort());
 					if (client->setDestination(sakit::Host::Localhost, UDP_PORT_ASYNC_SERVER))
 					{
-						hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().c_str(), client->getRemotePort());
+						hlog::writef(LOG_TAG, "Connected to '%s:%d'", client->getRemoteHost().toString().cStr(), client->getRemotePort());
 						hstream stream;
 						char data[12] = "Hi there.\0g";
 						stream.writeRaw(data, 12);
@@ -477,7 +477,7 @@ void _testAsyncUdpServer()
 						unsigned short remotePort = 0;
 						client->receive(&stream, remoteHost, remotePort); // receive all there is
 						stream.rewind();
-						hlog::writef(LOG_TAG, "Client received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+						hlog::writef(LOG_TAG, "Client received (from '%s:%d'): %d", remoteHost.toString().cStr(), remotePort, stream.size());
 						_printReceived(&stream);
 						hlog::write(LOG_TAG, "Disconnected.");
 					}
@@ -512,7 +512,7 @@ void _testAsyncUdpClient()
 	sakit::UdpServer* server = new sakit::UdpServer(&udpServerDelegate);
 	if (server->bind(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER))
 	{
-		hlog::writef(LOG_TAG, "Server bound to '%s:%d'", server->getLocalHost().toString().c_str(), server->getLocalPort());
+		hlog::writef(LOG_TAG, "Server bound to '%s:%d'", server->getLocalHost().toString().cStr(), server->getLocalPort());
 		sakit::UdpSocket* client = new sakit::UdpSocket(&udpClientDelegate);
 		if (client->bindAsync(sakit::Host::Localhost, UDP_PORT_ASYNC_CLIENT))
 		{
@@ -521,7 +521,7 @@ void _testAsyncUdpClient()
 				sakit::update();
 				hthread::sleep(100.0f);
 			} while (client->isBinding());
-			hlog::writef(LOG_TAG, "CLIENT bound to '%s:%d'", client->getLocalHost().toString().c_str(), client->getLocalPort());
+			hlog::writef(LOG_TAG, "CLIENT bound to '%s:%d'", client->getLocalHost().toString().cStr(), client->getLocalPort());
 			if (client->setDestination(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER)) // there is no async destination setting, it's not needed
 			{
 				hstream stream;
@@ -541,12 +541,12 @@ void _testAsyncUdpClient()
 				if (server->receive(&stream, remoteHost, remotePort))
 				{
 					stream.rewind();
-					hlog::writef(LOG_TAG, "RECEIVED received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+					hlog::writef(LOG_TAG, "RECEIVED received (from '%s:%d'): %d", remoteHost.toString().cStr(), remotePort, stream.size());
 					_printReceived(&stream);
 					sakit::UdpSocket* received = new sakit::UdpSocket(&udpClientDelegate);
 					if (received->bind(sakit::Host::Localhost, UDP_PORT_SYNC_SERVER_ANSWER))
 					{
-						hlog::writef(LOG_TAG, "RECEIVED bound to '%s:%d'", received->getLocalHost().toString().c_str(), received->getLocalPort());
+						hlog::writef(LOG_TAG, "RECEIVED bound to '%s:%d'", received->getLocalHost().toString().cStr(), received->getLocalPort());
 						if (received->setDestination(remoteHost, remotePort))
 						{
 							int sent = received->send("Hello.");
@@ -617,35 +617,35 @@ void _testUdpMulticast()
 	sakit::UdpSocket* s1 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
 	if (s1->bind(sakit::Host(UDP_MULTICAST_HOST_ADDRESS), UDP_PORT_MULTICAST_CLIENT_1))
 	{
-		hlog::writef(LOG_TAG, "UDP-1 bound to '%s:%d'", s1->getLocalHost().toString().c_str(), s1->getLocalPort());
+		hlog::writef(LOG_TAG, "UDP-1 bound to '%s:%d'", s1->getLocalHost().toString().cStr(), s1->getLocalPort());
 		if (s1->joinMulticastGroup(s1->getLocalHost(), sakit::Host(UDP_MULTICAST_ADDRESS)))
 		{
 			hlog::writef(LOG_TAG, "UDP-1 joined multicast group '%s'", UDP_MULTICAST_ADDRESS);
 			sakit::UdpSocket* s2 = new sakit::UdpSocket(NULL); // not using any async calls here, no delegate needed
 			if (s2->bind(UDP_PORT_MULTICAST_CLIENT_2))
 			{
-				hlog::writef(LOG_TAG, "UDP-2 bound to '%s:%d'", s2->getLocalHost().toString().c_str(), s2->getLocalPort());
+				hlog::writef(LOG_TAG, "UDP-2 bound to '%s:%d'", s2->getLocalHost().toString().cStr(), s2->getLocalPort());
 				if (s2->setDestination(sakit::Host(UDP_MULTICAST_ADDRESS), UDP_PORT_MULTICAST_CLIENT_1))
 				{
-					hlog::writef(LOG_TAG, "UDP-2 set destination to '%s:%d'", s2->getRemoteHost().toString().c_str(), s2->getRemotePort());
+					hlog::writef(LOG_TAG, "UDP-2 set destination to '%s:%d'", s2->getRemoteHost().toString().cStr(), s2->getRemotePort());
 					sent = s2->send("Hello.");
-					hlog::writef(LOG_TAG, "UDP-2 sent (to '%s:%d'): %d", s2->getRemoteHost().toString().c_str(), s2->getRemotePort(), sent);
+					hlog::writef(LOG_TAG, "UDP-2 sent (to '%s:%d'): %d", s2->getRemoteHost().toString().cStr(), s2->getRemotePort(), sent);
 					hstream stream;
 					sakit::Host remoteHost;
 					unsigned short remotePort = 0;
 					s1->receive(&stream, remoteHost, remotePort);
 					stream.rewind();
-					hlog::writef(LOG_TAG, "UDP-1 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+					hlog::writef(LOG_TAG, "UDP-1 received (from '%s:%d'): %d", remoteHost.toString().cStr(), remotePort, stream.size());
 					if (stream.size() > 0)
 					{
 						_printReceived(&stream);
 						s1->setDestination(remoteHost, remotePort);
 						sent = s1->send("Hi.");
-						hlog::writef(LOG_TAG, "UDP-1 sent (to '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, sent);
+						hlog::writef(LOG_TAG, "UDP-1 sent (to '%s:%d'): %d", remoteHost.toString().cStr(), remotePort, sent);
 						stream.clear();
 						s2->receive(&stream, remoteHost, remotePort);
 						stream.rewind();
-						hlog::writef(LOG_TAG, "UDP-2 received (from '%s:%d'): %d", remoteHost.toString().c_str(), remotePort, stream.size());
+						hlog::writef(LOG_TAG, "UDP-2 received (from '%s:%d'): %d", remoteHost.toString().cStr(), remotePort, stream.size());
 						if (stream.size() > 0)
 						{
 							_printReceived(&stream);
@@ -686,15 +686,17 @@ void _testHttpSocket()
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
-//	if (client->executeGet(&response, url, headers))
-//	{
-//		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().c_str());
-//		hlog::write(LOG_TAG, response.Raw.read(1500) + "\n...");
-//	}
-//	else
-//	{
-//		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
-//	}
+	/*
+	if (client->executeGet(&response, url, headers))
+	{
+		hlog::debugf(LOG_TAG, "- received %d bytes from %s", response.Raw.size(), url.getHost().cStr());
+		hlog::write(LOG_TAG, response.Raw.read(1500) + "\n...");
+	}
+	else
+	{
+		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
+	}
+	*/
 	delete client;
 }
 
@@ -709,18 +711,20 @@ void _testAsyncHttpSocket()
 	hlog::debug(LOG_TAG, "URL: " + url.toString());
 	hmap<hstr, hstr> headers;
 	headers["User-Agent"] = "SAKit Demo Simple";
-//	if (client->executeGetAsync(url, headers))
-//	{
-//		do
-//		{
-//			sakit::update();
-//			hthread::sleep(100.0f);
-//		} while (client->isExecuting());
-//	}
-//	else
-//	{
-//		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
-//	}
+	/*
+	if (client->executeGetAsync(url, headers))
+	{
+		do
+		{
+			sakit::update();
+			hthread::sleep(100.0f);
+		} while (client->isExecuting());
+	}
+	else
+	{
+		hlog::error(LOG_TAG, "Failed to call " SAKIT_HTTP_REQUEST_GET " on: " + url.getHost());
+	}
+	*/
 	delete client;
 }
 
