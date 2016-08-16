@@ -22,7 +22,7 @@
 
 namespace sakit
 {
-	extern hstr logTag;
+	sakitExport extern hstr logTag;
 
 	sakitFnExport void init(bool threadedUpdate = false);
 	sakitFnExport bool isInitialized();
