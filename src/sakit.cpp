@@ -338,6 +338,7 @@ namespace sakit
 	void destroy()
 	{
 		hlog::write(logTag, "Destroying Socket Abstraction Kit.");
+		mapping.clear();
 		if (_updateThread != NULL)
 		{
 			_updateThread->join();
@@ -349,7 +350,6 @@ namespace sakit
 		{
 			hlog::warn(logTag, "Not all sockets/servers have been destroyed!");
 		}
-        mapping.clear();
 	}
 
 	void _internalUpdate(float timeDelta)
