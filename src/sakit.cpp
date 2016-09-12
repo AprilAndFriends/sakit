@@ -349,6 +349,7 @@ namespace sakit
 		{
 			hlog::warn(logTag, "Not all sockets/servers have been destroyed!");
 		}
+        mapping.clear();
 	}
 
 	void _internalUpdate(float timeDelta)
