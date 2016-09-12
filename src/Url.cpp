@@ -184,8 +184,22 @@ namespace sakit
 
 	hstr Url::getAbsolutePath(bool withPort) const
 	{
-		hstr result;
-		result += HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		hstr result = HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		if (withPort && this->port > 0)
+		{
+			result += ":" + hstr(this->port);
+		}
+		harray<hstr> paths = this->path.split('/', -1, true);
+		foreach (hstr, it, paths)
+		{
+			result += "/" + this->_encodeWwwFormComponent((*it), PATH_ALLOWED);
+		}
+		return result;
+	}
+
+	hstr Url::getRelativePath(bool withPort) const
+	{
+		hstr result = this->_encodeWwwFormComponent("", HOST_ALLOWED);
 		if (withPort && this->port > 0)
 		{
 			result += ":" + hstr(this->port);
@@ -213,9 +227,9 @@ namespace sakit
 		return result;
 	}
 
-	hstr Url::toString(bool withPort) const
+	hstr Url::toString(bool withPort, bool useRelativePath) const
 	{
-		hstr result = this->getAbsolutePath(withPort);
+		hstr result = (!useRelativePath ? this->getAbsolutePath(withPort) : this->getRelativePath(withPort));
 		hstr body = this->getBody();
 		if (body != "")
 		{

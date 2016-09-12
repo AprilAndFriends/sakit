@@ -13,6 +13,7 @@
 #include <hltypes/hthread.h>
 
 #include "HttpResponse.h"
+#include "HttpSocket.h"
 #include "HttpSocketThread.h"
 #include "PlatformSocket.h"
 #include "sakit.h"
@@ -101,15 +102,15 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		// if timed out, has no predefined length, all headers were received and there is a body
-		if (time >= *this->timeout && !this->response->headers.hasKey("Content-Length") && this->response->headersComplete && this->response->body.size() > 0)
+		if (time >= *this->timeout && !this->response->headers.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH) && this->response->headersComplete && this->response->body.size() > 0)
 		{
-			if (!this->response->headers.hasKey("Content-Length") && this->response->body.size() > 0)
+			if (!this->response->headers.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH) && this->response->body.size() > 0)
 			{
 				// let's say it's complete, we don't know its supposed length anyway
-				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
+				hlog::warn(logTag, "HttpSocket did not return header " SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH "! Body might be incomplete, but will be considered complete.");
 				this->response->bodyComplete = true;
 			}
-			else if ((int)this->response->headers["Content-Length"] == 0) // empty body
+			else if ((int)this->response->headers[SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH] == 0) // empty body
 			{
 				this->response->bodyComplete = true;
 			}
@@ -119,8 +120,6 @@ namespace sakit
 		if (this->response->headersComplete && this->response->bodyComplete)
 		{
 			this->result = FINISHED;
-			this->response->raw.rewind();
-			this->response->body.rewind();
 		}
 		else
 		{

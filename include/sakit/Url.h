@@ -42,9 +42,11 @@ namespace sakit
 		/// @note The returned value is fully encoded.
 		hstr getAbsolutePath(bool withPort = false) const;
 		/// @note The returned value is fully encoded.
+		hstr getRelativePath(bool withPort = false) const;
+		/// @note The returned value is fully encoded.
 		hstr getBody() const;
 		/// @note The returned value is fully encoded.
-		hstr toString(bool withPort = true) const;
+		hstr toString(bool withPort = true, bool useRelativePath = false) const;
 
 		static hstr encodeWwwForm(hmap<hstr, hstr> query, char delimiter = '&');
 		static hmap<hstr, hstr> decodeWwwForm(chstr string, char* usedDelimiter = NULL);

@@ -106,7 +106,7 @@ namespace sakit
 		HttpResponse* response = this->thread->response;
 		this->thread->response = new HttpResponse();
 		Url url = this->url; // _terminateConnection() deletes this, but it's needed for the delegate call ahead
-		if (!this->keepAlive || response->headers.tryGet("Connection", "") == "close" || !this->socket->isConnected())
+		if (!this->keepAlive || response->headers.tryGet(SAKIT_HTTP_REQUEST_HEADER_CONNECTION, "") == "close" || !this->socket->isConnected())
 		{
 			this->_terminateConnection();
 			this->state = IDLE;
@@ -122,6 +122,9 @@ namespace sakit
 		{
 			this->socketDelegate->onExecuteProgress(this, response, url);
 		}
+		// the data can be rewinded after reporting progress
+		response->raw.rewind();
+		response->body.rewind();
 		switch (result)
 		{
 		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, url);	break;
@@ -213,7 +216,7 @@ namespace sakit
 		}
 		response->body.rewind();
 		response->raw.rewind();
-		if (!this->keepAlive || response->headers.tryGet("Connection", "") == "close")
+		if (!this->keepAlive || response->headers.tryGet(SAKIT_HTTP_REQUEST_HEADER_CONNECTION, "") == "close")
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
@@ -326,13 +329,13 @@ namespace sakit
 		// if timed out, has no predefined length, all headers were received and there is a body
 		if (time >= this->timeout && response->headersComplete)
 		{
-			if (!response->headers.hasKey("Content-Length") && response->body.size() > 0)
+			if (!response->headers.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH) && response->body.size() > 0)
 			{
 				// let's say it's complete, we don't know its supposed length anyway
 				hlog::warn(logTag, "HttpSocket did not return header Content-Length! Body might be incomplete, but will be considered complete.");
 				response->bodyComplete = true;
 			}
-			else if ((int)response->headers["Content-Length"] == 0) // empty body
+			else if ((int)response->headers[SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH] == 0) // empty body
 			{
 				response->bodyComplete = true;
 			}
@@ -422,7 +425,7 @@ namespace sakit
 		hstr body = customBody;
 		if (!urlEncoded)
 		{
-			absolutePath = this->url.getAbsolutePath();
+			absolutePath = this->url.getRelativePath();
 			if (customBody == "")
 			{
 				body = this->url.getBody();
@@ -434,7 +437,7 @@ namespace sakit
 		}
 		else
 		{
-			absolutePath = this->url.toString(false);
+			absolutePath = this->url.toString(false, true);
 		}
 		hstr request;
 		request += method + " " + absolutePath + " " + this->_makeProtocol() + HTTP_DELIMITER;
