@@ -28,6 +28,7 @@ namespace sakit
 	int bufferSize = 65536;
 	harray<Base*> connections;
 	hmutex connectionsMutex;
+	hmutex updateMutex;
 	hmap<unsigned int, hstr> mapping;
 	/// @note Used for optimization to avoid hstr::fromUnicode() calls.
 	hmap<hstr, hstr> reverseMapping;
@@ -375,9 +376,12 @@ namespace sakit
 
 	void _asyncUpdate(hthread* thread)
 	{
+		hmutex::ScopeLock lock;
 		while (thread->isRunning())
 		{
+			lock.acquire(&updateMutex);
 			_internalUpdate(0.001f);
+			lock.release();
 			hthread::sleep(1.0f);
 		}
 	}

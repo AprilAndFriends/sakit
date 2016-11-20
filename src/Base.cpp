@@ -19,6 +19,7 @@ namespace sakit
 {
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
+	extern hmutex updateMutex;
 
 	void Base::__register()
 	{
@@ -28,6 +29,7 @@ namespace sakit
 
 	void Base::__unregister()
 	{
+		hmutex::ScopeLock lockUpdate(&updateMutex); // prevents deletion while update is still running
 		hmutex::ScopeLock lock(&connectionsMutex);
 		int index = connections.indexOf(this);
 		if (index >= 0)
