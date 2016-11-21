@@ -50,6 +50,8 @@
 		return this->_executeMethodAsync(REQUEST_ ## constant, customBody, customHeaders); \
 	}
 
+#define DEBUG_LOG_TAG (logTag + "-debug")
+
 namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
@@ -66,9 +68,12 @@ namespace sakit
 
 	HttpSocket::~HttpSocket()
 	{
+		hlog::warnf(DEBUG_LOG_TAG, "Starting unregister: %p", this);
 		this->__unregister();
+		hlog::warnf(DEBUG_LOG_TAG, "Finished unregister: %p", this);
 		this->thread->join();
 		delete this->thread;
+		hlog::warnf(DEBUG_LOG_TAG, "Finished delete: %p", this);
 	}
 
 	bool HttpSocket::isConnected()
@@ -88,11 +93,13 @@ namespace sakit
 		hmutex::ScopeLock lock(&this->mutexState);
 		hmutex::ScopeLock lockThread(&this->thread->mutex);
 		State result = this->thread->result;
+		HttpResponse* response = NULL;
 		if (result == RUNNING || result == IDLE)
 		{
 			if (this->reportProgress && this->thread->response->hasNewData())
 			{
-				HttpResponse* response = this->thread->response->clone();
+				hlog::warnf(DEBUG_LOG_TAG, "Cloning response from (for report): %p", this);
+				response = this->thread->response->clone();
 				this->thread->response->consumeNewData();
 				Url url = this->url;
 				lockThread.release();
@@ -103,8 +110,9 @@ namespace sakit
 			return;
 		}
 		this->thread->result = IDLE;
-		HttpResponse* response = this->thread->response;
-		this->thread->response = new HttpResponse();
+		hlog::warnf(DEBUG_LOG_TAG, "Cloning response from (for complete): %p", this);
+		response = this->thread->response->clone();
+		this->thread->response->clear();
 		Url url = this->url; // _terminateConnection() deletes this, but it's needed for the delegate call ahead
 		if (!this->keepAlive || response->headers.tryGet(SAKIT_HTTP_REQUEST_HEADER_CONNECTION, "") == "close" || !this->socket->isConnected())
 		{
