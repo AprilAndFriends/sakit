@@ -355,6 +355,7 @@ namespace sakit
 
 	void _internalUpdate(float timeDelta)
 	{
+		hmutex::ScopeLock lockUpdate(&updateMutex);
 		hmutex::ScopeLock lock(&connectionsMutex);
 		harray<Base*> _connections = sakit::connections;
 		lock.release();
@@ -376,12 +377,9 @@ namespace sakit
 
 	void _asyncUpdate(hthread* thread)
 	{
-		hmutex::ScopeLock lock;
 		while (thread->isRunning())
 		{
-			lock.acquire(&updateMutex);
 			_internalUpdate(0.001f);
-			lock.release();
 			hthread::sleep(1.0f);
 		}
 	}

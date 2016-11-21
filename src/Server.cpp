@@ -31,8 +31,11 @@ namespace sakit
 
 	Server::~Server()
 	{
-		this->serverThread->join();
-		delete this->serverThread;
+		if (this->serverThread != NULL)
+		{
+			this->serverThread->join();
+			delete this->serverThread;
+		}
 	}
 
 	bool Server::isRunning()

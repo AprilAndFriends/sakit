@@ -19,6 +19,7 @@ namespace sakit
 {
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
+	extern hmutex updateMutex;
 
 	TcpServer::TcpServer(TcpServerDelegate* tcpServerDelegate, TcpSocketDelegate* acceptedDelegate) : Server(dynamic_cast<ServerDelegate*>(tcpServerDelegate))
 	{
@@ -79,9 +80,11 @@ namespace sakit
 		this->state = RUNNING;
 		lock.release();
 		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
+		hmutex::ScopeLock lockUpdate(&updateMutex);
 		lock.acquire(&connectionsMutex);
 		connections -= tcpSocket;
 		lock.release();
+		lockUpdate.release();
 		float time = 0.0f;
 		while (true)
 		{

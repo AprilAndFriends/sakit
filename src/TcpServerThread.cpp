@@ -20,6 +20,7 @@ namespace sakit
 {
 	extern harray<Base*> connections;
 	extern hmutex connectionsMutex;
+	extern hmutex updateMutex;
 
 	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
 	{
@@ -34,9 +35,11 @@ namespace sakit
 	void TcpServerThread::_updateProcess()
 	{
 		TcpSocket* tcpSocket = new TcpSocket(this->acceptedDelegate);
+		hmutex::ScopeLock lockUpdate(&updateMutex);
 		hmutex::ScopeLock lock(&connectionsMutex);
 		connections -= tcpSocket;
 		lock.release();
+		lockUpdate.release();
 		while (this->isRunning() && this->executing)
 		{
 			if (!this->socket->listen())
@@ -53,9 +56,11 @@ namespace sakit
 				this->sockets += tcpSocket;
 				lock.release();
 				tcpSocket = new TcpSocket(this->acceptedDelegate);
+				lockUpdate.acquire(&updateMutex);
 				lock.acquire(&connectionsMutex);
 				connections -= tcpSocket;
 				lock.release();
+				lockUpdate.release();
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}

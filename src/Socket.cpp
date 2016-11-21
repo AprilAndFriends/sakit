@@ -32,8 +32,11 @@ namespace sakit
 	{
 		this->sender->join();
 		delete this->sender;
-		this->receiver->join();
-		delete this->receiver;
+		if (this->receiver != NULL)
+		{
+			this->receiver->join();
+			delete this->receiver;
+		}
 	}
 
 	bool Socket::isSending()
