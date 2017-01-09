@@ -221,8 +221,10 @@ namespace sakit
 			lock.release();
 			*info = NULL;
 		}
-#ifndef _ANDROID
-		this->socketInfo->ai_family = AF_INET;
+#ifdef _IOS
+		this->socketInfo->ai_family = AF_INET6;
+#elif !defined(_ANDROID)
+        this->socketInfo->ai_family = AF_INET;
 #else
 		this->socketInfo->ai_family = PF_INET;
 #endif
@@ -231,6 +233,13 @@ namespace sakit
 		this->socketInfo->ai_flags = 0;
 		lock.acquire(&mutexGetaddrinfo);
 		int result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
+#ifdef _IOS
+        if (result != 0)
+        {
+            this->socketInfo->ai_family = AF_INET;
+            result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
+        }
+#endif
 		if (result != 0)
 		{
 			hlog::error(logTag, "getaddrinfo() " + __gai_strerror(result));
