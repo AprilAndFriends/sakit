@@ -44,7 +44,7 @@ namespace sakit
 		return -1;
 	}
 
-	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0)
+	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0), body(2 * 1024 * 1024) // TEMP HACK, prevents crashes
 	{
 		this->clear();
 	}
@@ -59,7 +59,7 @@ namespace sakit
 		this->statusCode = UNDEFINED;
 		this->statusMessage = "";
 		this->headers.clear();
-		this->body.clear();
+        this->body.clear(2 * 1024 * 1024); // TEMP HACK, prevents crashes
 		this->raw.clear();
 		this->headersComplete = false;
 		this->bodyComplete = false;
