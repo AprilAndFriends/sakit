@@ -89,7 +89,7 @@ namespace sakit
 		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, HttpVersionNotSupported, 505);
 	));
 
-	HttpResponse::HttpResponse() : statusCode(Code::Undefined), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0), body(2 * 1024 * 1024) // TEMP HACK, prevents crashes
+	HttpResponse::HttpResponse() : statusCode(Code::Undefined), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0)
 	{
 		this->clear();
 	}
@@ -104,8 +104,8 @@ namespace sakit
 		this->statusCode = Code::Undefined;
 		this->statusMessage = "";
 		this->headers.clear();
-        this->body.clear(2 * 1024 * 1024); // TEMP HACK, prevents crashes
-		this->raw.clear(2 * 1024 * 1024); // TEMP HACK, prevents crashes
+		this->body.clear();
+		this->raw.clear();
 		this->headersComplete = false;
 		this->bodyComplete = false;
 		this->chunkSize = 0;
