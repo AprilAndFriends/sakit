@@ -36,7 +36,7 @@ namespace sakit
 			if (!this->socket->receive(this->stream, remaining, &this->streamMutex))
 			{
 				lock.acquire(&this->resultMutex);
-				this->result = FAILED;
+				this->result = State::Failed;
 				return;
 			}
 			if (this->maxValue > 0 && remaining == 0)
@@ -46,7 +46,7 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		lock.acquire(&this->resultMutex);
-		this->result = FINISHED;
+		this->result = State::Finished;
 	}
 
 }

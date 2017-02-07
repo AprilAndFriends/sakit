@@ -70,7 +70,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = RUNNING;
+		this->state = State::Running;
 		lock.release();
 		float time = 0.0f;
 		bool result = false;
@@ -92,7 +92,7 @@ namespace sakit
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
 		lock.acquire(&this->mutexState);
-		this->state = BOUND;
+		this->state = State::Bound;
 		return result;
 	}
 

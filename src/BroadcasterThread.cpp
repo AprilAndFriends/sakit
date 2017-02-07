@@ -32,7 +32,7 @@ namespace sakit
 	{
 		bool result = this->socket->broadcast(this->adapters, this->remotePort, this->stream, (int)this->stream->size());
 		hmutex::ScopeLock lock(&this->resultMutex);
-		this->result = (result ? FINISHED : FAILED);
+		this->result = (result ? State::Finished : State::Failed);
 		this->stream->clear();
 	}
 

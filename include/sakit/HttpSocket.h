@@ -13,6 +13,7 @@
 #ifndef SAKIT_HTTP_SOCKET_H
 #define SAKIT_HTTP_SOCKET_H
 
+#include <hltypes/henum.h>
 #include <hltypes/hltypesUtil.h>
 #include <hltypes/hmap.h>
 #include <hltypes/hstring.h>
@@ -68,12 +69,12 @@ namespace sakit
 	class sakitExport HttpSocket : public SocketBase
 	{
 	public:
-		enum Protocol
-		{
-			HTTP11
-		};
+		HL_ENUM_CLASS_PREFIX_DECLARE(sakitExport, Protocol,
+		(
+			HL_ENUM_DECLARE(Protocol, Http11);
+		));
 
-		HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol = HTTP11);
+		HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol = Protocol::Http11);
 		~HttpSocket();
 
 		HL_DEFINE_ISSET(keepAlive, KeepAlive);

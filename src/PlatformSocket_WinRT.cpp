@@ -54,7 +54,7 @@ namespace sakit
 		const int timeout = (int)(sakit::getGlobalTimeout() * 1000);
 		int i = 0;
 		lock.acquire(mutex);
-		while (result != FINISHED && i < timeout)
+		while (result != State::Finished && i < timeout)
 		{
 			lock.release();
 			hthread::sleep(1.0f);
@@ -63,16 +63,16 @@ namespace sakit
 		}
 		if (i >= timeout)
 		{
-			result = FAILED;
+			result = State::Failed;
 		}
 		lock.release();
-		return (result != FAILED);
+		return (result != State::Failed);
 	}
 
 	void PlatformSocket::_awaitAsyncCancel(State& result, hmutex::ScopeLock& lock, hmutex* mutex)
 	{
 		lock.acquire(mutex);
-		while (result != FINISHED)
+		while (result != State::Finished)
 		{
 			lock.release();
 			hthread::sleep(0.01f);
@@ -160,7 +160,7 @@ namespace sakit
 		if (this->sSock != nullptr)
 		{
 			// open socket
-			State _asyncState = RUNNING;
+			State _asyncState = State::Running;
 			IAsyncAction^ action = nullptr;
 			try
 			{
@@ -168,14 +168,14 @@ namespace sakit
 				action->Completed = ref new AsyncActionCompletedHandler([&_asyncResult, &_asyncState, &_mutex](IAsyncAction^ action, AsyncStatus status)
 				{
 					hmutex::ScopeLock _lock(&_mutex);
-					if (_asyncState == RUNNING)
+					if (_asyncState == State::Running)
 					{
 						if (status == AsyncStatus::Completed)
 						{
 							_asyncResult = true;
 						}
 					}
-					_asyncState = FINISHED;
+					_asyncState = State::Finished;
 				});
 				if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 				{
@@ -206,7 +206,7 @@ namespace sakit
 	{
 		// open socket
 		bool _asyncResult = false;
-		State _asyncState = RUNNING;
+		State _asyncState = State::Running;
 		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		IAsyncOperation<IOutputStream^>^ operation = nullptr;
@@ -217,7 +217,7 @@ namespace sakit
 				[this, &_asyncResult, &_asyncState, &_mutex](IAsyncOperation<IOutputStream^>^ operation, AsyncStatus status)
 			{
 				hmutex::ScopeLock _lock(&_mutex);
-				if (_asyncState == RUNNING)
+				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
 					{
@@ -225,7 +225,7 @@ namespace sakit
 						_asyncResult = true;
 					}
 				}
-				_asyncState = FINISHED;
+				_asyncState = State::Finished;
 			});
 			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
@@ -270,7 +270,7 @@ namespace sakit
 		}
 		*/
 		bool _asyncResult = false;
-		State _asyncState = RUNNING;
+		State _asyncState = State::Running;
 		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		try
@@ -292,14 +292,14 @@ namespace sakit
 			action->Completed = ref new AsyncActionCompletedHandler([&_asyncResult, &_asyncState, &_mutex](IAsyncAction^ action, AsyncStatus status)
 			{
 				hmutex::ScopeLock _lock(&_mutex);
-				if (_asyncState == RUNNING)
+				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
 					{
 						_asyncResult = true;
 					}
 				}
-				_asyncState = FINISHED;
+				_asyncState = State::Finished;
 			});
 			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
@@ -402,7 +402,7 @@ namespace sakit
 	bool PlatformSocket::send(hstream* stream, int& count, int& sent)
 	{
 		bool _asyncResult = false;
-		State _asyncState = RUNNING;
+		State _asyncState = State::Running;
 		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		int _asyncResultSize = 0;
@@ -425,7 +425,7 @@ namespace sakit
 				[&_asyncResult, &_asyncState, &_asyncResultSize, &_mutex](IAsyncOperationWithProgress<unsigned int, unsigned int>^ operation, AsyncStatus status)
 			{
 				hmutex::ScopeLock _lock(&_mutex);
-				if (_asyncState == RUNNING)
+				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
 					{
@@ -433,7 +433,7 @@ namespace sakit
 						_asyncResultSize = operation->GetResults();
 					}
 				}
-				_asyncState = FINISHED;
+				_asyncState = State::Finished;
 			});
 			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
@@ -508,7 +508,7 @@ namespace sakit
 	bool PlatformSocket::_readStream(hstream* stream, int& maxCount, hmutex* mutex, IInputStream^ inputStream)
 	{
 		bool _asyncResult = false;
-		State _asyncState = RUNNING;
+		State _asyncState = State::Running;
 		int _asyncResultSize = 0;
 		int readCount = (maxCount > 0 ? hmin(this->bufferSize, maxCount) : this->bufferSize);
 		Buffer^ _buffer = ref new Buffer(readCount);
@@ -520,7 +520,7 @@ namespace sakit
 				[&_asyncResult, &_asyncState, &_asyncResultSize, &mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 			{
 				hmutex::ScopeLock _lock(mutex);
-				if (_asyncState == RUNNING)
+				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
 					{
@@ -528,7 +528,7 @@ namespace sakit
 						_asyncResultSize = operation->GetResults()->Length;
 					}
 				}
-				_asyncState = FINISHED;
+				_asyncState = State::Finished;
 			});
 			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, mutex))
 			{
@@ -648,7 +648,7 @@ namespace sakit
 			}
 		}
 		hstr result;
-		State _asyncState = RUNNING;
+		State _asyncState = State::Running;
 		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		try
@@ -658,7 +658,7 @@ namespace sakit
 				[wantIp, wantPort, &result, &_asyncState, &_mutex](IAsyncOperation<Collections::IVectorView<EndpointPair^>^>^ operation, AsyncStatus status)
 			{
 				hmutex::ScopeLock _lock(&_mutex);
-				if (_asyncState == RUNNING)
+				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
 					{
@@ -691,7 +691,7 @@ namespace sakit
 						}
 					}
 				}
-				_asyncState = FINISHED;
+				_asyncState = State::Finished;
 			});
 			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{

@@ -35,13 +35,13 @@ namespace sakit
 		hmutex::ScopeLock lock(&this->resultMutex);
 		if (result)
 		{
-			this->result = FINISHED;
+			this->result = State::Finished;
 			this->localHost = localHost;
 			this->localPort = localPort;
 		}
 		else
 		{
-			this->result = FAILED;
+			this->result = State::Failed;
 		}
 	}
 
@@ -49,21 +49,18 @@ namespace sakit
 	{
 		bool result = this->socket->disconnect();
 		hmutex::ScopeLock lock(&this->resultMutex);
-		this->result = (result ? FINISHED : FAILED);
+		this->result = (result ? State::Finished : State::Failed);
 	}
 
 	void ConnectorThread::_updateProcess()
 	{
-		switch (this->state)
+		if (this->state == State::Connecting)
 		{
-		case CONNECTING:
 			this->_updateConnecting();
-			break;
-		case DISCONNECTING:
+		}
+		else if (this->state == State::Disconnecting)
+		{
 			this->_updateDisconnecting();
-			break;
-		default:
-			break;
 		}
 	}
 

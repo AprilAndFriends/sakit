@@ -52,6 +52,11 @@
 
 namespace sakit
 {
+	HL_ENUM_CLASS_DEFINE(HttpSocket::Protocol,
+	(
+		HL_ENUM_DEFINE(HttpSocket::Protocol, Http11);
+	));
+
 	unsigned short HttpSocket::DefaultPort = 80;
 
 	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false), reportProgress(false)
@@ -74,13 +79,13 @@ namespace sakit
 	bool HttpSocket::isConnected()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		return (this->state == RUNNING || this->state == CONNECTED);
+		return (this->state == State::Running || this->state == State::Connected);
 	}
 
 	bool HttpSocket::isExecuting()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		return (this->state == RUNNING);
+		return (this->state == State::Running);
 	}
 
 	void HttpSocket::update(float timeDelta)
@@ -90,7 +95,7 @@ namespace sakit
 		hmutex::ScopeLock lockThreadResponse;
 		State result = this->thread->result;
 		HttpResponse* response = NULL;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			if (this->reportProgress)
 			{
@@ -109,7 +114,7 @@ namespace sakit
 			}
 			return;
 		}
-		this->thread->result = IDLE;
+		this->thread->result = State::Idle;
 		lockThreadResponse.acquire(&this->thread->responseMutex);
 		response = this->thread->response->clone();
 		this->thread->response->clear();
@@ -118,11 +123,11 @@ namespace sakit
 		if (!this->keepAlive || response->headers.tryGet(SAKIT_HTTP_REQUEST_HEADER_CONNECTION, "") == "close" || !this->socket->isConnected())
 		{
 			this->_terminateConnection();
-			this->state = IDLE;
+			this->state = State::Idle;
 		}
 		else
 		{
-			this->state = CONNECTED;
+			this->state = State::Connected;
 		}
 		lockThreadResult.release();
 		lock.release();
@@ -134,11 +139,13 @@ namespace sakit
 		// the data can be rewinded after reporting progress
 		response->raw.rewind();
 		response->body.rewind();
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:	this->socketDelegate->onExecuteCompleted(this, response, url);	break;
-		case FAILED:	this->socketDelegate->onExecuteFailed(this, response, url);		break;
-		default:																		break;
+			this->socketDelegate->onExecuteCompleted(this, response, url);
+		}
+		else if (result == State::Failed)
+		{
+			this->socketDelegate->onExecuteFailed(this, response, url);
 		}
 		delete response;
 	}
@@ -196,7 +203,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = RUNNING;
+		this->state = State::Running;
 		lock.release();
 		hstr request = this->_processRequest(method, url, customBody, customHeaders);
 		unsigned short port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
@@ -205,14 +212,14 @@ namespace sakit
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
-			this->state = IDLE;
+			this->state = State::Idle;
 			return false;
 		}
 		if (SocketBase::_send(request) == 0)
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
-			this->state = IDLE;
+			this->state = State::Idle;
 			return false;
 		}
 		response->clear();
@@ -220,7 +227,7 @@ namespace sakit
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
-			this->state = IDLE;
+			this->state = State::Idle;
 			return false;
 		}
 		response->body.rewind();
@@ -229,12 +236,12 @@ namespace sakit
 		{
 			this->_terminateConnection();
 			lock.acquire(&this->mutexState);
-			this->state = IDLE;
+			this->state = State::Idle;
 		}
 		else
 		{
 			lock.acquire(&this->mutexState);
-			this->state = CONNECTED;
+			this->state = State::Connected;
 		}
 		return (response->headersComplete && response->bodyComplete);
 	}
@@ -279,7 +286,7 @@ namespace sakit
 		this->thread->stream->rewind();
 		this->thread->host = this->remoteHost;
 		this->thread->port = (this->url.getPort() == 0 ? this->remotePort : this->url.getPort());
-		this->state = RUNNING;
+		this->state = State::Running;
 		this->thread->start();
 		return true;
 	}
@@ -379,7 +386,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = DISCONNECTING;
+		this->state = State::Disconnecting;
 		lock.release();
 		bool result = this->socket->disconnect();
 		lock.acquire(&this->mutexState);
@@ -389,7 +396,7 @@ namespace sakit
 			this->remotePort = 0;
 			this->localHost = Host();
 			this->localPort = 0;
-			this->state = IDLE;
+			this->state = State::Idle;
 			this->url = Url();
 		}
 		else
@@ -407,17 +414,12 @@ namespace sakit
 
 	bool HttpSocket::_canExecute(State state)
 	{
-		harray<State> allowed;
-		allowed += IDLE;
-		allowed += CONNECTED;
-		return _checkState(state, allowed, "execute");
+		return _checkState(state, State::allowedHttpExecuteStates, "execute");
 	}
 
 	bool HttpSocket::_canAbort(State state)
 	{
-		harray<State> allowed;
-		allowed += RUNNING;
-		return _checkState(state, allowed, "abort");
+		return _checkState(state, State::allowedHttpAbortStates, "abort");
 	}
 
 	hstr HttpSocket::_processRequest(chstr method, Url url, chstr customBody, hmap<hstr, hstr> customHeaders)
@@ -474,12 +476,22 @@ namespace sakit
 
 	hstr HttpSocket::_makeProtocol()
 	{
-		switch (this->protocol)
+		/*
+		if (this->protocol == Protocol::Http10)
 		{
-		//case HTTP10:	return "HTTP/1.0";
-		case HTTP11:	return "HTTP/1.1";
-		//case HTTP20:	return "HTTP/2.0";
+			return "HTTP/1.0";
 		}
+		*/
+		if (this->protocol == Protocol::Http11)
+		{
+			return "HTTP/1.1";
+		}
+		/*
+		if (this->protocol == Protocol::Http20)
+		{
+			return "HTTP/2.0";
+		}
+		*/
 		hlog::error(logTag, "Invalid HTTP protocol version!");
 		return ""; // invalid
 	}

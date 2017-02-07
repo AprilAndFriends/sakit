@@ -65,7 +65,7 @@ namespace sakit
 		}
 		delete stream;
 		lock.acquire(&this->resultMutex);
-		this->result = FINISHED;
+		this->result = State::Finished;
 	}
 
 }

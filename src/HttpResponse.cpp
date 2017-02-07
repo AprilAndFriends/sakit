@@ -44,7 +44,52 @@ namespace sakit
 		return -1;
 	}
 
-	HttpResponse::HttpResponse() : statusCode(UNDEFINED), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0), body(2 * 1024 * 1024) // TEMP HACK, prevents crashes
+	HL_ENUM_CLASS_DEFINE(HttpResponse::Code,
+	(
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Undefined, 0);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Continue, 100);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, SwitchingProtocols, 101);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Ok, 200);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Created, 201);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Accepted, 202);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NonAuthorativeInformation, 203);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NoContent, 204);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, ResetContent, 205);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, PartialContent, 206);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, MultipleChoices, 300);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, MovedPermanently, 301);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Found, 302);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, SeeOther, 303);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NotModified, 304);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, UseProxy, 305);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, TemporaryRedirect, 307);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, BadRequest, 400);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Unauthorized, 401);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, PaymentRequired, 402);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Forbidden, 403);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NotFound, 404);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, MethodNotAllowed, 405);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NotAcceptable, 406);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, ProxyAuthenticationRequired, 407);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, RequestTimeOut, 408);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Conflict, 409);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, Gone, 410);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, LengthRequired, 411);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, PreconditionFailed, 412);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, RequestEntityTooLarge, 413);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, RequestUriTooLarge, 414);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, UnsupportedMediaType, 415);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, RequestedRangeNotSatisfiable, 416);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, ExpectationFailed, 417);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, InternalServerError, 500);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, NotImplemented, 501);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, BadGateway, 502);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, ServiceUnavailable, 503);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, GatewayTimeOut, 504);
+		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, HttpVersionNotSupported, 505);
+	));
+
+	HttpResponse::HttpResponse() : statusCode(Code::Undefined), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0), body(2 * 1024 * 1024) // TEMP HACK, prevents crashes
 	{
 		this->clear();
 	}
@@ -56,11 +101,11 @@ namespace sakit
 	void HttpResponse::clear()
 	{
 		this->protocol = "";
-		this->statusCode = UNDEFINED;
+		this->statusCode = Code::Undefined;
 		this->statusMessage = "";
 		this->headers.clear();
         this->body.clear(2 * 1024 * 1024); // TEMP HACK, prevents crashes
-		this->raw.clear();
+		this->raw.clear(2 * 1024 * 1024); // TEMP HACK, prevents crashes
 		this->headersComplete = false;
 		this->bodyComplete = false;
 		this->chunkSize = 0;
@@ -122,7 +167,7 @@ namespace sakit
 				this->headersComplete = true;
 				break;
 			}
-			if (this->statusCode == HttpResponse::UNDEFINED)
+			if (this->statusCode == HttpResponse::Code::Undefined)
 			{
 				index = line.indexOf(' ');
 				if (index >= 0)
@@ -132,7 +177,7 @@ namespace sakit
 					index = line.indexOf(' ');
 					if (index >= 0)
 					{
-						this->statusCode = (HttpResponse::Code)(int)line(0, index);
+						this->statusCode = HttpResponse::Code::fromInt((int)line(0, index));
 						this->statusMessage = line(index + 1, -1);
 					}
 					else

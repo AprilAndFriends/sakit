@@ -40,7 +40,7 @@ namespace sakit
 			if (!this->socket->send(this->stream, count, sent))
 			{
 				lock.acquire(&this->resultMutex);
-				this->result = FAILED;
+				this->result = State::Failed;
 				lock.release();
 				this->stream->clear();
 				return;
@@ -55,7 +55,7 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		lock.acquire(&this->resultMutex);
-		this->result = FINISHED;
+		this->result = State::Finished;
 		lock.release();
 		this->stream->clear();
 	}

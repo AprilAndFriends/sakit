@@ -42,13 +42,13 @@ namespace sakit
 	bool Socket::isSending()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		return (this->state == SENDING || this->state == SENDING_RECEIVING);
+		return (this->state == State::Sending || this->state == State::SendingReceiving);
 	}
 
 	bool Socket::isReceiving()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		return (this->state == RECEIVING || this->state == SENDING_RECEIVING);
+		return (this->state == State::Receiving || this->state == State::SendingReceiving);
 	}
 
 	void Socket::update(float timeDelta)
@@ -70,7 +70,7 @@ namespace sakit
 		}
 		lockThreadSentCount.release();
 		State result = this->sender->result;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			lockThreadResult.release();
 			lock.release();
@@ -80,8 +80,8 @@ namespace sakit
 			}
 			return;
 		}
-		this->sender->result = IDLE;
-		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
+		this->sender->result = State::Idle;
+		this->state = (this->state == State::SendingReceiving ? State::Receiving : this->idleState);
 		lockThreadResult.release();
 		lock.release();
 		if (sentCount > 0)
@@ -89,11 +89,13 @@ namespace sakit
 			this->socketDelegate->onSent(this, sentCount);
 		}
 		// delegate calls
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:	this->socketDelegate->onSendFinished(this);	break;
-		case FAILED:	this->socketDelegate->onSendFailed(this);	break;
-		default:													break;
+			this->socketDelegate->onSendFinished(this);
+		}
+		else if (result == State::Failed)
+		{
+			this->socketDelegate->onSendFailed(this);
 		}
 	}
 
@@ -126,11 +128,11 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
+		this->state = (this->state == State::Receiving ? State::SendingReceiving : State::Sending);
 		lock.release();
 		int result = this->_sendDirect(stream, count);
 		lock.acquire(&this->mutexState);
-		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
+		this->state = (this->state == State::SendingReceiving ? State::Receiving : this->idleState);
 		return result;
 	}
 
@@ -146,8 +148,8 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
-		this->sender->result = RUNNING;
+		this->state = (this->state == State::Receiving ? State::SendingReceiving : State::Sending);
+		this->sender->result = State::Running;
 		this->sender->stream->clear();
 		this->sender->stream->writeRaw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
 		this->sender->stream->rewind();
@@ -164,7 +166,7 @@ namespace sakit
 			result = this->_canReceive(this->state);
 			if (result)
 			{
-				this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
+				this->state = (this->state == State::Sending ? State::SendingReceiving : State::Receiving);
 			}
 		}
 		return result;
@@ -173,7 +175,7 @@ namespace sakit
 	int Socket::_finishReceive(int result)
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->state = (this->state == State::SendingReceiving ? State::Sending : this->idleState);
 		return result;
 	}
 
@@ -185,8 +187,8 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = (this->state == SENDING ? SENDING_RECEIVING : RECEIVING);
-		this->receiver->result = RUNNING;
+		this->state = (this->state == State::Sending ? State::SendingReceiving : State::Receiving);
+		this->receiver->result = State::Running;
 		this->receiver->maxValue = maxValue;
 		this->receiver->start();
 		return true;
@@ -220,7 +222,7 @@ namespace sakit
 	
 	bool Socket::_checkStartReceiveStatus(State receiverState)
 	{
-		if (receiverState == RUNNING)
+		if (receiverState == State::Running)
 		{
 			hlog::warn(logTag, "Cannot start receiving, already receiving!");
 			return false;
@@ -230,26 +232,19 @@ namespace sakit
 
 	bool Socket::_canSend(State state)
 	{
-		harray<State> allowed;
-		allowed += this->idleState;
-		allowed += RECEIVING;
+		harray<State> allowed = State::allowedSendStatesBasic + this->idleState;
 		return _checkState(state, allowed, "send");
 	}
 
 	bool Socket::_canReceive(State state)
 	{
-		harray<State> allowed;
-		allowed += this->idleState;
-		allowed += SENDING;
+		harray<State> allowed = State::allowedReceiveStatesBasic + this->idleState;
 		return _checkState(state, allowed, "receive");
 	}
 
 	bool Socket::_canStopReceive(State state)
 	{
-		harray<State> allowed;
-		allowed += RECEIVING;
-		allowed += SENDING_RECEIVING;
-		return _checkState(state, allowed, "stop receiving");
+		return _checkState(state, State::allowedStopReceiveStates, "stop receiving");
 	}
 
 	bool Socket::_checkSendParameters(hstream* stream, int count)

@@ -13,24 +13,44 @@
 #ifndef SAKIT_STATE_H
 #define SAKIT_STATE_H
 
+#include <hltypes/henum.h>
+
+#include "sakitExport.h"
+
 namespace sakit
 {
-	enum State
-	{
-		IDLE,
-		BINDING,
-		BOUND,
-		UNBINDING,
-		CONNECTING,
-		CONNECTED,
-		DISCONNECTING,
-		RUNNING,
-		SENDING,
-		RECEIVING,
-		SENDING_RECEIVING,
-		FINISHED,
-		FAILED
-	};
+	HL_ENUM_CLASS_PREFIX_DECLARE(sakitExport, State,
+	(
+		HL_ENUM_DECLARE(State, Idle);
+		HL_ENUM_DECLARE(State, Binding);
+		HL_ENUM_DECLARE(State, Bound);
+		HL_ENUM_DECLARE(State, Unbinding);
+		HL_ENUM_DECLARE(State, Connecting);
+		HL_ENUM_DECLARE(State, Connected);
+		HL_ENUM_DECLARE(State, Disconnecting);
+		HL_ENUM_DECLARE(State, Running);
+		HL_ENUM_DECLARE(State, Sending);
+		HL_ENUM_DECLARE(State, Receiving);
+		HL_ENUM_DECLARE(State, SendingReceiving);
+		HL_ENUM_DECLARE(State, Finished);
+		HL_ENUM_DECLARE(State, Failed);
+
+		static const harray<State> allowedBindStates;
+		static const harray<State> allowedUnbindStates;
+		static const harray<State> allowedConnectStates;
+		static const harray<State> allowedDisconnectStates;
+		static const harray<State> allowedSendStatesBasic;
+		static const harray<State> allowedReceiveStatesBasic;
+		static const harray<State> allowedStopReceiveStates;
+		static const harray<State> allowedSetDestinationStates;
+		static const harray<State> allowedJoinMulticastGroupStates;
+		static const harray<State> allowedLeaveMulticastGroupStates;
+		static const harray<State> allowedServerStartStates;
+		static const harray<State> allowedServerStopStates;
+		static const harray<State> allowedHttpExecuteStates;
+		static const harray<State> allowedHttpAbortStates;
+
+	));
 
 }
 #endif

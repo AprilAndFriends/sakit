@@ -276,9 +276,6 @@
     <ClCompile Include="..\..\src\Connector.cpp">
       <Filter>Source Files\Fragments</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sakitUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ConnectorDelegate.cpp">
       <Filter>Source Files\Fragments</Filter>
     </ClCompile>
@@ -302,6 +299,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ifaddrs_android.c">
       <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\State.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

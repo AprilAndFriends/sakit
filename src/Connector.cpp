@@ -60,19 +60,19 @@ namespace sakit
 	bool Connector::isConnecting()
 	{
 		hmutex::ScopeLock lock(this->_mutexState);
-		return (*this->_state == CONNECTING);
+		return (*this->_state == State::Connecting);
 	}
 
 	bool Connector::isConnected()
 	{
 		hmutex::ScopeLock lock(this->_mutexState);
-		return (*this->_state != IDLE && *this->_state != CONNECTING);
+		return (*this->_state != State::Idle && *this->_state != State::Connecting);
 	}
 
 	bool Connector::isDisconnecting()
 	{
 		hmutex::ScopeLock lock(this->_mutexState);
-		return (*this->_state == DISCONNECTING);
+		return (*this->_state == State::Disconnecting);
 	}
 
 	void Connector::_update(float timeDelta)
@@ -85,76 +85,68 @@ namespace sakit
 		unsigned short remotePort = this->_thread->port;
 		Host localHost = this->_thread->localHost;
 		unsigned short localPort = this->_thread->localPort;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			return;
 		}
-		this->_thread->state = IDLE;
-		this->_thread->result = IDLE;
-		switch (result)
+		this->_thread->state = State::Idle;
+		this->_thread->result = State::Idle;
+		if (result == State::Finished)
 		{
-		case FINISHED:
-			switch (state)
+			if (state == State::Connecting)
 			{
-			case CONNECTING:
-				*this->_state = CONNECTED;
+				*this->_state = State::Connected;
 				*this->_remoteHost = remoteHost;
 				*this->_remotePort = remotePort;
 				*this->_localHost = localHost;
 				*this->_localPort = localPort;
-				break;
-			case DISCONNECTING:
-				*this->_state = IDLE;
+			}
+			else if (state == State::Disconnecting)
+			{
+				*this->_state = State::Idle;
 				remoteHost = *this->_remoteHost;
 				remotePort = *this->_remotePort;
 				*this->_remoteHost = Host();
 				*this->_remotePort = 0;
 				*this->_localHost = Host();
 				*this->_localPort = 0;
-				break;
-			default:
-				break;
 			}
-			break;
-		case FAILED:
-			switch (state)
+		}
+		else if (result == State::Failed)
+		{
+			if (state == State::Connecting)
 			{
-			case CONNECTING:
-				*this->_state = IDLE;
-				break;
-			case DISCONNECTING:
-				*this->_state = CONNECTED;
-				break;
-			default:
-				break;
+				*this->_state = State::Idle;
 			}
-			break;
-		default:
-			break;
+			else if (state == State::Disconnecting)
+			{
+				*this->_state = State::Connected;
+			}
 		}
 		lockThreadResult.release();
 		lock.release();
 		// delegate calls
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:
-			switch (state)
+			if (state == State::Connecting)
 			{
-			case CONNECTING:	this->_connectorDelegate->onConnected(this, remoteHost, remotePort);		break;
-			case DISCONNECTING:	this->_connectorDelegate->onDisconnected(this, remoteHost, remotePort);		break;
-			default:																						break;
+				this->_connectorDelegate->onConnected(this, remoteHost, remotePort);
 			}
-			break;
-		case FAILED:
-			switch (state)
+			else if (state == State::Disconnecting)
 			{
-			case CONNECTING:	this->_connectorDelegate->onConnectFailed(this, remoteHost, remotePort);	break;
-			case DISCONNECTING:	this->_connectorDelegate->onDisconnectFailed(this, remoteHost, remotePort);	break;
-			default:																						break;
+				this->_connectorDelegate->onDisconnected(this, remoteHost, remotePort);
 			}
-			break;
-		default:
-			break;
+		}
+		else if (result == State::Failed)
+		{
+			if (state == State::Connecting)
+			{
+				this->_connectorDelegate->onConnectFailed(this, remoteHost, remotePort);
+			}
+			else if (state == State::Disconnecting)
+			{
+				this->_connectorDelegate->onDisconnectFailed(this, remoteHost, remotePort);
+			}
 		}
 	}
 
@@ -166,7 +158,7 @@ namespace sakit
 		{
 			return false;
 		}
-		*this->_state = CONNECTING;
+		*this->_state = State::Connecting;
 		lock.release();
 		Host localHost;
 		unsigned short localPort = 0;
@@ -178,7 +170,7 @@ namespace sakit
 			*this->_remotePort = remotePort;
 			*this->_localHost = localHost;
 			*this->_localPort = localPort;
-			*this->_state = CONNECTED;
+			*this->_state = State::Connected;
 		}
 		else
 		{
@@ -195,7 +187,7 @@ namespace sakit
 		{
 			return false;
 		}
-		*this->_state = DISCONNECTING;
+		*this->_state = State::Disconnecting;
 		lock.release();
 		bool result = this->_socket->disconnect();
 		lock.acquire(this->_mutexState);
@@ -205,7 +197,7 @@ namespace sakit
 			*this->_remotePort = 0;
 			*this->_localHost = Host();
 			*this->_localPort = 0;
-			*this->_state = IDLE;
+			*this->_state = State::Idle;
 		}
 		else
 		{
@@ -221,9 +213,9 @@ namespace sakit
 		{
 			return false;
 		}
-		*this->_state = CONNECTING;
-		this->_thread->state = CONNECTING;
-		this->_thread->result = RUNNING;
+		*this->_state = State::Connecting;
+		this->_thread->state = State::Connecting;
+		this->_thread->result = State::Running;
 		this->_thread->host = remoteHost;
 		this->_thread->port = remotePort;
 		this->_thread->start();
@@ -237,25 +229,21 @@ namespace sakit
 		{
 			return false;
 		}
-		*this->_state = DISCONNECTING;
-		this->_thread->state = DISCONNECTING;
-		this->_thread->result = RUNNING;
+		*this->_state = State::Disconnecting;
+		this->_thread->state = State::Disconnecting;
+		this->_thread->result = State::Running;
 		this->_thread->start();
 		return true;
 	}
 
 	bool Connector::_canConnect(State state)
 	{
-		harray<State> allowed;
-		allowed += IDLE;
-		return _checkState(state, allowed, "connect");
+		return _checkState(state, State::allowedConnectStates, "connect");
 	}
 
 	bool Connector::_canDisconnect(State state)
 	{
-		harray<State> allowed;
-		allowed += CONNECTED;
-		return _checkState(state, allowed, "disconnect");
+		return _checkState(state, State::allowedDisconnectStates, "disconnect");
 	}
 
 }

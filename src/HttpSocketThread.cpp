@@ -42,7 +42,7 @@ namespace sakit
 		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
 		{
 			hmutex::ScopeLock lock(&this->resultMutex);
-			this->result = FAILED;
+			this->result = State::Failed;
 			lock.release();
 			this->executing = false;
 		}
@@ -57,7 +57,7 @@ namespace sakit
 			if (!this->socket->send(this->stream, count, sentCount))
 			{
 				hmutex::ScopeLock lock(&this->resultMutex);
-				this->result = FAILED;
+				this->result = State::Failed;
 				lock.release();
 				this->executing = false;
 				this->socket->disconnect();
@@ -142,11 +142,11 @@ namespace sakit
 		// only a response with complete headers and a complete body is considered
 		if (completeHeaders)
 		{
-			this->result = FINISHED;
+			this->result = State::Finished;
 		}
 		else
 		{
-			this->result = FAILED;
+			this->result = State::Failed;
 			this->socket->disconnect();
 		}
 	}

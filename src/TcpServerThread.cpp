@@ -53,7 +53,7 @@ namespace sakit
 			if (!this->socket->listen())
 			{
 				lock.acquire(&this->resultMutex);
-				this->result = FAILED;
+				this->result = State::Failed;
 				lock.release();
 				delete tcpSocket;
 				return;
@@ -74,7 +74,7 @@ namespace sakit
 		}
 		delete tcpSocket;
 		lock.acquire(&this->resultMutex);
-		this->result = FINISHED;
+		this->result = State::Finished;
 	}
 
 }

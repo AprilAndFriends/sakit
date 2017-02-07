@@ -14,14 +14,23 @@
 #define SAKIT_UTIL_H
 
 #include <hltypes/harray.h>
+#include <hltypes/hlog.h>
 #include <hltypes/hstring.h>
 
+#include "sakit.h"
 #include "State.h"
 
 namespace sakit
 {
-	hstr _getText(State state);
-	bool _checkState(State current, harray<State> allowed, chstr action);
+	inline bool _checkState(State current, const harray<State>& allowed, chstr action)
+	{
+		if (allowed.has(current))
+		{
+			return true;
+		}
+		hlog::warnf(logTag, "Cannot %s, current state is: %s", action.cStr(), current.getName().cStr());
+		return false;
+	}
 
 }
 #endif

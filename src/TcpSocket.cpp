@@ -22,7 +22,7 @@
 
 namespace sakit
 {
-	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), CONNECTED),
+	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Connected),
 		Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
 	{
 		this->tcpSocketDelegate = socketDelegate;
@@ -61,7 +61,7 @@ namespace sakit
 		}
 		lockThreadStream.release();
 		State result = this->receiver->result;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			lockThreadResult.release();
 			lock.release();
@@ -73,8 +73,8 @@ namespace sakit
 			}
 			return;
 		}
-		this->receiver->result = IDLE;
-		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->receiver->result = State::Idle;
+		this->state = (this->state == State::SendingReceiving ? State::Sending : this->idleState);
 		lockThreadResult.release();
 		lock.release();
 		if (stream != NULL)
@@ -84,11 +84,13 @@ namespace sakit
 			delete stream;
 		}
 		// delegate calls
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:	this->socketDelegate->onReceiveFinished(this);	break;
-		case FAILED:	this->tcpSocketDelegate->onReceiveFailed(this);	break;
-		default:														break;
+			this->socketDelegate->onReceiveFinished(this);
+		}
+		else if (result == State::Failed)
+		{
+			this->tcpSocketDelegate->onReceiveFailed(this);
 		}
 	}
 
@@ -119,7 +121,7 @@ namespace sakit
 	{
 		SocketBase::_activateConnection(remoteHost, remotePort, localHost, localPort);
 		hmutex::ScopeLock lock(&this->mutexState);
-		this->state = CONNECTED;
+		this->state = State::Connected;
 	}
 
 }

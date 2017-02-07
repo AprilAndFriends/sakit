@@ -30,28 +30,25 @@ namespace sakit
 	{
 		bool result = this->socket->bind(this->host, this->port);
 		hmutex::ScopeLock lock(&this->resultMutex);
-		this->result = (result ? FINISHED : FAILED);
+		this->result = (result ? State::Finished : State::Failed);
 	}
 
 	void BinderThread::_updateUnbinding()
 	{
 		bool result = this->socket->disconnect();
 		hmutex::ScopeLock lock(&this->resultMutex);
-		this->result = (result ? FINISHED : FAILED);
+		this->result = (result ? State::Finished : State::Failed);
 	}
 
 	void BinderThread::_updateProcess()
 	{
-		switch (this->state)
+		if (this->state == State::Binding)
 		{
-		case BINDING:
 			this->_updateBinding();
-			break;
-		case UNBINDING:
+		}
+		else if (this->state == State::Unbinding)
+		{
 			this->_updateUnbinding();
-			break;
-		default:
-			break;
 		}
 	}
 

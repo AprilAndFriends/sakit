@@ -22,7 +22,7 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), BOUND),
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Bound),
 		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate))
 	{
 		this->socket->setConnectionLess(true);
@@ -62,7 +62,7 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = CONNECTING; // just a precaution
+		this->state = State::Connecting; // just a precaution
 		lock.release();
 		// this is not a real connect on UDP, it just does its job of setting a proper remote host
 		bool result = this->socket->connect(remoteHost, remotePort, this->localHost, this->localPort, this->timeout, this->retryFrequency);
@@ -77,7 +77,7 @@ namespace sakit
 			this->remoteHost = Host();
 			this->remotePort = 0;
 		}
-		this->state = BOUND;
+		this->state = State::Bound;
 		return result;
 	}
 
@@ -141,20 +141,22 @@ namespace sakit
 		hmutex::ScopeLock lock(&this->mutexState);
 		hmutex::ScopeLock lockThreadResult(&this->broadcaster->resultMutex);
 		State result = this->broadcaster->result;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			return;
 		}
-		this->broadcaster->result = IDLE;
-		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
+		this->broadcaster->result = State::Idle;
+		this->state = (this->state == State::SendingReceiving ? State::Receiving : this->idleState);
 		lockThreadResult.release();
 		lock.release();
 		// delegate calls
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:	this->udpSocketDelegate->onBroadcastFinished(this);	break;
-		case FAILED:	this->udpSocketDelegate->onBroadcastFailed(this);	break;
-		default:															break;
+			this->udpSocketDelegate->onBroadcastFinished(this);
+		}
+		else if (result == State::Failed)
+		{
+			this->udpSocketDelegate->onBroadcastFailed(this);
 		}
 	}
 
@@ -177,7 +179,7 @@ namespace sakit
 		}
 		lockThreadStreams.release();
 		State result = this->receiver->result;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			lockThreadResult.release();
 			lock.release();
@@ -188,8 +190,8 @@ namespace sakit
 			}
 			return;
 		}
-		this->receiver->result = IDLE;
-		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
+		this->receiver->result = State::Idle;
+		this->state = (this->state == State::SendingReceiving ? State::Sending : this->idleState);
 		lockThreadResult.release();
 		lock.release();
 		for_iter (i, 0, streams.size())
@@ -198,7 +200,7 @@ namespace sakit
 			delete streams[i];
 		}
 		// delegate calls
-		if (result == FINISHED)
+		if (result == State::Finished)
 		{
 			this->socketDelegate->onReceiveFinished(this);
 		}
@@ -248,11 +250,11 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
+		this->state = (this->state == State::Receiving ? State::SendingReceiving : State::Sending);
 		lock.release();
 		bool result = this->socket->broadcast(adapters, remotePort, stream, count);
 		lock.acquire(&this->mutexState);
-		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
+		this->state = (this->state == State::SendingReceiving ? State::Receiving : this->idleState);
 		return result;
 	}
 
@@ -289,8 +291,8 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = (this->state == RECEIVING ? SENDING_RECEIVING : SENDING);
-		this->broadcaster->result = RUNNING;
+		this->state = (this->state == State::Receiving ? State::SendingReceiving : State::Sending);
+		this->broadcaster->result = State::Running;
 		this->broadcaster->stream->clear();
 		this->broadcaster->stream->writeRaw(*stream, (int)hmin((int64_t)count, stream->size() - stream->position()));
 		this->broadcaster->stream->rewind();
@@ -323,29 +325,17 @@ namespace sakit
 
 	bool UdpSocket::_canSetDestination(State state)
 	{
-		harray<State> allowed;
-		allowed += BOUND;
-		return _checkState(state, allowed, "set destination");
+		return _checkState(state, State::allowedSetDestinationStates, "set destination");
 	}
 
 	bool UdpSocket::_canJoinMulticastGroup(State state)
 	{
-		harray<State> allowed;
-		allowed += BOUND;
-		allowed += SENDING;
-		allowed += RECEIVING;
-		allowed += SENDING_RECEIVING;
-		return _checkState(state, allowed, "join multicast group");
+		return _checkState(state, State::allowedJoinMulticastGroupStates, "join multicast group");
 	}
 
 	bool UdpSocket::_canLeaveMulticastGroup(State state)
 	{
-		harray<State> allowed;
-		allowed += BOUND;
-		allowed += SENDING;
-		allowed += RECEIVING;
-		allowed += SENDING_RECEIVING;
-		return _checkState(state, allowed, "leave multicast group");
+		return _checkState(state, State::allowedLeaveMulticastGroupStates, "leave multicast group");
 	}
 
 }

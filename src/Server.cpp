@@ -41,7 +41,7 @@ namespace sakit
 	bool Server::isRunning()
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		return (this->state == RUNNING);
+		return (this->state == State::Running);
 	}
 
 	bool Server::startAsync()
@@ -51,8 +51,8 @@ namespace sakit
 		{
 			return false;
 		}
-		this->state = RUNNING;
-		this->serverThread->result = RUNNING;
+		this->state = State::Running;
+		this->serverThread->result = State::Running;
 		this->serverThread->start();
 		return true;
 	}
@@ -74,35 +74,33 @@ namespace sakit
 		hmutex::ScopeLock lock(&this->mutexState);
 		hmutex::ScopeLock lockThreadResult(&this->serverThread->resultMutex);
 		State result = this->serverThread->result;
-		if (result == RUNNING || result == IDLE)
+		if (result == State::Running || result == State::Idle)
 		{
 			return;
 		}
-		this->serverThread->result = IDLE;
-		this->state = BOUND;
+		this->serverThread->result = State::Idle;
+		this->state = State::Bound;
 		lockThreadResult.release();
 		lock.release();
 		// delegate calls
-		switch (result)
+		if (result == State::Finished)
 		{
-		case FINISHED:	this->serverDelegate->onStopped(this);		break;
-		case FAILED:	this->serverDelegate->onStartFailed(this);	break;
-		default:													break;
+			this->serverDelegate->onStopped(this);
+		}
+		else if (result == State::Failed)
+		{
+			this->serverDelegate->onStartFailed(this);
 		}
 	}
 
 	bool Server::_canStart(State state)
 	{
-		harray<State> allowed;
-		allowed += BOUND;
-		return _checkState(state, allowed, "start");
+		return _checkState(state, State::allowedServerStartStates, "start");
 	}
 
 	bool Server::_canStop(State state)
 	{
-		harray<State> allowed;
-		allowed += RUNNING;
-		return _checkState(state, allowed, "stop");
+		return _checkState(state, State::allowedServerStopStates, "stop");
 	}
 
 }
