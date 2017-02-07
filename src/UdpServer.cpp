@@ -41,7 +41,8 @@ namespace sakit
 		harray<unsigned short> ports;
 		harray<hstream*> streams;
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->udpServerThread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->udpServerThread->resultMutex);
+		hmutex::ScopeLock lockThreadStreams(&this->udpServerThread->streamsMutex);
 		if (this->udpServerThread->streams.size() > 0)
 		{
 			hosts = this->udpServerThread->remoteHosts;
@@ -51,7 +52,8 @@ namespace sakit
 			this->udpServerThread->remotePorts.clear();
 			this->udpServerThread->streams.clear();
 		}
-		lockThread.release();
+		lockThreadStreams.release();
+		lockThreadResult.release();
 		lock.release();
 		for_iter (i, 0, streams.size())
 		{

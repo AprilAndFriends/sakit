@@ -225,7 +225,7 @@ namespace sakit
 		this->raw.readRaw(buffer, size);
 		buffer[size] = '\0'; // classic string terminating 0-character
 		data = hstr(buffer);
-		delete [] buffer;
+		delete[] buffer;
 	}
 
 	HttpResponse* HttpResponse::clone() const

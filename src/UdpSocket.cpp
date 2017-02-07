@@ -139,7 +139,7 @@ namespace sakit
 		Binder::_update(timeDelta);
 		Socket::update(timeDelta);
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->broadcaster->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->broadcaster->resultMutex);
 		State result = this->broadcaster->result;
 		if (result == RUNNING || result == IDLE)
 		{
@@ -147,7 +147,7 @@ namespace sakit
 		}
 		this->broadcaster->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		// delegate calls
 		switch (result)
@@ -164,7 +164,8 @@ namespace sakit
 		harray<unsigned short> remotePorts;
 		harray<hstream*> streams;
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->receiver->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->receiver->resultMutex);
+		hmutex::ScopeLock lockThreadStreams(&this->udpReceiver->streamsMutex);
 		if (this->udpReceiver->streams.size() > 0)
 		{
 			remoteHosts = this->udpReceiver->remoteHosts;
@@ -174,10 +175,11 @@ namespace sakit
 			this->udpReceiver->remotePorts.clear();
 			this->udpReceiver->streams.clear();
 		}
+		lockThreadStreams.release();
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			lockThread.release();
+			lockThreadResult.release();
 			lock.release();
 			for_iter (i, 0, streams.size())
 			{
@@ -188,7 +190,7 @@ namespace sakit
 		}
 		this->receiver->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		for_iter (i, 0, streams.size())
 		{
@@ -220,7 +222,7 @@ namespace sakit
 		stream.readRaw(p, size);
 		p[size] = 0;
 		hstr result = p;
-		delete [] p;
+		delete[] p;
 		return result;
 	}
 
@@ -282,7 +284,7 @@ namespace sakit
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->broadcaster->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->broadcaster->resultMutex);
 		if (!this->_canSend(this->state))
 		{
 			return false;

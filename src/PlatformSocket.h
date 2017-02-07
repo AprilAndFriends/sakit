@@ -37,7 +37,6 @@ using namespace Windows::Storage::Streams;
 
 namespace sakit
 {
-	class HttpResponse;
 	class Socket;
 
 	class PlatformSocket
@@ -58,8 +57,7 @@ namespace sakit
 		bool bind(Host localHost, unsigned short& localPort);
 		bool disconnect();
 		bool send(hstream* stream, int& sent, int& count);
-		bool receive(hstream* stream, hmutex& mutex, int& maxBytes);
-		bool receive(HttpResponse* response, hmutex& mutex);
+		bool receive(hstream* stream, int& maxCount, hmutex* mutex = NULL);
 		bool receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 		bool listen();
 		bool accept(Socket* socket);
@@ -96,7 +94,7 @@ namespace sakit
 		struct sockaddr_storage* address;
 
 		bool _setAddress(Host& host, unsigned short& port, addrinfo** info);
-		bool _checkReceivedBytes(unsigned long* received);
+		bool _checkReceivedCount(unsigned long* receivedCount);
 		bool _checkResult(int result, chstr functionName, bool disconnectOnError = true);
 		void _getLocalHostPort(Host& host, unsigned short& port);
 #else
@@ -163,10 +161,10 @@ namespace sakit
 		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);
 
 		bool _setUdpHost(HostName^ hostName, unsigned short remotePort);
-		bool _readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream);
+		bool _readStream(hstream* stream, int& maxCount, hmutex* mutex, IInputStream^ inputStream);
 
-		static bool _awaitAsync(State& state, hmutex& mutex, hmutex::ScopeLock& lock);
-		static void _awaitAsyncCancel(State& state, hmutex& mutex, hmutex::ScopeLock& lock);
+		static bool _awaitAsync(State& state, hmutex::ScopeLock& lock, hmutex* mutex);
+		static void _awaitAsyncCancel(State& state, hmutex::ScopeLock& lock, hmutex* mutex);
 #endif
 
 		bool _setNonBlocking(bool value);

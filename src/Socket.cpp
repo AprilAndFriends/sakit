@@ -59,32 +59,34 @@ namespace sakit
 
 	void Socket::_updateSending()
 	{
-		int sent = 0;
+		int sentCount = 0;
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->sender->mutex);
-		if (this->sender->lastSent > 0)
+		hmutex::ScopeLock lockThreadResult(&this->sender->resultMutex);
+		hmutex::ScopeLock lockThreadSentCount(&this->sender->sentCountMutex);
+		if (this->sender->sentCount > 0)
 		{
-			sent = this->sender->lastSent;
-			this->sender->lastSent = 0;
+			sentCount = this->sender->sentCount;
+			this->sender->sentCount = 0;
 		}
+		lockThreadSentCount.release();
 		State result = this->sender->result;
 		if (result == RUNNING || result == IDLE)
 		{
-			if (sent > 0)
+			lockThreadResult.release();
+			lock.release();
+			if (sentCount > 0)
 			{
-				lockThread.release();
-				lock.release();
-				this->socketDelegate->onSent(this, sent);
+				this->socketDelegate->onSent(this, sentCount);
 			}
 			return;
 		}
 		this->sender->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? RECEIVING : this->idleState);
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
-		if (sent > 0)
+		if (sentCount > 0)
 		{
-			this->socketDelegate->onSent(this, sent);
+			this->socketDelegate->onSent(this, sentCount);
 		}
 		// delegate calls
 		switch (result)
@@ -139,7 +141,7 @@ namespace sakit
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->sender->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->sender->resultMutex);
 		if (!this->_canSend(this->state))
 		{
 			return false;
@@ -178,7 +180,7 @@ namespace sakit
 	bool Socket::_startReceiveAsync(int maxValue)
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->receiver->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->receiver->resultMutex);
 		if (!this->_canReceive(this->state))
 		{
 			return false;

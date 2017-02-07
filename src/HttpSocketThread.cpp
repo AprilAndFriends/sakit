@@ -41,21 +41,22 @@ namespace sakit
 		unsigned short localPort = 0;
 		if (!this->socket->isConnected() && !this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency))
 		{
-			hmutex::ScopeLock lock(&this->mutex);
+			hmutex::ScopeLock lock(&this->resultMutex);
 			this->result = FAILED;
+			lock.release();
 			this->executing = false;
 		}
 	}
 
 	void HttpSocketThread::_updateSend()
 	{
-		int sent = 0;
+		int sentCount = 0;
 		int count = (int)this->stream->size();
 		while (this->isRunning() && this->executing)
 		{
-			if (!this->socket->send(this->stream, count, sent))
+			if (!this->socket->send(this->stream, count, sentCount))
 			{
-				hmutex::ScopeLock lock(&this->mutex);
+				hmutex::ScopeLock lock(&this->resultMutex);
 				this->result = FAILED;
 				lock.release();
 				this->executing = false;
@@ -73,20 +74,35 @@ namespace sakit
 
 	void HttpSocketThread::_updateReceive()
 	{
+		hmutex::ScopeLock lock;
+		int maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
+		hstream stream(maxCount);
 		float time = 0.0f;
-		int64_t size = 0;
-		int64_t lastSize = 0;
+		int64_t size = 0LL;
+		int64_t lastSize = 0LL;
+		int64_t position = 0LL;
+		int count = 0;
 		while (this->isRunning() && this->executing)
 		{
-			if (!this->socket->receive(this->response, this->mutex))
+			if (!this->socket->receive(&stream, maxCount))
 			{
 				break;
 			}
+			stream.rewind();
+			lock.acquire(&this->responseMutex);
+			this->response->raw.seek(0, hstream::END);
+			position = this->response->raw.position();
+			this->response->raw.writeRaw(stream);
+			this->response->raw.seek(position, hstream::START);
+			this->response->parseFromRaw();
+			size = this->response->raw.size();
 			if (this->response->headersComplete && this->response->bodyComplete)
 			{
+				lock.release();
 				break;
 			}
-			size = this->response->raw.size();
+			lock.release();
+			stream.clear(maxCount);
 			if (lastSize != size)
 			{
 				lastSize = size;
@@ -101,13 +117,14 @@ namespace sakit
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
+		lock.acquire(&this->responseMutex);
 		// if timed out, has no predefined length, all headers were received and there is a body
 		if (time >= *this->timeout && !this->response->headers.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH) && this->response->headersComplete && this->response->body.size() > 0)
 		{
 			if (!this->response->headers.hasKey(SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH) && this->response->body.size() > 0)
 			{
 				// let's say it's complete, we don't know its supposed length anyway
-				hlog::warn(logTag, "HttpSocket did not return header " SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH "! Body might be incomplete, but will be considered complete.");
+				hlog::warn(logTag, "HttpSocket did not return header '" SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH "'! Body might be incomplete, but will be considered complete.");
 				this->response->bodyComplete = true;
 			}
 			else if ((int)this->response->headers[SAKIT_HTTP_REQUEST_HEADER_CONTENT_LENGTH] == 0) // empty body
@@ -115,16 +132,21 @@ namespace sakit
 				this->response->bodyComplete = true;
 			}
 		}
-		hmutex::ScopeLock lock(&this->mutex);
+		bool completeHeaders = (this->response->headersComplete && this->response->bodyComplete);
+		if (!completeHeaders)
+		{
+			this->response->clear();
+		}
+		lock.release();
+		lock.acquire(&this->resultMutex);
 		// only a response with complete headers and a complete body is considered
-		if (this->response->headersComplete && this->response->bodyComplete)
+		if (completeHeaders)
 		{
 			this->result = FINISHED;
 		}
 		else
 		{
 			this->result = FAILED;
-			this->response->clear();
 			this->socket->disconnect();
 		}
 	}

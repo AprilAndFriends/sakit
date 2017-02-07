@@ -38,9 +38,9 @@ namespace sakit
 		void update(float timeDelta = 0.0f);
 
 		/// @note Keep in mind that only all queued stream data is received at once.
-		int receive(hstream* stream, int maxBytes = 0);
-		hstr receive(int maxBytes = 0);
-		bool startReceiveAsync(int maxBytes = 0);
+		int receive(hstream* stream, int maxCount = 0);
+		hstr receive(int maxCount = 0);
+		bool startReceiveAsync(int maxCount = 0);
 
 	protected:
 		TcpSocketDelegate* tcpSocketDelegate;

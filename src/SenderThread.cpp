@@ -18,7 +18,7 @@
 
 namespace sakit
 {
-	SenderThread::SenderThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), lastSent(0)
+	SenderThread::SenderThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), sentCount(0)
 	{
 		this->name = "SAKit sender";
 		this->stream = new hstream();
@@ -39,13 +39,14 @@ namespace sakit
 			sent = 0;
 			if (!this->socket->send(this->stream, count, sent))
 			{
-				lock.acquire(&this->mutex);
+				lock.acquire(&this->resultMutex);
 				this->result = FAILED;
+				lock.release();
 				this->stream->clear();
 				return;
 			}
-			lock.acquire(&this->mutex);
-			this->lastSent += sent;
+			lock.acquire(&this->sentCountMutex);
+			this->sentCount += sent;
 			lock.release();
 			if (this->stream->eof())
 			{
@@ -53,8 +54,9 @@ namespace sakit
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
-		lock.acquire(&this->mutex);
+		lock.acquire(&this->resultMutex);
 		this->result = FINISHED;
+		lock.release();
 		this->stream->clear();
 	}
 

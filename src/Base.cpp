@@ -76,20 +76,19 @@ namespace sakit
 		return sent;
 	}
 	
-	int Base::_receiveDirect(hstream* stream, int maxBytes)
+	int Base::_receiveDirect(hstream* stream, int maxCount)
 	{
-		hmutex mutex;
 		float time = 0.0f;
-		int remaining = maxBytes;
+		int remainingCount = maxCount;
 		int64_t position = stream->position();
 		int64_t lastPosition = position;
 		while (true)
 		{
-			if (!this->socket->receive(stream, mutex, remaining))
+			if (!this->socket->receive(stream, remainingCount))
 			{
 				break;
 			}
-			if (maxBytes > 0 && remaining == 0)
+			if (maxCount > 0 && remainingCount == 0)
 			{
 				break;
 			}
@@ -100,7 +99,7 @@ namespace sakit
 				time = 0.0f;
 				continue;
 			}
-			if (remaining != maxBytes || lastPosition != position)
+			if (remainingCount != maxCount || lastPosition != position)
 			{
 				break;
 			}

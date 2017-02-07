@@ -34,7 +34,8 @@ namespace sakit
 
 	protected:
 		hstream* stream;
-		int lastSent;
+		int sentCount;
+		hmutex sentCountMutex;
 
 		void _updateProcess();
 

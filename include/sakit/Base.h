@@ -52,7 +52,7 @@ namespace sakit
 		Base();
 
 		int _sendDirect(hstream* stream, int count);
-		int _receiveDirect(hstream* stream, int maxBytes);
+		int _receiveDirect(hstream* stream, int maxCount);
 		int _receiveFromDirect(hstream* stream, Host& remoteHost, unsigned short& remotePort);
 
 		void __register();

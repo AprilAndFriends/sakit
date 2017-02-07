@@ -46,7 +46,7 @@ namespace sakit
 		PlatformSocket* socket;
 		Host host;
 		unsigned short port;
-		hmutex mutex;
+		hmutex resultMutex;
 
 		virtual void _updateProcess() = 0;
 

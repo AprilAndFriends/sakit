@@ -35,6 +35,7 @@ namespace sakit
 
 	protected:
 		hstream* stream;
+		hmutex streamMutex;
 
 		void _updateProcess();
 

@@ -33,9 +33,9 @@ namespace sakit
 		hmutex::ScopeLock lock;
 		while (this->isRunning() && this->executing)
 		{
-			if (!this->socket->receive(this->stream, this->mutex, remaining))
+			if (!this->socket->receive(this->stream, remaining, &this->streamMutex))
 			{
-				lock.acquire(&this->mutex);
+				lock.acquire(&this->resultMutex);
 				this->result = FAILED;
 				return;
 			}
@@ -45,7 +45,7 @@ namespace sakit
 			}
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
-		lock.acquire(&this->mutex);
+		lock.acquire(&this->resultMutex);
 		this->result = FINISHED;
 	}
 

@@ -36,6 +36,7 @@ namespace sakit
 		harray<Host> remoteHosts;
 		harray<unsigned short> remotePorts;
 		harray<hstream*> streams;
+		hmutex streamsMutex;
 
 		void _updateProcess();
 

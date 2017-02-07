@@ -78,7 +78,7 @@ namespace sakit
 	void Connector::_update(float timeDelta)
 	{
 		hmutex::ScopeLock lock(this->_mutexState);
-		hmutex::ScopeLock lockThread(&this->_thread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->_thread->resultMutex);
 		State state = *this->_state;
 		State result = this->_thread->result;
 		Host remoteHost = this->_thread->host;
@@ -132,7 +132,7 @@ namespace sakit
 		default:
 			break;
 		}
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		// delegate calls
 		switch (result)

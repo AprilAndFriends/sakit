@@ -27,23 +27,9 @@ namespace sakit
 	PlatformSocket::~PlatformSocket()
 	{
 		this->disconnect();
-		delete [] this->receiveBuffer;
+		delete[] this->receiveBuffer;
 	}
 	
-	bool PlatformSocket::receive(HttpResponse* response, hmutex& mutex)
-	{
-		response->raw.seek(0, hstream::END);
-		int64_t position = response->raw.position();
-		int count = 0;
-		bool result = this->receive(&response->raw, mutex, count);
-		if (result)
-		{
-			response->raw.seek(position, hstream::START);
-			response->parseFromRaw();
-		}
-		return result;
-	}
-
 	bool PlatformSocket::_printLastError(chstr basicMessage, int code)
 	{
 		hstr message;

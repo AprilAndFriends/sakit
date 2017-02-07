@@ -52,19 +52,21 @@ namespace sakit
 	{
 		hstream* stream = NULL;
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->receiver->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->receiver->resultMutex);
+		hmutex::ScopeLock lockThreadStream(&this->tcpReceiver->streamMutex);
 		if (this->tcpReceiver->stream->size() > 0)
 		{
 			stream = this->tcpReceiver->stream;
 			this->tcpReceiver->stream = new hstream();
 		}
+		lockThreadStream.release();
 		State result = this->receiver->result;
 		if (result == RUNNING || result == IDLE)
 		{
+			lockThreadResult.release();
+			lock.release();
 			if (stream != NULL)
 			{
-				lockThread.release();
-				lock.release();
 				stream->rewind();
 				this->tcpSocketDelegate->onReceived(this, stream);
 				delete stream;
@@ -73,7 +75,7 @@ namespace sakit
 		}
 		this->receiver->result = IDLE;
 		this->state = (this->state == SENDING_RECEIVING ? SENDING : this->idleState);
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		if (stream != NULL)
 		{
@@ -90,27 +92,27 @@ namespace sakit
 		}
 	}
 
-	int TcpSocket::receive(hstream* stream, int maxBytes)
+	int TcpSocket::receive(hstream* stream, int maxCount)
 	{
 		if (!this->_prepareReceive(stream))
 		{
 			return 0;
 		}
-		return this->_finishReceive(this->_receiveDirect(stream, maxBytes));
+		return this->_finishReceive(this->_receiveDirect(stream, maxCount));
 	}
 	
-	hstr TcpSocket::receive(int maxBytes)
+	hstr TcpSocket::receive(int maxCount)
 	{
 		hstream stream;
-		int size = this->receive(&stream, maxBytes);
+		int size = this->receive(&stream, maxCount);
 		unsigned char terminator = 0;
 		stream.writeRaw(&terminator, 1); // Terminator 2 was better though
 		return hstr((char*)stream, size);
 	}
 
-	bool TcpSocket::startReceiveAsync(int maxBytes)
+	bool TcpSocket::startReceiveAsync(int maxCount)
 	{
-		return this->_startReceiveAsync(maxBytes);
+		return this->_startReceiveAsync(maxCount);
 	}
 
 	void TcpSocket::_activateConnection(Host remoteHost, unsigned short remotePort, Host localHost, unsigned short localPort)

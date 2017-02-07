@@ -19,6 +19,8 @@
 #include "Socket.h"
 #include "TimedThread.h"
 
+#define HTTP_SOCKET_THREAD_BUFFER_SIZE 4096
+
 namespace sakit
 {
 	class PlatformSocket;
@@ -36,6 +38,7 @@ namespace sakit
 	protected:
 		hstream* stream;
 		HttpResponse* response;
+		hmutex responseMutex;
 
 		void _updateConnect();
 		void _updateSend();

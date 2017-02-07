@@ -50,8 +50,6 @@
 		return this->_executeMethodAsync(REQUEST_ ## constant, customBody, customHeaders); \
 	}
 
-#define DEBUG_LOG_TAG (logTag + "-debug")
-
 namespace sakit
 {
 	unsigned short HttpSocket::DefaultPort = 80;
@@ -68,12 +66,9 @@ namespace sakit
 
 	HttpSocket::~HttpSocket()
 	{
-		hlog::warnf(DEBUG_LOG_TAG, "Starting unregister: %p", this);
 		this->__unregister();
-		hlog::warnf(DEBUG_LOG_TAG, "Finished unregister: %p", this);
 		this->thread->join();
 		delete this->thread;
-		hlog::warnf(DEBUG_LOG_TAG, "Finished delete: %p", this);
 	}
 
 	bool HttpSocket::isConnected()
@@ -91,28 +86,34 @@ namespace sakit
 	void HttpSocket::update(float timeDelta)
 	{
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->thread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->thread->resultMutex);
+		hmutex::ScopeLock lockThreadResponse;
 		State result = this->thread->result;
 		HttpResponse* response = NULL;
 		if (result == RUNNING || result == IDLE)
 		{
-			if (this->reportProgress && this->thread->response->hasNewData())
+			if (this->reportProgress)
 			{
-				hlog::warnf(DEBUG_LOG_TAG, "Cloning response from (for report): %p", this);
-				response = this->thread->response->clone();
-				this->thread->response->consumeNewData();
-				Url url = this->url;
-				lockThread.release();
-				lock.release();
-				this->socketDelegate->onExecuteProgress(this, response, url);
-				delete response;
+				lockThreadResponse.acquire(&this->thread->responseMutex);
+				if (this->thread->response->hasNewData())
+				{
+					response = this->thread->response->clone();
+					this->thread->response->consumeNewData();
+					lockThreadResponse.release();
+					Url url = this->url;
+					lockThreadResult.release();
+					lock.release();
+					this->socketDelegate->onExecuteProgress(this, response, url);
+					delete response;
+				}
 			}
 			return;
 		}
 		this->thread->result = IDLE;
-		hlog::warnf(DEBUG_LOG_TAG, "Cloning response from (for complete): %p", this);
+		lockThreadResponse.acquire(&this->thread->responseMutex);
 		response = this->thread->response->clone();
 		this->thread->response->clear();
+		lockThreadResponse.release();
 		Url url = this->url; // _terminateConnection() deletes this, but it's needed for the delegate call ahead
 		if (!this->keepAlive || response->headers.tryGet(SAKIT_HTTP_REQUEST_HEADER_CONNECTION, "") == "close" || !this->socket->isConnected())
 		{
@@ -123,7 +124,7 @@ namespace sakit
 		{
 			this->state = CONNECTED;
 		}
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		// some final data might be available
 		if (this->reportProgress && response->hasNewData())
@@ -266,7 +267,7 @@ namespace sakit
 			return false;
 		}
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->thread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->thread->resultMutex);
 		if (!this->_canExecute(this->state))
 		{
 			return false;
@@ -305,20 +306,29 @@ namespace sakit
 
 	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
 	{
-		hmutex mutex;
+		int maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
+		hstream stream(maxCount);
 		float time = 0.0f;
-		int64_t size = 0;
-		int64_t lastSize = 0;
+		int64_t size = 0LL;
+		int64_t lastSize = 0LL;
+		int64_t position = 0LL;
 		while (true)
 		{
-			if (!this->socket->receive(response, mutex))
+			if (!this->socket->receive(&stream, maxCount))
 			{
 				break;
 			}
+			stream.rewind();
+			response->raw.seek(0, hstream::END);
+			position = response->raw.position();
+			response->raw.writeRaw(stream);
+			response->raw.seek(position, hstream::START);
+			response->parseFromRaw();
 			if (response->headersComplete && response->bodyComplete)
 			{
 				break;
 			}
+			stream.clear(maxCount);
 			size = response->raw.size();
 			if (lastSize != size)
 			{

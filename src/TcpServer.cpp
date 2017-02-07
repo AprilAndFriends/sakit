@@ -54,14 +54,16 @@ namespace sakit
 		this->_updateSockets();
 		harray<TcpSocket*> sockets;
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->tcpServerThread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->tcpServerThread->resultMutex);
+		hmutex::ScopeLock lockThreadSockets(&this->tcpServerThread->socketsMutex);
 		if (this->tcpServerThread->sockets.size() > 0)
 		{
 			sockets = this->tcpServerThread->sockets;
 			this->tcpServerThread->sockets.clear();
 			this->sockets += sockets;
 		}
-		lockThread.release();
+		lockThreadSockets.release();
+		lockThreadResult.release();
 		lock.release();
 		foreach (TcpSocket*, it, sockets)
 		{

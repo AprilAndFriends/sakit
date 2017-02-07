@@ -32,7 +32,7 @@ namespace sakit
 		Host localHost;
 		unsigned short localPort = 0;
 		bool result = this->socket->connect(this->host, this->port, localHost, localPort, *this->timeout, *this->retryFrequency);
-		hmutex::ScopeLock lock(&this->mutex);
+		hmutex::ScopeLock lock(&this->resultMutex);
 		if (result)
 		{
 			this->result = FINISHED;
@@ -48,7 +48,7 @@ namespace sakit
 	void ConnectorThread::_updateDisconnecting()
 	{
 		bool result = this->socket->disconnect();
-		hmutex::ScopeLock lock(&this->mutex);
+		hmutex::ScopeLock lock(&this->resultMutex);
 		this->result = (result ? FINISHED : FAILED);
 	}
 

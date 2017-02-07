@@ -29,14 +29,14 @@ namespace sakit
 	void BinderThread::_updateBinding()
 	{
 		bool result = this->socket->bind(this->host, this->port);
-		hmutex::ScopeLock lock(&this->mutex);
+		hmutex::ScopeLock lock(&this->resultMutex);
 		this->result = (result ? FINISHED : FAILED);
 	}
 
 	void BinderThread::_updateUnbinding()
 	{
 		bool result = this->socket->disconnect();
-		hmutex::ScopeLock lock(&this->mutex);
+		hmutex::ScopeLock lock(&this->resultMutex);
 		this->result = (result ? FINISHED : FAILED);
 	}
 

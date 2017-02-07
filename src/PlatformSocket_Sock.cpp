@@ -467,49 +467,49 @@ namespace sakit
 		return false;
 	}
 
-	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& maxBytes)
+	bool PlatformSocket::receive(hstream* stream, int& maxCount, hmutex* mutex)
 	{
-		unsigned long received = 0;
-		if (!this->_checkReceivedBytes(&received))
+		unsigned long receivedCount = 0;
+		if (!this->_checkReceivedCount(&receivedCount))
 		{
 			return false;
 		}
-		if (received == 0)
+		if (receivedCount == 0)
 		{
 			return true;
 		}
-		int read = hmin((int)received, this->bufferSize);
-		if (maxBytes > 0) // if don't read everything
+		int readCount = hmin((int)receivedCount, this->bufferSize);
+		if (maxCount > 0) // if don't read everything
 		{
-			read = hmin(read, maxBytes);
+			readCount = hmin(readCount, maxCount);
 		}
-		read = (int)recv(this->sock, this->receiveBuffer, read, 0);
-		if (!this->_checkResult(read, "recv()", false))
+		readCount = (int)recv(this->sock, this->receiveBuffer, readCount, 0);
+		if (!this->_checkResult(readCount, "recv()", false))
 		{
 			return false;
 		}
-		hmutex::ScopeLock lock(&mutex);
-		stream->writeRaw(this->receiveBuffer, read);
+		hmutex::ScopeLock lock(mutex);
+		stream->writeRaw(this->receiveBuffer, readCount);
 		lock.release();
-		if (maxBytes > 0) // if don't read everything
+		if (maxCount > 0) // if don't read everything
 		{
-			maxBytes -= read;
+			maxCount -= readCount;
 		}
 		return true;
 	}
 
 	bool PlatformSocket::receiveFrom(hstream* stream, Host& remoteHost, unsigned short& remotePort)
 	{
-		unsigned long received = 0;
-		if (!this->_checkReceivedBytes(&received))
+		unsigned long receivedCount = 0;
+		if (!this->_checkReceivedCount(&receivedCount))
 		{
 			return false;
 		}
-		if (received == 0)
+		if (receivedCount == 0)
 		{
 			return true;
 		}
-		int read = hmin((int)received, this->bufferSize);
+		int read = hmin((int)receivedCount, this->bufferSize);
 		sockaddr_storage address;
 		socklen_t size = (socklen_t)sizeof(sockaddr_storage);
 		this->_setNonBlocking(true);
@@ -535,7 +535,7 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::_checkReceivedBytes(unsigned long* received)
+	bool PlatformSocket::_checkReceivedCount(unsigned long* receivedCount)
 	{
 #ifndef _WIN32 // Unix requires a select() call before using ioctl/ioctlsocket
 		timeval interval = {0, 1};
@@ -553,7 +553,7 @@ namespace sakit
 		}
 #endif
 		// control socket IO
-		return this->_checkResult(ioctlsocket(this->sock, FIONREAD, (unsigned long*)received), "ioctlsocket()", false);
+		return this->_checkResult(ioctlsocket(this->sock, FIONREAD, (unsigned long*)receivedCount), "ioctlsocket()", false);
 	}
 
 	bool PlatformSocket::listen()

@@ -72,7 +72,7 @@ namespace sakit
 	{
 		Binder::_update(timeDelta);
 		hmutex::ScopeLock lock(&this->mutexState);
-		hmutex::ScopeLock lockThread(&this->serverThread->mutex);
+		hmutex::ScopeLock lockThreadResult(&this->serverThread->resultMutex);
 		State result = this->serverThread->result;
 		if (result == RUNNING || result == IDLE)
 		{
@@ -80,7 +80,7 @@ namespace sakit
 		}
 		this->serverThread->result = IDLE;
 		this->state = BOUND;
-		lockThread.release();
+		lockThreadResult.release();
 		lock.release();
 		// delegate calls
 		switch (result)

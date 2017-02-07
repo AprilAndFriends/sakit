@@ -37,6 +37,7 @@ namespace sakit
 	protected:
 		TcpSocketDelegate* acceptedDelegate;
 		harray<TcpSocket*> sockets;
+		hmutex socketsMutex;
 
 		void _updateProcess();
 

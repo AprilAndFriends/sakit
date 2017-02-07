@@ -48,18 +48,18 @@ namespace sakit
 		memset(this->receiveBuffer, 0, this->bufferSize);
 	}
 
-	bool PlatformSocket::_awaitAsync(State& result, hmutex& mutex, hmutex::ScopeLock& lock)
+	bool PlatformSocket::_awaitAsync(State& result, hmutex::ScopeLock& lock, hmutex* mutex)
 	{
 		// if WinRT socket doesn't react in X seconds, something could be wrong
 		const int timeout = (int)(sakit::getGlobalTimeout() * 1000);
 		int i = 0;
-		lock.acquire(&mutex);
+		lock.acquire(mutex);
 		while (result != FINISHED && i < timeout)
 		{
 			lock.release();
 			hthread::sleep(1.0f);
 			++i;
-			lock.acquire(&mutex);
+			lock.acquire(mutex);
 		}
 		if (i >= timeout)
 		{
@@ -69,14 +69,14 @@ namespace sakit
 		return (result != FAILED);
 	}
 
-	void PlatformSocket::_awaitAsyncCancel(State& result, hmutex& mutex, hmutex::ScopeLock& lock)
+	void PlatformSocket::_awaitAsyncCancel(State& result, hmutex::ScopeLock& lock, hmutex* mutex)
 	{
-		lock.acquire(&mutex);
+		lock.acquire(mutex);
 		while (result != FINISHED)
 		{
 			lock.release();
 			hthread::sleep(0.01f);
-			lock.acquire(&mutex);
+			lock.acquire(mutex);
 		}
 		lock.release();
 	}
@@ -177,10 +177,10 @@ namespace sakit
 					}
 					_asyncState = FINISHED;
 				});
-				if (!PlatformSocket::_awaitAsync(_asyncState, _mutex, _lock))
+				if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 				{
 					action->Cancel();
-					PlatformSocket::_awaitAsyncCancel(_asyncState, _mutex, _lock);
+					PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 					this->disconnect();
 					return false;
 				}
@@ -227,10 +227,10 @@ namespace sakit
 				}
 				_asyncState = FINISHED;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex, _lock))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
 				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _mutex, _lock);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 				return false;
 			}
 		}
@@ -301,10 +301,10 @@ namespace sakit
 				}
 				_asyncState = FINISHED;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex, _lock))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
 				action->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _mutex, _lock);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 				this->disconnect();
 				return false;
 			}
@@ -435,10 +435,10 @@ namespace sakit
 				}
 				_asyncState = FINISHED;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex, _lock))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
 				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _mutex, _lock);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 				return false;
 			}
 		}
@@ -457,11 +457,11 @@ namespace sakit
 		return _asyncResult;
 	}
 
-	bool PlatformSocket::receive(hstream* stream, hmutex& mutex, int& count)
+	bool PlatformSocket::receive(hstream* stream, int& maxCount, hmutex* mutex)
 	{
 		if (this->sSock != nullptr)
 		{
-			return this->_readStream(stream, mutex, count, this->sSock->InputStream);
+			return this->_readStream(stream, maxCount, mutex, this->sSock->InputStream);
 		}
 		return false;
 	}
@@ -505,21 +505,21 @@ namespace sakit
 		return true;
 	}
 
-	bool PlatformSocket::_readStream(hstream* stream, hmutex& mutex, int& count, IInputStream^ inputStream)
+	bool PlatformSocket::_readStream(hstream* stream, int& maxCount, hmutex* mutex, IInputStream^ inputStream)
 	{
 		bool _asyncResult = false;
 		State _asyncState = RUNNING;
 		int _asyncResultSize = 0;
-		int read = (count > 0 ? hmin(this->bufferSize, count) : this->bufferSize);
-		Buffer^ _buffer = ref new Buffer(read);
+		int readCount = (maxCount > 0 ? hmin(this->bufferSize, maxCount) : this->bufferSize);
+		Buffer^ _buffer = ref new Buffer(readCount);
 		hmutex::ScopeLock _lock;
 		try
 		{
-			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = inputStream->ReadAsync(_buffer, read, InputStreamOptions::Partial);
+			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = inputStream->ReadAsync(_buffer, readCount, InputStreamOptions::Partial);
 			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
 				[&_asyncResult, &_asyncState, &_asyncResultSize, &mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 			{
-				hmutex::ScopeLock _lock(&mutex);
+				hmutex::ScopeLock _lock(mutex);
 				if (_asyncState == RUNNING)
 				{
 					if (status == AsyncStatus::Completed)
@@ -530,10 +530,10 @@ namespace sakit
 				}
 				_asyncState = FINISHED;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, mutex, _lock))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, mutex))
 			{
 				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, mutex, _lock);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, mutex);
 				// don't disconnect here, a timeout could have caused the operation to abort
 				if (_asyncResultSize == 0)
 				{
@@ -561,13 +561,13 @@ namespace sakit
 			return false;
 		}
 		reader->DetachBuffer();
-		_lock.acquire(&mutex);
+		_lock.acquire(mutex);
 		stream->writeRaw(_data->Data, _data->Length);
 		_asyncResultSize = (int)_data->Length;
 		_lock.release();
-		if (count > 0) // if don't read everything
+		if (maxCount > 0) // if don't read everything
 		{
-			count -= _asyncResultSize;
+			maxCount -= _asyncResultSize;
 		}
 		return false; // all data has been read, that's how WinRT works
 	}
@@ -693,10 +693,10 @@ namespace sakit
 				}
 				_asyncState = FINISHED;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _mutex, _lock))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
 				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _mutex, _lock);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 				return "";
 			}
 		}

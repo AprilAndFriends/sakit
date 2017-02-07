@@ -30,6 +30,14 @@ namespace sakit
 
 	TcpServerThread::~TcpServerThread()
 	{
+		hmutex::ScopeLock lock(&this->socketsMutex);
+		harray<TcpSocket*> sockets = this->sockets;
+		this->sockets.clear();
+		lock.release();
+		foreach (TcpSocket*, it, sockets)
+		{
+			delete (*it);
+		}
 	}
 
 	void TcpServerThread::_updateProcess()
@@ -44,7 +52,7 @@ namespace sakit
 		{
 			if (!this->socket->listen())
 			{
-				lock.acquire(&this->mutex);
+				lock.acquire(&this->resultMutex);
 				this->result = FAILED;
 				lock.release();
 				delete tcpSocket;
@@ -52,7 +60,7 @@ namespace sakit
 			}
 			if (this->socket->accept(tcpSocket))
 			{
-				lock.acquire(&this->mutex);
+				lock.acquire(&this->socketsMutex);
 				this->sockets += tcpSocket;
 				lock.release();
 				tcpSocket = new TcpSocket(this->acceptedDelegate);
@@ -65,7 +73,7 @@ namespace sakit
 			hthread::sleep(*this->retryFrequency * 1000.0f);
 		}
 		delete tcpSocket;
-		lock.acquire(&this->mutex);
+		lock.acquire(&this->resultMutex);
 		this->result = FINISHED;
 	}
 
