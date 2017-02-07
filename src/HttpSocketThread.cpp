@@ -81,7 +81,6 @@ namespace sakit
 		int64_t size = 0LL;
 		int64_t lastSize = 0LL;
 		int64_t position = 0LL;
-		int count = 0;
 		while (this->isRunning() && this->executing)
 		{
 			if (!this->socket->receive(&stream, maxCount))
