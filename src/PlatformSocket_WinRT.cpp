@@ -576,7 +576,7 @@ namespace sakit
 	{
 		hstream* stream = new hstream();
 		int count = 0;
-		this->socket->_readStream(stream, hmutex(), count, args->GetDataStream());
+		this->socket->_readStream(stream, count, NULL, args->GetDataStream());
 		if (stream->size() > 0)
 		{
 			stream->rewind();
