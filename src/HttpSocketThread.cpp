@@ -89,10 +89,10 @@ namespace sakit
 			}
 			stream.rewind();
 			lock.acquire(&this->responseMutex);
-			this->response->raw.seek(0, hstream::END);
+			this->response->raw.seek(0, hseek::End);
 			position = this->response->raw.position();
 			this->response->raw.writeRaw(stream);
-			this->response->raw.seek(position, hstream::START);
+			this->response->raw.seek(position, hseek::Start);
 			this->response->parseFromRaw();
 			size = this->response->raw.size();
 			if (this->response->headersComplete && this->response->bodyComplete)

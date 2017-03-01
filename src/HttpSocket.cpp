@@ -326,10 +326,10 @@ namespace sakit
 				break;
 			}
 			stream.rewind();
-			response->raw.seek(0, hstream::END);
+			response->raw.seek(0, hseek::End);
 			position = response->raw.position();
 			response->raw.writeRaw(stream);
-			response->raw.seek(position, hstream::START);
+			response->raw.seek(position, hseek::Start);
 			response->parseFromRaw();
 			if (response->headersComplete && response->bodyComplete)
 			{

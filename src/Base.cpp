@@ -72,7 +72,7 @@ namespace sakit
 			}
 			hthread::sleep(this->retryFrequency * 1000.0f);
 		}
-		stream->seek(position, hstream::START);
+		stream->seek(position, hseek::Start);
 		return sent;
 	}
 	

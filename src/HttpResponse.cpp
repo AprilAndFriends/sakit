@@ -155,7 +155,7 @@ namespace sakit
 			index = data.indexOf(HTTP_DELIMITER);
 			if (index < 0)
 			{
-				this->raw.seek(read - size, hstream::END);
+				this->raw.seek(read - size, hseek::End);
 				break;
 			}
 			line = (index > 0 ? data(0, index) : "");
@@ -163,7 +163,7 @@ namespace sakit
 			read += index + 2;
 			if (line == "")
 			{
-				this->raw.seek(read - size, hstream::END);
+				this->raw.seek(read - size, hseek::End);
 				this->headersComplete = true;
 				break;
 			}
@@ -236,7 +236,7 @@ namespace sakit
 					if (this->chunkSize == 0)
 					{
 						this->body.writeRaw(this->raw);
-						this->raw.seek(0, hstream::END);
+						this->raw.seek(0, hseek::End);
 						this->bodyComplete = true;
 						break;
 					}
