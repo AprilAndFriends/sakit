@@ -35,20 +35,20 @@ namespace sakit
 		HL_ENUM_DECLARE(State, Finished);
 		HL_ENUM_DECLARE(State, Failed);
 
-		static const harray<State> allowedBindStates;
-		static const harray<State> allowedUnbindStates;
-		static const harray<State> allowedConnectStates;
-		static const harray<State> allowedDisconnectStates;
-		static const harray<State> allowedSendStatesBasic;
-		static const harray<State> allowedReceiveStatesBasic;
-		static const harray<State> allowedStopReceiveStates;
-		static const harray<State> allowedSetDestinationStates;
-		static const harray<State> allowedJoinMulticastGroupStates;
-		static const harray<State> allowedLeaveMulticastGroupStates;
-		static const harray<State> allowedServerStartStates;
-		static const harray<State> allowedServerStopStates;
-		static const harray<State> allowedHttpExecuteStates;
-		static const harray<State> allowedHttpAbortStates;
+		static harray<State> allowedBindStates;
+		static harray<State> allowedUnbindStates;
+		static harray<State> allowedConnectStates;
+		static harray<State> allowedDisconnectStates;
+		static harray<State> allowedSendStatesBasic;
+		static harray<State> allowedReceiveStatesBasic;
+		static harray<State> allowedStopReceiveStates;
+		static harray<State> allowedSetDestinationStates;
+		static harray<State> allowedJoinMulticastGroupStates;
+		static harray<State> allowedLeaveMulticastGroupStates;
+		static harray<State> allowedServerStartStates;
+		static harray<State> allowedServerStopStates;
+		static harray<State> allowedHttpExecuteStates;
+		static harray<State> allowedHttpAbortStates;
 
 	));
 

@@ -15,6 +15,7 @@
 #include "PlatformSocket.h"
 #include "sakit.h"
 #include "Socket.h"
+#include "State.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -306,6 +307,30 @@ namespace sakit
 		{
 			reverseMapping[it->second] = hstr::fromUnicode(it->first);
 		}
+		// init states
+		State::allowedBindStates += State::Idle;
+		State::allowedUnbindStates += State::Bound;
+		State::allowedConnectStates += State::Idle;
+		State::allowedDisconnectStates += State::Connected;
+		State::allowedSendStatesBasic += State::Receiving;
+		State::allowedReceiveStatesBasic += State::Sending;
+		State::allowedStopReceiveStates += State::Receiving;
+		State::allowedStopReceiveStates += State::SendingReceiving;
+		State::allowedSetDestinationStates += State::Bound;
+		State::allowedJoinMulticastGroupStates += State::Bound;
+		State::allowedJoinMulticastGroupStates += State::Sending;
+		State::allowedJoinMulticastGroupStates += State::Receiving;
+		State::allowedJoinMulticastGroupStates += State::SendingReceiving;
+		State::allowedLeaveMulticastGroupStates += State::Bound;
+		State::allowedLeaveMulticastGroupStates += State::Sending;
+		State::allowedLeaveMulticastGroupStates += State::Receiving;
+		State::allowedLeaveMulticastGroupStates += State::SendingReceiving;
+		State::allowedServerStartStates += State::Bound;
+		State::allowedServerStopStates += State::Running;
+		State::allowedHttpExecuteStates += State::Idle;
+		State::allowedHttpExecuteStates += State::Connected;
+		State::allowedHttpAbortStates += State::Running;
+		// threading
 		if (threadedUpdate)
 		{
 			_updateThread = new hthread(&_asyncUpdate, "SAKit async update");
