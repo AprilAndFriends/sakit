@@ -75,16 +75,30 @@ namespace sakit
 	void HttpSocketThread::_updateReceive()
 	{
 		hmutex::ScopeLock lock;
-		int maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
+		int maxCount = 0;
 		hstream stream(maxCount);
 		float time = 0.0f;
 		int64_t size = 0LL;
 		int64_t lastSize = 0LL;
 		int64_t position = 0LL;
+		bool hasMoreData = true;
+		// this implementation differs slightly from HttpSocket::_receiveHttpDirect() due to required mutex locking
 		while (this->isRunning() && this->executing)
 		{
+			maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
 			if (!this->socket->receive(&stream, maxCount))
 			{
+				if (stream.size() > 0)
+				{
+					stream.rewind();
+					lock.acquire(&this->responseMutex);
+					this->response->raw.seek(0, hseek::End);
+					position = this->response->raw.position();
+					this->response->raw.writeRaw(stream);
+					this->response->raw.seek(position, hseek::Start);
+					this->response->parseFromRaw();
+					lock.release();
+				}
 				break;
 			}
 			stream.rewind();

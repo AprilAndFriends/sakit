@@ -313,25 +313,27 @@ namespace sakit
 
 	int HttpSocket::_receiveHttpDirect(HttpResponse* response)
 	{
-		int maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
+		int maxCount = 0;
 		hstream stream(maxCount);
 		float time = 0.0f;
 		int64_t size = 0LL;
 		int64_t lastSize = 0LL;
 		int64_t position = 0LL;
+		bool hasMoreData = false;
 		while (true)
 		{
-			if (!this->socket->receive(&stream, maxCount))
+			maxCount = HTTP_SOCKET_THREAD_BUFFER_SIZE;
+			hasMoreData = this->socket->receive(&stream, maxCount);
+			if (stream.size() > 0)
 			{
-				break;
+				stream.rewind();
+				response->raw.seek(0, hseek::End);
+				position = response->raw.position();
+				response->raw.writeRaw(stream);
+				response->raw.seek(position, hseek::Start);
+				response->parseFromRaw();
 			}
-			stream.rewind();
-			response->raw.seek(0, hseek::End);
-			position = response->raw.position();
-			response->raw.writeRaw(stream);
-			response->raw.seek(position, hseek::Start);
-			response->parseFromRaw();
-			if (response->headersComplete && response->bodyComplete)
+			if (!hasMoreData || response->headersComplete && response->bodyComplete)
 			{
 				break;
 			}

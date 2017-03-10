@@ -512,14 +512,15 @@ namespace sakit
 		int _asyncResultSize = 0;
 		int readCount = (maxCount > 0 ? hmin(this->bufferSize, maxCount) : this->bufferSize);
 		Buffer^ _buffer = ref new Buffer(readCount);
+		hmutex _mutex;
 		hmutex::ScopeLock _lock;
 		try
 		{
 			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = inputStream->ReadAsync(_buffer, readCount, InputStreamOptions::Partial);
 			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
-				[&_asyncResult, &_asyncState, &_asyncResultSize, &mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
+				[&_asyncResult, &_asyncState, &_asyncResultSize, &_mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 			{
-				hmutex::ScopeLock _lock(mutex);
+				hmutex::ScopeLock _lock(&_mutex);
 				if (_asyncState == State::Running)
 				{
 					if (status == AsyncStatus::Completed)
@@ -530,12 +531,12 @@ namespace sakit
 				}
 				_asyncState = State::Finished;
 			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, mutex))
+			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
 			{
 				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, mutex);
+				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
 				// don't disconnect here, a timeout could have caused the operation to abort
-				if (_asyncResultSize == 0)
+				if (_asyncResultSize <= 0)
 				{
 					return true;
 				}
@@ -565,11 +566,11 @@ namespace sakit
 		stream->writeRaw(_data->Data, _data->Length);
 		_asyncResultSize = (int)_data->Length;
 		_lock.release();
-		if (maxCount > 0) // if don't read everything
+		if (maxCount > 0) // if not trying to read everything at once
 		{
 			maxCount -= _asyncResultSize;
 		}
-		return false; // all data has been read, that's how WinRT works
+		return true; // if data has been read, consider this not finished yet
 	}
 
 	void PlatformSocket::UdpReceiver::onReceivedDatagram(DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args)

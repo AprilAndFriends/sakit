@@ -24,6 +24,11 @@ namespace sakit
 {
 	inline bool _checkState(State current, const harray<State>& allowed, chstr action)
 	{
+		if (!sakit::isInitialized())
+		{
+			hlog::error(logTag, "SAKit is not initialized!");
+			return false;
+		}
 		if (allowed.has(current))
 		{
 			return true;

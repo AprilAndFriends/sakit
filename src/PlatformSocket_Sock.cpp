@@ -491,7 +491,7 @@ namespace sakit
 		hmutex::ScopeLock lock(mutex);
 		stream->writeRaw(this->receiveBuffer, readCount);
 		lock.release();
-		if (maxCount > 0) // if don't read everything
+		if (maxCount > 0) // if not trying to read everything at once
 		{
 			maxCount -= readCount;
 		}
