@@ -333,7 +333,7 @@ namespace sakit
 				response->raw.seek(position, hseek::Start);
 				response->parseFromRaw();
 			}
-			if (!hasMoreData || response->headersComplete && response->bodyComplete)
+			if (!hasMoreData || (response->headersComplete && response->bodyComplete))
 			{
 				break;
 			}
