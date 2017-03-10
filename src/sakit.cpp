@@ -1,5 +1,5 @@
 /// @file
-/// @version 1.1
+/// @version 1.2
 /// 
 /// @section LICENSE
 /// 
@@ -23,6 +23,8 @@
 
 namespace sakit
 {
+	static hversion version(1, 2, 0);
+	
 	hstr logTag = "sakit";
 	float timeout = 10.00f;
 	float retryFrequency = 0.01f;
@@ -45,8 +47,8 @@ namespace sakit
 	
 	void init(bool threadedUpdate)
 	{
+		hlog::write(logTag, "Initializing Socket Abstraction Kit: " + version.toString());
 		bufferSize = 65536;
-		hlog::write(logTag, "Initializing Socket Abstraction Kit.");
 		PlatformSocket::platformInit();
 		// all 254 HTML entities as per HTML 4.0 specification
 		mapping[0x22u] = "quot";
