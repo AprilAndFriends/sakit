@@ -81,7 +81,6 @@ namespace sakit
 		int64_t size = 0LL;
 		int64_t lastSize = 0LL;
 		int64_t position = 0LL;
-		bool hasMoreData = true;
 		// this implementation differs slightly from HttpSocket::_receiveHttpDirect() due to required mutex locking
 		while (this->isRunning() && this->executing)
 		{
