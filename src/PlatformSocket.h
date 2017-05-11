@@ -30,6 +30,7 @@
 #include <netinet/in.h>
 #endif
 #ifdef _WINRT
+using namespace Windows::Foundation;
 using namespace Windows::Networking;
 using namespace Windows::Networking::Sockets;
 using namespace Windows::Storage::Streams;
@@ -156,6 +157,16 @@ namespace sakit
 		ConnectionAccepter^ connectionAccepter;
 		UdpReceiver^ udpReceiver;
 		IOutputStream^ udpStream;
+
+		// needs to be public due to Microsoft design choices
+	public:
+		Buffer^ _receiveBuffer;
+		hstream _receiveStream;
+		hmutex _mutexReceiveStream;
+		IAsyncOperationWithProgress<IBuffer^, unsigned int>^ _receiveAsyncOperation;
+		hmutex _mutexReceiveAsyncOperation;
+
+	private:
 
 		static HostName^ _makeHostName(Host host);
 		static hstr _resolve(chstr host, chstr serviceName, bool wantIp, bool wantPort);

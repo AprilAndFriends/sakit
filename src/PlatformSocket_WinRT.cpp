@@ -38,7 +38,7 @@ namespace sakit
 	{
 	}
 
-	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false), serverMode(false)
+	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false), serverMode(false), _receiveStream(this->bufferSize)
 	{
 		this->sSock = nullptr;
 		this->dSock = nullptr;
@@ -46,6 +46,8 @@ namespace sakit
 		this->bufferSize = sakit::bufferSize;
 		this->receiveBuffer = new char[this->bufferSize];
 		memset(this->receiveBuffer, 0, this->bufferSize);
+		this->_receiveBuffer = nullptr;
+		this->_receiveAsyncOperation = nullptr;
 	}
 
 	bool PlatformSocket::_awaitAsync(State& result, hmutex::ScopeLock& lock, hmutex* mutex)
@@ -370,6 +372,14 @@ namespace sakit
 
 	bool PlatformSocket::disconnect()
 	{
+		hmutex::ScopeLock _lock(&this->_mutexReceiveAsyncOperation);
+		if (this->_receiveAsyncOperation != nullptr)
+		{
+			this->_receiveAsyncOperation->Cancel();
+			this->_receiveAsyncOperation = nullptr;
+			this->_receiveBuffer = nullptr;
+		}
+		_lock.release();
 		if (this->sSock != nullptr)
 		{
 			delete this->sSock; // deleting the socket is the documented way in WinRT to close the socket in C++
@@ -385,7 +395,7 @@ namespace sakit
 			delete this->sServer; // deleting the socket is the documented way in WinRT to close the socket in C++
 			this->sServer = nullptr;
 		}
-		hmutex::ScopeLock _lock(&this->_mutexAcceptedSockets);
+		_lock.acquire(&this->_mutexAcceptedSockets);
 		foreach (StreamSocket^, it, this->_acceptedSockets)
 		{
 			delete (*it);
@@ -507,70 +517,83 @@ namespace sakit
 
 	bool PlatformSocket::_readStream(hstream* stream, int& maxCount, hmutex* mutex, IInputStream^ inputStream)
 	{
-		bool _asyncResult = false;
-		State _asyncState = State::Running;
-		int _asyncResultSize = 0;
-		int readCount = (maxCount > 0 ? hmin(this->bufferSize, maxCount) : this->bufferSize);
-		Buffer^ _buffer = ref new Buffer(readCount);
-		hmutex _mutex;
-		hmutex::ScopeLock _lock;
-		try
+		// this workaround is required due to the fact that IAsyncOperationWithProgress::Completed could be fire upon assignment and then a mutex deadlock would occur
+		hmutex::ScopeLock _lockAsync(&this->_mutexReceiveAsyncOperation);
+		bool asyncOperationRunning = (this->_receiveAsyncOperation != nullptr);
+		_lockAsync.release();
+		if (!asyncOperationRunning)
 		{
-			IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation = inputStream->ReadAsync(_buffer, readCount, InputStreamOptions::Partial);
-			operation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
-				[&_asyncResult, &_asyncState, &_asyncResultSize, &_mutex](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
+			try
 			{
-				hmutex::ScopeLock _lock(&_mutex);
-				if (_asyncState == State::Running)
+				this->_receiveBuffer = ref new Buffer(this->bufferSize);
+				this->_receiveAsyncOperation = inputStream->ReadAsync(this->_receiveBuffer, this->bufferSize, InputStreamOptions::Partial);
+				this->_receiveAsyncOperation->Completed = ref new AsyncOperationWithProgressCompletedHandler<IBuffer^, unsigned int>(
+					[this](IAsyncOperationWithProgress<IBuffer^, unsigned int>^ operation, AsyncStatus status)
 				{
 					if (status == AsyncStatus::Completed)
 					{
-						_asyncResult = true;
-						_asyncResultSize = operation->GetResults()->Length;
+						IBuffer^ _buffer = operation->GetResults();
+						Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
+						DataReader^ reader = DataReader::FromBuffer(_buffer);
+						try
+						{
+							reader->ReadBytes(_data);
+							hmutex::ScopeLock _lock(&this->_mutexReceiveStream);
+							this->_receiveStream.writeRaw(_data->Data, _data->Length);
+							hlog::errorf("OK", "async data: %d", _data->Length);
+						}
+						catch (Platform::OutOfBoundsException^ e)
+						{
+						}
+						reader->DetachBuffer();
+						hmutex::ScopeLock _lock(&this->_mutexReceiveAsyncOperation);
+						this->_receiveAsyncOperation = nullptr;
+						this->_receiveBuffer = nullptr;
 					}
-				}
-				_asyncState = State::Finished;
-			});
-			if (!PlatformSocket::_awaitAsync(_asyncState, _lock, &_mutex))
+				});
+			}
+			catch (Platform::Exception^ e)
 			{
-				operation->Cancel();
-				PlatformSocket::_awaitAsyncCancel(_asyncState, _lock, &_mutex);
-				// don't disconnect here, a timeout could have caused the operation to abort
-				if (_asyncResultSize <= 0)
-				{
-					return true;
-				}
+				PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
+				return false;
 			}
 		}
-		catch (Platform::Exception^ e)
+		_lockAsync.acquire(&this->_mutexReceiveStream);
+		if (this->_receiveStream.size() > 0)
 		{
-			PlatformSocket::_printLastError(_HL_PSTR_TO_HSTR(e->Message));
-			return false;
+			this->_receiveStream.rewind();
+			if (maxCount > 0)
+			{
+				hmutex::ScopeLock _lock(mutex);
+				int written = stream->writeRaw(this->_receiveStream, maxCount);
+				_lock.release();
+				maxCount -= written;
+				this->_receiveStream.seek(written);
+				int64_t remaining = this->_receiveStream.size() - written;
+				if (remaining > 0)
+				{
+					hstream remainingData;
+					remainingData.writeRaw(this->_receiveStream);
+					remainingData.rewind();
+					this->_receiveStream.clear(this->bufferSize);
+					this->_receiveStream.writeRaw(remainingData);
+				}
+				else
+				{
+					this->_receiveStream.clear(this->bufferSize);
+				}
+			}
+			else
+			{
+				hmutex::ScopeLock _lock(mutex);
+				stream->writeRaw(this->_receiveStream);
+				_lock.release();
+				this->_receiveStream.clear(this->bufferSize);
+			}
+			return true; // if data has been read, consider this not finished yet
 		}
-		if (_asyncResultSize <= 0)
-		{
-			return true;
-		}
-		Platform::Array<unsigned char>^ _data = ref new Platform::Array<unsigned char>(_buffer->Length);
-		DataReader^ reader = DataReader::FromBuffer(_buffer);
-		try
-		{
-			reader->ReadBytes(_data);
-		}
-		catch (Platform::OutOfBoundsException^ e)
-		{
-			return false;
-		}
-		reader->DetachBuffer();
-		_lock.acquire(mutex);
-		stream->writeRaw(_data->Data, _data->Length);
-		_asyncResultSize = (int)_data->Length;
-		_lock.release();
-		if (maxCount > 0) // if not trying to read everything at once
-		{
-			maxCount -= _asyncResultSize;
-		}
-		return true; // if data has been read, consider this not finished yet
+		hmutex::ScopeLock _lock(&this->_mutexReceiveAsyncOperation);
+		return (this->_receiveStream.size() > 0 || this->_receiveAsyncOperation != nullptr); // if still having an active async operation, consider this not finished yet
 	}
 
 	void PlatformSocket::UdpReceiver::onReceivedDatagram(DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args)

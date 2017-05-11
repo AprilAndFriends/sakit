@@ -26,7 +26,7 @@ namespace sakit
 	static hversion version(1, 2, 0);
 	
 	hstr logTag = "sakit";
-	float timeout = 10.00f;
+	float timeout = 10.0f;
 	float retryFrequency = 0.01f;
 	int bufferSize = 65536;
 	harray<Base*> connections;
