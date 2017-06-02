@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity Name="com.sakit.demoSimple" Publisher="CN=Sakit" Version="3.5.0.0" />
+  <mp:PhoneIdentity PhoneProductId="6afa13ff-2b98-4e9b-ac0d-b7bbd29329ab" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>Sakit Demo Simple</DisplayName>
+    <PublisherDisplayName>Sakit</PublisherDisplayName>
+    <Logo>media\assets\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="sakit.App">
+      <uap:VisualElements DisplayName="App" Square150x150Logo="media\assets\Logo.png" Square44x44Logo="media\assets\LogoTiny.png" Description="Sakit Demo Simple" BackgroundColor="transparent">
+        <uap:LockScreen Notification="badge" BadgeLogo="media\assets\LogoBadge.png" />
+        <uap:DefaultTile Wide310x150Logo="media\assets\WideLogo.png" Square71x71Logo="media\assets\LogoSmall.png" Square310x310Logo="media\assets\LogoBig.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="media\assets\Splash.png" BackgroundColor="transparent" />
+        <uap:InitialRotationPreference>
+          <uap:Rotation Preference="landscape" />
+          <uap:Rotation Preference="landscapeFlipped" />
+        </uap:InitialRotationPreference>
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>
