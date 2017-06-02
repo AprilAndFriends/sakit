@@ -5,37 +5,37 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="winuwp">
+    <Filter Include="uwp">
       <UniqueIdentifier>{f0ae1058-a500-44e2-8f2a-326b57b71662}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media">
+    <Filter Include="uwp\media">
       <UniqueIdentifier>{df25b4c6-d8ac-462d-b490-c614f00bcfbf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets">
+    <Filter Include="uwp\media\assets">
       <UniqueIdentifier>{88ab3f03-5374-4194-8762-3355cfa6d25a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\Logo">
+    <Filter Include="uwp\media\assets\Logo">
       <UniqueIdentifier>{df6315b6-fa7d-4aef-a55d-0ab1d950dd04}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\LogoBig">
+    <Filter Include="uwp\media\assets\LogoBig">
       <UniqueIdentifier>{9d3df410-95d1-4b13-9b64-57ae49abc4fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\Splash">
+    <Filter Include="uwp\media\assets\Splash">
       <UniqueIdentifier>{407d8cef-d128-4e2b-a1d5-a3b51a7ea90b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\StoreLogo">
+    <Filter Include="uwp\media\assets\StoreLogo">
       <UniqueIdentifier>{9ce80e43-8189-444c-bbbf-4296f5fe4aee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\LogoSmall">
+    <Filter Include="uwp\media\assets\LogoSmall">
       <UniqueIdentifier>{2645cea4-b2ec-4d82-837b-d791a7a45482}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\LogoTiny">
+    <Filter Include="uwp\media\assets\LogoTiny">
       <UniqueIdentifier>{025f072d-66d5-4e92-878f-268be7554ecf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\WideLogo">
+    <Filter Include="uwp\media\assets\WideLogo">
       <UniqueIdentifier>{b13550d9-3dd8-4b26-9a29-a90d31b7897d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="winuwp\media\assets\LogoBadge">
+    <Filter Include="uwp\media\assets\LogoBadge">
       <UniqueIdentifier>{e6a5d39c-6986-4515-bfb4-e62d594f2180}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -46,98 +46,98 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="media\assets\Logo.scale-100.png">
-      <Filter>winuwp\media\assets\Logo</Filter>
+      <Filter>uwp\media\assets\Logo</Filter>
     </Image>
     <Image Include="media\assets\Logo.scale-125.png">
-      <Filter>winuwp\media\assets\Logo</Filter>
+      <Filter>uwp\media\assets\Logo</Filter>
     </Image>
     <Image Include="media\assets\Logo.scale-150.png">
-      <Filter>winuwp\media\assets\Logo</Filter>
+      <Filter>uwp\media\assets\Logo</Filter>
     </Image>
     <Image Include="media\assets\LogoBig.scale-100.png">
-      <Filter>winuwp\media\assets\LogoBig</Filter>
+      <Filter>uwp\media\assets\LogoBig</Filter>
     </Image>
     <Image Include="media\assets\LogoBig.scale-125.png">
-      <Filter>winuwp\media\assets\LogoBig</Filter>
+      <Filter>uwp\media\assets\LogoBig</Filter>
     </Image>
     <Image Include="media\assets\LogoBig.scale-150.png">
-      <Filter>winuwp\media\assets\LogoBig</Filter>
+      <Filter>uwp\media\assets\LogoBig</Filter>
     </Image>
     <Image Include="media\assets\LogoBadge.scale-100.png">
-      <Filter>winuwp\media\assets\LogoBadge</Filter>
+      <Filter>uwp\media\assets\LogoBadge</Filter>
     </Image>
     <Image Include="media\assets\LogoBadge.scale-125.png">
-      <Filter>winuwp\media\assets\LogoBadge</Filter>
+      <Filter>uwp\media\assets\LogoBadge</Filter>
     </Image>
     <Image Include="media\assets\LogoBadge.scale-150.png">
-      <Filter>winuwp\media\assets\LogoBadge</Filter>
+      <Filter>uwp\media\assets\LogoBadge</Filter>
     </Image>
     <Image Include="media\assets\LogoSmall.scale-100.png">
-      <Filter>winuwp\media\assets\LogoSmall</Filter>
+      <Filter>uwp\media\assets\LogoSmall</Filter>
     </Image>
     <Image Include="media\assets\LogoSmall.scale-125.png">
-      <Filter>winuwp\media\assets\LogoSmall</Filter>
+      <Filter>uwp\media\assets\LogoSmall</Filter>
     </Image>
     <Image Include="media\assets\LogoSmall.scale-150.png">
-      <Filter>winuwp\media\assets\LogoSmall</Filter>
+      <Filter>uwp\media\assets\LogoSmall</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.scale-100.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.scale-125.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.scale-150.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.targetsize-16.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.targetsize-24.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.targetsize-48.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\LogoTiny.targetsize-256.png">
-      <Filter>winuwp\media\assets\LogoTiny</Filter>
+      <Filter>uwp\media\assets\LogoTiny</Filter>
     </Image>
     <Image Include="media\assets\StoreLogo.scale-100.png">
-      <Filter>winuwp\media\assets\StoreLogo</Filter>
+      <Filter>uwp\media\assets\StoreLogo</Filter>
     </Image>
     <Image Include="media\assets\StoreLogo.scale-125.png">
-      <Filter>winuwp\media\assets\StoreLogo</Filter>
+      <Filter>uwp\media\assets\StoreLogo</Filter>
     </Image>
     <Image Include="media\assets\StoreLogo.scale-150.png">
-      <Filter>winuwp\media\assets\StoreLogo</Filter>
+      <Filter>uwp\media\assets\StoreLogo</Filter>
     </Image>
     <Image Include="media\assets\WideLogo.scale-100.png">
-      <Filter>winuwp\media\assets\WideLogo</Filter>
+      <Filter>uwp\media\assets\WideLogo</Filter>
     </Image>
     <Image Include="media\assets\WideLogo.scale-125.png">
-      <Filter>winuwp\media\assets\WideLogo</Filter>
+      <Filter>uwp\media\assets\WideLogo</Filter>
     </Image>
     <Image Include="media\assets\WideLogo.scale-150.png">
-      <Filter>winuwp\media\assets\WideLogo</Filter>
+      <Filter>uwp\media\assets\WideLogo</Filter>
     </Image>
     <Image Include="media\assets\Splash.scale-100.png">
-      <Filter>winuwp\media\assets\Splash</Filter>
+      <Filter>uwp\media\assets\Splash</Filter>
     </Image>
     <Image Include="media\assets\Splash.scale-125.png">
-      <Filter>winuwp\media\assets\Splash</Filter>
+      <Filter>uwp\media\assets\Splash</Filter>
     </Image>
     <Image Include="media\assets\Splash.scale-150.png">
-      <Filter>winuwp\media\assets\Splash</Filter>
+      <Filter>uwp\media\assets\Splash</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\demos\demo_simple\TemporaryKey.pfx">
-      <Filter>winuwp</Filter>
+      <Filter>uwp</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="..\..\demos\demo_simple\Package-uwp.appxmanifest">
-      <Filter>winuwp</Filter>
+      <Filter>uwp</Filter>
     </AppxManifest>
   </ItemGroup>
 </Project>
