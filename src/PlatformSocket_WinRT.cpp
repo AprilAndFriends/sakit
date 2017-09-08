@@ -540,7 +540,6 @@ namespace sakit
 							reader->ReadBytes(_data);
 							hmutex::ScopeLock _lock(&this->_mutexReceiveStream);
 							this->_receiveStream.writeRaw(_data->Data, _data->Length);
-							hlog::errorf("OK", "async data: %d", _data->Length);
 						}
 						catch (Platform::OutOfBoundsException^ e)
 						{
