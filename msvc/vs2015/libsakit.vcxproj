@@ -54,6 +54,7 @@
     <ProjectGuid>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</ProjectGuid>
     <RootNamespace>sakit</RootNamespace>
   </PropertyGroup>
+  <Import Project="..\..\..\hltypes\msvc\vs2015\props-generic\system.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="props\default.props" />
   <Import Project="..\..\..\hltypes\msvc\vs2015\props-generic\platform-$(Platform).props" />
