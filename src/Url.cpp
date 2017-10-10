@@ -263,7 +263,7 @@ namespace sakit
 
 	hstr Url::_encodeWwwFormComponent(chstr string, chstr allowed)
 	{
-		hstr result;
+		harray<hstr> result;
 		for_iter (i, 0, string.size())
 		{
 			if (allowed.contains(string[i]))
@@ -275,13 +275,13 @@ namespace sakit
 				result += hsprintf("%%%02X", string[i]);
 			}
 		}
-		return result;
+		return result.joined("");
 	}
 
 	hstr Url::_decodeWwwFormComponent(chstr string)
 	{
 		hstr current = string;
-		hstr result;
+		harray<hstr> result;
 		int index = 0;
 		while (true)
 		{
@@ -295,7 +295,7 @@ namespace sakit
 			result += (char)current(index + 1, 2).unhex();
 			current = current(index + 3, -1);
 		}
-		return result;
+		return result.joined("");
 	}
 
 	hstr Url::encodeWwwForm(hmap<hstr, hstr> query, char delimiter)
