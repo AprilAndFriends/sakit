@@ -73,6 +73,18 @@ extern int h_errno;
 #include "Server.h"
 #include "Socket.h"
 
+#ifdef _IOS
+	#define FAMILY_INET AF_INET6
+	#define FAMILY_CONNECT_INET AF_INET
+	#define USE_FALLBACK
+#elif !defined(_ANDROID)
+	#define FAMILY_INET AF_INET
+	#define FAMILY_CONNECT_INET AF_INET
+#else
+	#define FAMILY_INET PF_INET
+	#define FAMILY_CONNECT_INET PF_INET
+#endif
+
 namespace sakit
 {
 	extern int bufferSize;
@@ -221,24 +233,18 @@ namespace sakit
 			lock.release();
 			*info = NULL;
 		}
-#ifdef _IOS
-		this->socketInfo->ai_family = AF_INET6;
-#elif !defined(_ANDROID)
-        this->socketInfo->ai_family = AF_INET;
-#else
-		this->socketInfo->ai_family = PF_INET;
-#endif
+		this->socketInfo->ai_family = FAMILY_INET;
 		this->socketInfo->ai_socktype = (!this->connectionLess ? SOCK_STREAM : SOCK_DGRAM);
 		this->socketInfo->ai_protocol = IPPROTO_IP;
 		this->socketInfo->ai_flags = 0;
 		lock.acquire(&mutexGetaddrinfo);
 		int result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
-#ifdef _IOS
-        if (result != 0)
-        {
-            this->socketInfo->ai_family = AF_INET;
-            result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
-        }
+#ifdef USE_FALLBACK
+		if (result != 0)
+		{
+			this->socketInfo->ai_family = AF_INET;
+			result = getaddrinfo(host.toString().cStr(), hstr(port).cStr(), this->socketInfo, info);
+		}
 #endif
 		if (result != 0)
 		{
@@ -613,11 +619,7 @@ namespace sakit
 		}
 		sockaddr_in address;
 		memset(&address, 0, sizeof(sockaddr_in));
-#ifndef _ANDROID
-		address.sin_family = AF_INET;
-#else
-		address.sin_family = PF_INET;
-#endif
+		address.sin_family = FAMILY_CONNECT_INET;
 		address.sin_port = __htons(port);
 		int result = 0;
 		int maxResult = 0;
@@ -654,11 +656,7 @@ namespace sakit
 		addrinfo hints;
 		addrinfo* info;
 		memset(&hints, 0, sizeof(hints));
-#ifndef _ANDROID
-		hints.ai_family = AF_INET;
-#else
-		hints.ai_family = PF_INET;
-#endif
+		hints.ai_family = FAMILY_CONNECT_INET;
 		hmutex::ScopeLock lock(&mutexGetaddrinfo);
 		int result = getaddrinfo(domain.toString().cStr(), NULL, &hints, &info);
 		if (result != 0)
@@ -678,11 +676,7 @@ namespace sakit
 	Host PlatformSocket::resolveIp(Host ip)
 	{
 		sockaddr_in address;
-#ifndef _ANDROID
-		address.sin_family = AF_INET;
-#else
-		address.sin_family = PF_INET;
-#endif
+		address.sin_family = FAMILY_CONNECT_INET;
 		__inet_pton(address.sin_family, ip.toString().cStr(), &address.sin_addr);
 		char hostName[NI_MAXHOST] = {'\0'};
 		hmutex::ScopeLock lock(&mutexGetnameinfo);
@@ -700,11 +694,7 @@ namespace sakit
 		addrinfo hints;
 		addrinfo* info;
 		memset(&hints, 0, sizeof(hints));
-#ifndef _ANDROID
-		hints.ai_family = AF_INET;
-#else
-		hints.ai_family = PF_INET;
-#endif
+		hints.ai_family = FAMILY_CONNECT_INET;
 		hmutex::ScopeLock lock(&mutexGetaddrinfo);
 		int result = getaddrinfo(NULL, serviceName.cStr(), &hints, &info);
 		if (result != 0)
