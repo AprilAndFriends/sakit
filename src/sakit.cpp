@@ -376,7 +376,7 @@ namespace sakit
 		PlatformSocket::platformDestroy();
 		if (connections.size() > 0)
 		{
-			hlog::warn(logTag, "Not all sockets/servers have been destroyed!");
+			hlog::warn(logTag, "Not all sockets/servers have been destroyed! Remaining: " + hstr(connections.size()));
 		}
 	}
 
@@ -384,7 +384,7 @@ namespace sakit
 	{
 		hmutex::ScopeLock lockUpdate(&updateMutex);
 		hmutex::ScopeLock lock(&connectionsMutex);
-		harray<Base*> _connections = sakit::connections;
+		harray<Base*> _connections = connections;
 		lock.release();
 		foreach (Base*, it, _connections)
 		{
