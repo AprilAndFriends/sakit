@@ -8,10 +8,10 @@
 
 #if !defined(_WIN32) || !defined(_WINRT)
 #include <stdint.h>
+#include <stdlib.h>
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #include <netinet/tcp.h>
-#include <stdlib.h>
 #include <memory.h>
 #define IN_ADDRT_T_TYPECAST (in_addr_t)
 #else
