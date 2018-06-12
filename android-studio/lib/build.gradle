@@ -1,0 +1,21 @@
+apply plugin: "com.android.library"
+apply from: "../../../hltypes/android-studio/generic/default.gradle"
+apply from: "../../../hltypes/android-studio/generic/native.gradle"
+apply from: "../../../hltypes/android-studio/generic/cpp.gradle"
+
+android {
+	defaultConfig {
+		versionCode 1200
+		versionName "1.2.0"
+	}
+	externalNativeBuild {
+		cmake {
+			path "CMakeLists.txt"
+		}
+	}
+}
+
+dependencies {
+	implementation project(":gtypes")
+	implementation fileTree(include: ["*.jar"], dir: "libs")
+}
