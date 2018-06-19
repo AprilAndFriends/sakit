@@ -23,7 +23,7 @@
  *	BSDI ifaddrs.h,v 2.5 2000/02/23 14:51:59 dab Exp
  */
 
-#ifdef _ANDROID
+#ifdef __ANDROID__
 #ifndef	_IFADDRS_H_
 #define	_IFADDRS_H_
 

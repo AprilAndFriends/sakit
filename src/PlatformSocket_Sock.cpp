@@ -35,7 +35,7 @@ typedef int socklen_t;
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-#ifndef _ANDROID
+#ifndef __ANDROID__
 #include <ifaddrs.h>
 #else
 #include "ifaddrs_android.h"
@@ -77,7 +77,7 @@ extern int h_errno;
 	#define FAMILY_INET AF_INET6
 	#define FAMILY_CONNECT_INET AF_INET
 	#define USE_FALLBACK
-#elif !defined(_ANDROID)
+#elif !defined(__ANDROID__)
 	#define FAMILY_INET AF_INET
 	#define FAMILY_CONNECT_INET AF_INET
 #else
