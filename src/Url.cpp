@@ -29,16 +29,25 @@
 
 namespace sakit
 {
-	Url::Url() : valid(false), port(0), queryDelimiter('&')
+	Url::Url() :
+		valid(false),
+		port(0),
+		queryDelimiter('&')
 	{
 	}
 
-	Url::Url(chstr url) : valid(false), port(0), queryDelimiter('&')
+	Url::Url(chstr url) :
+		valid(false),
+		port(0),
+		queryDelimiter('&')
 	{
 		this->set(url);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) : valid(false), port(0), queryDelimiter('&')
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) :
+		valid(false),
+		port(0),
+		queryDelimiter('&')
 	{
 		this->set(host, path, query, fragment);
 	}

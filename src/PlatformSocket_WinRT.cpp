@@ -38,7 +38,11 @@ namespace sakit
 	{
 	}
 
-	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false), serverMode(false), _receiveStream(this->bufferSize)
+	PlatformSocket::PlatformSocket() :
+		connected(false),
+		connectionLess(false),
+		serverMode(false),
+		_receiveStream(this->bufferSize)
 	{
 		this->sSock = nullptr;
 		this->dSock = nullptr;

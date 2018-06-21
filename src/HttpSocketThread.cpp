@@ -22,7 +22,8 @@
 
 namespace sakit
 {
-	HttpSocketThread::HttpSocketThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
+	HttpSocketThread::HttpSocketThread(PlatformSocket* socket, float* timeout, float* retryFrequency) :
+		TimedThread(socket, timeout, retryFrequency)
 	{
 		this->name = "SAKit HTTP Socket";
 		this->stream = new hstream();

@@ -10,7 +10,9 @@
 
 namespace sakit
 {
-	TcpSocketDelegate::TcpSocketDelegate() : SocketDelegate(), ConnectorDelegate()
+	TcpSocketDelegate::TcpSocketDelegate() :
+		SocketDelegate(),
+		ConnectorDelegate()
 	{
 	}
 

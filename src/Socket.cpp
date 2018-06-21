@@ -21,7 +21,8 @@
 
 namespace sakit
 {
-	Socket::Socket(SocketDelegate* socketDelegate, State idleState) : SocketBase()
+	Socket::Socket(SocketDelegate* socketDelegate, State idleState) :
+		SocketBase()
 	{
 		this->socketDelegate = socketDelegate;
 		this->idleState = idleState;

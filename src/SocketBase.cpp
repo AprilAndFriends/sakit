@@ -14,7 +14,9 @@
 
 namespace sakit
 {
-	SocketBase::SocketBase() : Base(), remotePort(0)
+	SocketBase::SocketBase() :
+		Base(),
+		remotePort(0)
 	{
 	}
 

@@ -18,7 +18,9 @@
 
 namespace sakit
 {
-	BroadcasterThread::BroadcasterThread(PlatformSocket* socket) : WorkerThread(socket), remotePort(0)
+	BroadcasterThread::BroadcasterThread(PlatformSocket* socket) :
+		WorkerThread(socket),
+		remotePort(0)
 	{
 		this->stream = new hstream();
 	}

@@ -38,7 +38,9 @@ namespace sakit
 		}
 	}
 
-	Base::Base() : state(State::Idle), localPort(0)
+	Base::Base() :
+		state(State::Idle),
+		localPort(0)
 	{
 		this->socket = new PlatformSocket();
 		this->timeout = sakit::getGlobalTimeout();

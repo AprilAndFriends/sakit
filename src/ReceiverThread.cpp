@@ -16,7 +16,9 @@
 
 namespace sakit
 {
-	ReceiverThread::ReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency), maxValue(0)
+	ReceiverThread::ReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency) :
+		TimedThread(socket, timeout, retryFrequency),
+		maxValue(0)
 	{
 		this->name = "SAKit receiver";
 	}

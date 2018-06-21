@@ -21,7 +21,8 @@ namespace sakit
 	extern hmutex connectionsMutex;
 	extern hmutex updateMutex;
 
-	TcpServer::TcpServer(TcpServerDelegate* tcpServerDelegate, TcpSocketDelegate* acceptedDelegate) : Server(dynamic_cast<ServerDelegate*>(tcpServerDelegate))
+	TcpServer::TcpServer(TcpServerDelegate* tcpServerDelegate, TcpSocketDelegate* acceptedDelegate) :
+		Server(dynamic_cast<ServerDelegate*>(tcpServerDelegate))
 	{
 		this->serverThread = this->tcpServerThread = new TcpServerThread(this->socket, this->acceptedDelegate, &this->timeout, &this->retryFrequency);
 		this->tcpServerDelegate = tcpServerDelegate;

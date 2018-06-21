@@ -22,7 +22,8 @@ namespace sakit
 	extern hmutex connectionsMutex;
 	extern hmutex updateMutex;
 
-	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
+	TcpServerThread::TcpServerThread(PlatformSocket* socket, TcpSocketDelegate* acceptedDelegate, float* timeout, float* retryFrequency) :
+		TimedThread(socket, timeout, retryFrequency)
 	{
 		this->name = "SAKit TCP server";
 		this->acceptedDelegate = acceptedDelegate;

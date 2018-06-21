@@ -22,7 +22,8 @@
 
 namespace sakit
 {
-	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Bound),
+	UdpSocket::UdpSocket(UdpSocketDelegate* socketDelegate) :
+		Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Bound),
 		Binder(this->socket, dynamic_cast<BinderDelegate*>(socketDelegate))
 	{
 		this->socket->setConnectionLess(true);

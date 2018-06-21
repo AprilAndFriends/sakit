@@ -21,7 +21,9 @@
 
 namespace sakit
 {
-	Server::Server(ServerDelegate* serverDelegate) : Base(), Binder(this->socket, dynamic_cast<BinderDelegate*>(serverDelegate))
+	Server::Server(ServerDelegate* serverDelegate) :
+		Base(),
+		Binder(this->socket, dynamic_cast<BinderDelegate*>(serverDelegate))
 	{
 		this->serverDelegate = serverDelegate;
 		this->serverThread = NULL;

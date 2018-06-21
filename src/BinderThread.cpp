@@ -18,7 +18,8 @@
 
 namespace sakit
 {
-	BinderThread::BinderThread(PlatformSocket* socket) : WorkerThread(socket)
+	BinderThread::BinderThread(PlatformSocket* socket) :
+		WorkerThread(socket)
 	{
 	}
 

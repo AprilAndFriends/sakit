@@ -18,7 +18,8 @@
 
 namespace sakit
 {
-	UdpServerThread::UdpServerThread(PlatformSocket* socket, float* timeout, float* retryFrequency) : TimedThread(socket, timeout, retryFrequency)
+	UdpServerThread::UdpServerThread(PlatformSocket* socket, float* timeout, float* retryFrequency) :
+		TimedThread(socket, timeout, retryFrequency)
 	{
 		this->name = "SAKit UDP server";
 	}

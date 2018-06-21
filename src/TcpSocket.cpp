@@ -22,7 +22,8 @@
 
 namespace sakit
 {
-	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) : Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Connected),
+	TcpSocket::TcpSocket(TcpSocketDelegate* socketDelegate) :
+		Socket(dynamic_cast<SocketDelegate*>(socketDelegate), State::Connected),
 		Connector(this->socket, dynamic_cast<ConnectorDelegate*>(socketDelegate))
 	{
 		this->tcpSocketDelegate = socketDelegate;

@@ -14,7 +14,10 @@
 
 namespace sakit
 {
-	WorkerThread::WorkerThread(PlatformSocket* socket) : hthread(&process, "SAKit worker"), result(State::Idle), port(0)
+	WorkerThread::WorkerThread(PlatformSocket* socket) :
+		hthread(&process, "SAKit worker"),
+		result(State::Idle),
+		port(0)
 	{
 		this->socket = socket;
 	}

@@ -178,7 +178,9 @@ namespace sakit
 #endif
 	}
 
-	PlatformSocket::PlatformSocket() : connected(false), connectionLess(false)
+	PlatformSocket::PlatformSocket() :
+		connected(false),
+		connectionLess(false)
 	{
 		this->sock = -1;
 		this->socketInfo = NULL;

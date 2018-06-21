@@ -59,7 +59,10 @@ namespace sakit
 
 	unsigned short HttpSocket::DefaultPort = 80;
 
-	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) : SocketBase(), keepAlive(false), reportProgress(false)
+	HttpSocket::HttpSocket(HttpSocketDelegate* socketDelegate, Protocol protocol) :
+		SocketBase(),
+		keepAlive(false),
+		reportProgress(false)
 	{
 		this->socketDelegate = socketDelegate;
 		this->protocol = protocol;

@@ -89,7 +89,13 @@ namespace sakit
 		HL_ENUM_DEFINE_VALUE(HttpResponse::Code, HttpVersionNotSupported, 505);
 	));
 
-	HttpResponse::HttpResponse() : statusCode(Code::Undefined), headersComplete(false), bodyComplete(false), chunkSize(0), chunkRead(0), newDataSize(0)
+	HttpResponse::HttpResponse() :
+		statusCode(Code::Undefined),
+		headersComplete(false),
+		bodyComplete(false),
+		chunkSize(0),
+		chunkRead(0),
+		newDataSize(0)
 	{
 		this->clear();
 	}
