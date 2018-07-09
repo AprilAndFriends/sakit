@@ -14,7 +14,6 @@ file(
 add_library(sakit STATIC ${CppSrc})
 
 include_directories(AFTER "../../include/sakit")
-include_directories(AFTER "../../src")
 include_directories(AFTER "../../../hltypes/include")
 
 add_definitions(
