@@ -17,5 +17,5 @@ android {
 
 dependencies {
 	implementation project(":gtypes")
-	implementation fileTree(include: ["*.jar"], dir: "libs")
+	api fileTree(include: ["*.jar"], dir: "libs")
 }
