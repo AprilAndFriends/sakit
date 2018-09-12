@@ -12,11 +12,11 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy ..\..\demos\media media\ /d /y /e
+      <Command>xcopy "..\..\demos\media" "media\" /d /y /e
 </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>xcopy $(OutDir)..\..\*.dll $(OutDir) /d /y
+      <Command>xcopy "$(OutDir)..\..\*.dll" "$(OutDir)" /d /y
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

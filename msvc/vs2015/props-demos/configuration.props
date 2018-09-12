@@ -12,7 +12,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy $(OutDir)..\..\*.dll $(OutDir) /d /y
+      <Command>xcopy "$(OutDir)..\..\*.dll" "$(OutDir)" /d /y
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
