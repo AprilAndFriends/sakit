@@ -197,10 +197,8 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				Base,
 				English,
-				Japanese,
-				French,
-				German,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* libsakit */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
