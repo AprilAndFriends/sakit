@@ -79,9 +79,9 @@ namespace sakit
 		int maxCount = 0;
 		hstream stream(maxCount);
 		float time = 0.0f;
-		int64_t size = 0LL;
-		int64_t lastSize = 0LL;
-		int64_t position = 0LL;
+		int64_t size = (int64_t)0;
+		int64_t lastSize = (int64_t)0;
+		int64_t position = (int64_t)0;
 		// this implementation differs slightly from HttpSocket::_receiveHttpDirect() due to required mutex locking
 		while (this->isRunning() && this->executing)
 		{
