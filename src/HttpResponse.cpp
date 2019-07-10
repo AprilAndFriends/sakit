@@ -100,10 +100,6 @@ namespace sakit
 		this->clear();
 	}
 
-	HttpResponse::~HttpResponse()
-	{
-	}
-
 	void HttpResponse::clear()
 	{
 		this->protocol = "";

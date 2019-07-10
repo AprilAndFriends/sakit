@@ -10,11 +10,8 @@
 
 namespace sakit
 {
-	ServerDelegate::ServerDelegate()
-	{
-	}
-
-	ServerDelegate::~ServerDelegate()
+	ServerDelegate::ServerDelegate() :
+		BinderDelegate()
 	{
 	}
 

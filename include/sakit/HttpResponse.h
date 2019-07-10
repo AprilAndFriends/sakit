@@ -123,7 +123,6 @@ namespace sakit
 		bool bodyComplete;
 
 		HttpResponse();
-		~HttpResponse();
 
 		void clear();
 		void parseFromRaw();

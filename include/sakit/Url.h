@@ -20,6 +20,9 @@
 #include "Host.h"
 #include "sakitExport.h"
 
+#define SAKIT_HTTP_SCHEME "http://"
+#define SAKIT_HTTPS_SCHEME "https://"
+
 namespace sakit
 {
 	class sakitExport Url
@@ -27,17 +30,17 @@ namespace sakit
 	public:
 		Url();
 		Url(chstr url);
-		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
-		~Url();
+		Url(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "", chstr scheme = SAKIT_HTTP_SCHEME);
 
 		HL_DEFINE_IS(valid, Valid);
+		HL_DEFINE_GETSET(hstr, scheme, scheme);
 		HL_DEFINE_GET(hstr, host, Host);
 		HL_DEFINE_GET(unsigned short, port, Port);
 		HL_DEFINE_GET(hstr, path, Path);
 		HL_DEFINE_GET2(hmap, hstr, hstr, query, Query);
 		HL_DEFINE_GET(hstr, fragment, Fragment);
 		void set(chstr url);
-		void set(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "");
+		void set(chstr host, chstr path, hmap<hstr, hstr> query = hmap<hstr, hstr>(), chstr fragment = "", chstr scheme = SAKIT_HTTP_SCHEME);
 
 		/// @note The returned value is fully encoded.
 		hstr getAbsolutePath(bool withPort = false) const;
@@ -53,6 +56,7 @@ namespace sakit
 
 	protected:
 		bool valid;
+		hstr scheme;
 		hstr host;
 		unsigned short port;
 		hstr path;

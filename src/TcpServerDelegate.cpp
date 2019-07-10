@@ -10,11 +10,8 @@
 
 namespace sakit
 {
-	TcpServerDelegate::TcpServerDelegate()
-	{
-	}
-
-	TcpServerDelegate::~TcpServerDelegate()
+	TcpServerDelegate::TcpServerDelegate() :
+		ServerDelegate()
 	{
 	}
 

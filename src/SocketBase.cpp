@@ -20,10 +20,6 @@ namespace sakit
 	{
 	}
 
-	SocketBase::~SocketBase()
-	{
-	}
-
 	int SocketBase::_send(chstr data)
 	{
 		hstream stream;

@@ -23,10 +23,6 @@ namespace sakit
 		this->gateway = gateway;
 	}
 
-	NetworkAdapter::~NetworkAdapter()
-	{
-	}
-
 	Host NetworkAdapter::getBroadcastIp() const
 	{
 		if (!this->address.isIp())

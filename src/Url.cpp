@@ -15,8 +15,6 @@
 #include "sakit.h"
 #include "Url.h"
 
-#define HTTP_SCHEME "http://"
-
 #define URL_UNRESERVED "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~"
 #define URL_RESERVED ":/?#[]@"
 #define QUERY_DELIMITERS "!$&'()*+,;"
@@ -44,12 +42,12 @@ namespace sakit
 		this->set(url);
 	}
 
-	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment) :
+	Url::Url(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment, chstr scheme) :
 		valid(false),
 		port(0),
 		queryDelimiter('&')
 	{
-		this->set(host, path, query, fragment);
+		this->set(host, path, query, fragment, scheme);
 	}
 
 	void Url::set(chstr url)
@@ -66,11 +64,19 @@ namespace sakit
 		this->query.clear();
 		this->fragment = "";
 		this->queryDelimiter = '&';
+		this->scheme = SAKIT_HTTP_SCHEME;
 		// set new
 		hstr newUrl = url;
-		if (url.startsWith(HTTP_SCHEME))
+		if (url.startsWith(SAKIT_HTTP_SCHEME))
 		{
-			newUrl = newUrl(strlen(HTTP_SCHEME), -1);
+			newUrl = newUrl(strlen(SAKIT_HTTP_SCHEME), -1);
+			this->scheme = SAKIT_HTTP_SCHEME;
+		}
+		else if (url.startsWith(SAKIT_HTTPS_SCHEME))
+		{
+			newUrl = newUrl(strlen(SAKIT_HTTPS_SCHEME), -1);
+			this->scheme = SAKIT_HTTPS_SCHEME;
+			hlog::warn(logTag, "URL uses HTTPS, but SSL isn't properly supported in SAKit yet: " + url);
 		}
 		this->host = newUrl;
 		int index = 0;
@@ -99,7 +105,7 @@ namespace sakit
 		this->_checkValues(query);
 	}
 
-	void Url::set(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment)
+	void Url::set(chstr host, chstr path, hmap<hstr, hstr> query, chstr fragment, chstr scheme)
 	{
 		// reset
 		this->valid = false;
@@ -110,6 +116,7 @@ namespace sakit
 		this->path = path;
 		this->query = query;
 		this->fragment = fragment;
+		this->scheme = scheme;
 		this->_checkValues("");
 	}
 
@@ -187,13 +194,9 @@ namespace sakit
 		this->valid = true;
 	}
 
-	Url::~Url()
-	{
-	}
-
 	hstr Url::getAbsolutePath(bool withPort) const
 	{
-		hstr result = HTTP_SCHEME + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
+		hstr result = (this->scheme != "" ? this->scheme : SAKIT_HTTP_SCHEME) + this->_encodeWwwFormComponent(this->host, HOST_ALLOWED);
 		if (withPort && this->port > 0)
 		{
 			result += ":" + hstr(this->port);

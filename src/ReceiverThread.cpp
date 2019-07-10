@@ -23,8 +23,4 @@ namespace sakit
 		this->name = "SAKit receiver";
 	}
 
-	ReceiverThread::~ReceiverThread()
-	{
-	}
-
 }

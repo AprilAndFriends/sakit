@@ -26,7 +26,6 @@ namespace sakit
 	{
 	public:
 		ServerDelegate();
-		~ServerDelegate();
 
 		virtual void onStopped(Server* server);
 		virtual void onStartFailed(Server* server);

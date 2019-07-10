@@ -27,7 +27,6 @@ namespace sakit
 	{
 	public:
 		TimedThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
-		~TimedThread();
 
 	protected:
 		float* timeout;

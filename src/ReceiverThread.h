@@ -31,7 +31,6 @@ namespace sakit
 		friend class Socket;
 
 		ReceiverThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
-		~ReceiverThread();
 
 	protected:
 		int maxValue;

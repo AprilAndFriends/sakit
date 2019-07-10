@@ -28,7 +28,6 @@ namespace sakit
 		Host(const char* domain);
 		Host(chstr domain);
 		Host(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
-		~Host();
 
 		bool isIp() const;
 

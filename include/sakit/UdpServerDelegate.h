@@ -27,7 +27,6 @@ namespace sakit
 	{
 	public:
 		UdpServerDelegate();
-		~UdpServerDelegate();
 
 		virtual void onReceived(UdpServer* server, Host remoteHost, unsigned short remotePort, hstream* stream);
 

@@ -31,8 +31,6 @@ namespace sakit
 	public:
 		friend class PlatformSocket;
 
-		~SocketBase();
-
 		HL_DEFINE_GET(Host, remoteHost, RemoteHost);
 		HL_DEFINE_GET(unsigned short, remotePort, RemotePort);
 

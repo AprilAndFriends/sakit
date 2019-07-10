@@ -23,10 +23,6 @@ namespace sakit
 	{
 	}
 
-	BinderThread::~BinderThread()
-	{
-	}
-
 	void BinderThread::_updateBinding()
 	{
 		bool result = this->socket->bind(this->host, this->port);

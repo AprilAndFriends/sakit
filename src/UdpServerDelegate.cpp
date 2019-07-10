@@ -10,11 +10,8 @@
 
 namespace sakit
 {
-	UdpServerDelegate::UdpServerDelegate()
-	{
-	}
-
-	UdpServerDelegate::~UdpServerDelegate()
+	UdpServerDelegate::UdpServerDelegate() :
+		ServerDelegate()
 	{
 	}
 

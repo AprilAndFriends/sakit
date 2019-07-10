@@ -16,10 +16,6 @@ namespace sakit
 	{
 	}
 
-	TcpSocketDelegate::~TcpSocketDelegate()
-	{
-	}
-
 	void TcpSocketDelegate::onReceived(TcpSocket* socket, hstream* stream)
 	{
 	}

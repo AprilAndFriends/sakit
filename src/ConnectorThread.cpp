@@ -25,10 +25,6 @@ namespace sakit
 		this->name = "SAKit connector";
 	}
 
-	ConnectorThread::~ConnectorThread()
-	{
-	}
-
 	void ConnectorThread::_updateConnecting()
 	{
 		Host localHost;

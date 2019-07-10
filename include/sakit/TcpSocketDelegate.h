@@ -29,7 +29,6 @@ namespace sakit
 	{
 	public:
 		TcpSocketDelegate();
-		~TcpSocketDelegate();
 
 		virtual void onReceived(TcpSocket* socket, hstream* stream);
 		virtual void onReceiveFailed(TcpSocket* socket);

@@ -22,10 +22,6 @@ namespace sakit
 		this->socket = socket;
 	}
 
-	WorkerThread::~WorkerThread()
-	{
-	}
-
 	void WorkerThread::process(hthread* thread)
 	{
 		((WorkerThread*)thread)->_updateProcess();

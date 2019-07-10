@@ -39,7 +39,6 @@ namespace sakit
 		friend class UdpSocket;
 
 		WorkerThread(PlatformSocket* socket);
-		~WorkerThread();
 
 	protected:
 		State result;

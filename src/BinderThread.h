@@ -32,7 +32,6 @@ namespace sakit
 		friend class Binder;
 
 		BinderThread(PlatformSocket* socket);
-		~BinderThread();
 
 	protected:
 		State state;

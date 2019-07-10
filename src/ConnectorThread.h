@@ -32,7 +32,6 @@ namespace sakit
 		friend class Connector;
 
 		ConnectorThread(PlatformSocket* socket, float* timeout, float* retryFrequency);
-		~ConnectorThread();
 
 	protected:
 		State state;

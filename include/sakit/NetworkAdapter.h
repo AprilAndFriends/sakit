@@ -25,7 +25,6 @@ namespace sakit
 	{
 	public:
 		NetworkAdapter(int comboIndex, int index, chstr name, chstr description, chstr type, Host address, Host mask, Host gateway);
-		~NetworkAdapter();
 
 		HL_DEFINE_GET(int, comboIndex, ComboIndex);
 		HL_DEFINE_GET(int, index, Index);

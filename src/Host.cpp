@@ -39,10 +39,6 @@ namespace sakit
 		this->address = hsprintf("%d.%d.%d.%d", a, b, c, d);
 	}
 
-	Host::~Host()
-	{
-	}
-
 	bool Host::isIp() const
 	{
 		harray<hstr> fragments = this->address.split('.');

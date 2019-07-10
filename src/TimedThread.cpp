@@ -19,8 +19,4 @@ namespace sakit
 		this->retryFrequency = retryFrequency;
 	}
 
-	TimedThread::~TimedThread()
-	{
-	}
-
 }
