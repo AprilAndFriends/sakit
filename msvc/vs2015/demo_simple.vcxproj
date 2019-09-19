@@ -17,38 +17,6 @@
       <Configuration>ReleaseS</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Android">
-      <Configuration>Debug</Configuration>
-      <Platform>Android</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugS|Android">
-      <Configuration>DebugS</Configuration>
-      <Platform>Android</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Android">
-      <Configuration>Release</Configuration>
-      <Platform>Android</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseS|Android">
-      <Configuration>ReleaseS</Configuration>
-      <Platform>Android</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Android-x86">
-      <Configuration>Debug</Configuration>
-      <Platform>Android-x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugS|Android-x86">
-      <Configuration>DebugS</Configuration>
-      <Platform>Android-x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Android-x86">
-      <Configuration>Release</Configuration>
-      <Platform>Android-x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseS|Android-x86">
-      <Configuration>ReleaseS</Configuration>
-      <Platform>Android-x86</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8ED4EDB5-7C0E-411F-BCC6-E96882CC73F3}</ProjectGuid>
