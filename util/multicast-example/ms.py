@@ -43,27 +43,27 @@ class ServerDiscoveryServer(SocketServer.UDPServer):
 
     def server_close(self):
         #TODO: leave the multicast groups...
-        print "SERVER CLOSE"
+        print("SERVER CLOSE")
         pass
 
 class ServerDiscoveryHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         data = self.request[0]
         socket = self.request[1]
-        print "Discovery server: ", self.client_address, "-", data
+        print("Discovery server: ", self.client_address, "-", data)
         socket.sendto("Hi from discovery server " + platform.node(), self.client_address)
 
 
 class CGSyncHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(1024)
-        print "CGSync server: ", self.client_address, "-", data
+        print("CGSync server: ", self.client_address, "-", data)
         self.request.sendall("Hi from cgsync server " + platform.node())
 		
 def startThreadedServer(s, name):
-	print ">>> Starting " + name
+	print(">>> Starting " + name)
 	s.serve_forever()
-	print ">>> Stopping " + name
+	print(">>> Stopping " + name)
 
 HOST, PORT = "239.5.0.5", 1505
 discoveryServer = ServerDiscoveryServer((HOST, PORT), ServerDiscoveryHandler)
@@ -72,6 +72,6 @@ discoveryThread.daemon = True
 discoveryThread.start()
 
 cgsyncServer = SocketServer.TCPServer(("0.0.0.0", 2505), CGSyncHandler)
-print cgsyncServer.server_address
+print(cgsyncServer.server_address)
 
 startThreadedServer(cgsyncServer, "CGSync server")

@@ -15,7 +15,7 @@ for i in range(1, 10):
 		continue
 	break
 		
-print "Created socket at %s:%d" % (ANY, SENDERPORT)
+print("Created socket at %s:%d" % (ANY, SENDERPORT))
 
 #Tell the kernel that we want to multicast and that the data is sent
 #to everyone (255 is the level of multicasting)
@@ -26,7 +26,7 @@ sock.setblocking(0)
 
 addrs = []
 
-print ">>> Waiting for servers to respond..."
+print(">>> Waiting for servers to respond...")
 i = 0
 while i < 20:
 	time.sleep(0.1)
@@ -34,7 +34,7 @@ while i < 20:
 	#Any subscribers to the multicast address will receive this data
 	try:
 		data, addr = sock.recvfrom(1024)
-		print "RESPONSE: ", addr, " - ", data
+		print("RESPONSE: ", addr, " - ", data)
 		
 		addrs.append(addr[0])
 	except socket.error:
@@ -44,10 +44,10 @@ sock.close()
 sock = None
 
 for i in addrs:
-	print "Connecting to TCP server at ", (i, 2505)
+	print("Connecting to TCP server at ", (i, 2505))
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
 	sock.connect((i, 2505))
 	sock.send("Hi TCP server, this is cgsync client")
 	data = sock.recv(1024)
 	sock.close()
-	print "cgsync server responded:", data, "\n"
+	print("cgsync server responded:", data, "\n")

@@ -18,13 +18,13 @@ vc=52CFBD39&action=login&username=5465737432&password=E0AF8F5928F7D7A1703F1FE9B8
 \r\n"
 
 sock.connect(('mbattles.cateia.com', 80))
-print "Sent: " + str(sock.send(message))
-print ""
+print("Sent: " + str(sock.send(message)))
+print("")
 
 while True:
 	data = sock.recv(2000)
 	if data != "":
-		print data
+		print(data)
 		break;
 
 

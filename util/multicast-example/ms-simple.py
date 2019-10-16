@@ -18,7 +18,7 @@ status = sock.setsockopt(socket.IPPROTO_IP,
 socket.IP_ADD_MEMBERSHIP,
 socket.inet_aton(MCAST_ADDR) + socket.inet_aton(ANY));
 
-print status
+print(status)
 
 sock.setblocking(0)
 ts = time.time()
@@ -28,9 +28,9 @@ while 1:
 	except socket.error, e:
 		pass
 	else:
-		print "We got data!"
-		print "FROM: ", addr
-		print "DATA: ", data
+		print("We got data!")
+		print("FROM: ", addr)
+		print("DATA: ", data)
 		sock.sendto(socket.gethostname() + " says Hi!", addr);
 
 
